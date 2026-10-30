@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تقارير المواقع</title>
+<meta name="theme-color" content="#13324f">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="تقارير المواقع">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one-column phone app — fixed top bar, cards, sticky action at bottom */
+:root{
+  --navy:#13324f; --ink:#13202e; --steel:#5d7186; --line:#d8e0e9;
+  --bg:#eef2f6; --card:#ffffff; --glass:#2a7ab8; --glass-soft:#e3eff8;
+  --ok:#2e8b57; --warn:#c48610; --danger:#b3261e;
+  --font:'IBM Plex Sans Arabic',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button,input,textarea,select{font:inherit;color:inherit}
+#bar{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.bar-in{display:flex;align-items:center;gap:10px;max-width:760px;margin:0 auto;padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+.logo{width:34px;height:34px;border-radius:8px}
+.bar-title{flex:1;min-width:0}
+.bt{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bs{font-size:11.5px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn,.chip{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;min-width:40px;height:40px;padding:0 10px;font-weight:600;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:14px max(14px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h3{font-size:16px}
+.muted{color:var(--steel)} .small{font-size:13px}
+.center{display:flex;justify-content:center;padding:60px 0}
+.spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--glass);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--glass);border-color:var(--glass);color:#fff}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.danger-ghost{color:var(--danger)}
+.btn:disabled{opacity:.55}
+.btn.wide{width:100%}
+.btn:focus-visible,.chip:focus-visible,.tab:focus-visible,.pcard:focus-visible,.segb:focus-visible{outline:3px solid #8cc2ea;outline-offset:2px}
+.link{background:none;border:0;color:var(--glass);font-weight:600;padding:6px;cursor:pointer}
+.form{gap:12px}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld span{font-size:13px;color:var(--steel);font-weight:500}
+.fld input,.fld textarea,.search{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fbfcfd;min-height:46px}
+.fld input:focus,.fld textarea:focus,.search:focus{outline:2px solid var(--glass);border-color:var(--glass)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.two{grid-template-columns:1fr}}
+.row-btns{display:flex;flex-wrap:wrap;gap:10px}
+.row-btns>*{flex:1 1 140px}
+.auth{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding-top:20px}
+.auth-logo{width:84px;height:84px;border-radius:20px}
+.auth .card{width:100%;text-align:start;margin-top:10px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+.toolbar .search{flex:1 1 200px}
+.pcard{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.pc-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pct{font-variant-numeric:tabular-nums;color:var(--glass);font-weight:700}
+.meter{height:6px;background:var(--glass-soft);border-radius:4px;overflow:hidden}
+.meter.big{height:10px}
+.meter i{display:block;height:100%;background:var(--glass);border-radius:4px}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:28px 16px;text-align:center;color:var(--steel)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:8px 16px;font-weight:600;cursor:pointer;color:var(--steel)}
+.tab.on{background:var(--navy);border-color:var(--navy);color:#fff}
+#tabBody{display:flex;flex-direction:column;gap:12px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #edf1f5;align-items:baseline}
+.kv:last-child{border-bottom:0}
+.kv>span:first-child{color:var(--steel);font-size:13.5px;flex:0 0 auto}
+.kv>span:last-child{text-align:end;min-width:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.mini{display:inline-block;font-size:12.5px;padding:2px 8px;border-radius:8px;background:var(--glass-soft);color:var(--glass);text-decoration:none;font-weight:600;margin-inline-start:4px}
+.notes p{margin:4px 0 0;white-space:pre-wrap}
+.task{display:flex;flex-direction:column;gap:6px;padding:6px 0}
+.task-name{font-weight:600}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.segb{border:1px solid var(--line);background:#fbfcfd;border-radius:10px;min-height:42px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--steel)}
+.segb.on.s0{background:#eef1f4;color:var(--ink);border-color:#b9c4cf}
+.segb.on.s1{background:#fdf3df;color:#8a5d06;border-color:var(--warn)}
+.segb.on.s2{background:#e3f3ea;color:#1e6b41;border-color:var(--ok)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.ph{margin:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ph img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;cursor:pointer}
+.ph figcaption{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:12px;color:var(--steel)}
+.x{border:0;background:none;color:var(--danger);font-size:16px;cursor:pointer;padding:6px;min-width:36px;min-height:36px}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #edf1f5}
+.li:last-child{border-bottom:0}
+.li .thumb{width:46px;height:46px;border-radius:8px;object-fit:cover;cursor:pointer;flex:0 0 auto}
+.li .grow{flex:1;min-width:0}
+.sum b{font-size:16px}
+.actions{position:fixed;inset:auto 0 0 0;z-index:15;background:linear-gradient(transparent,var(--bg) 30%);padding:18px max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.actions .btn{max-width:732px;margin:0 auto;display:flex}
+.badge{font-size:12px;padding:2px 9px;border-radius:10px;font-weight:600;background:#eef1f4;color:var(--steel)}
+.badge.pending{background:#fdf3df;color:#8a5d06}
+.badge.engineer{background:var(--glass-soft);color:var(--glass)}
+.badge.admin{background:var(--navy);color:#fff}
+.tbl-wrap{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+table.t th,table.t td{padding:8px 6px;border-bottom:1px solid #edf1f5;text-align:start;white-space:nowrap}
+table.t th{color:var(--steel);font-weight:500;font-size:12.5px}
+table.t tfoot td{font-weight:700;border-top:2px solid var(--line)}
+#sheet{position:fixed;inset:0;z-index:50}
+.sheet-bg{position:absolute;inset:0;background:rgba(10,20,32,.45)}
+.sheet{position:absolute;inset:auto 0 0 0;background:var(--card);border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;max-height:88vh;overflow:auto;max-width:760px;margin:0 auto}
+.sheet img.full{width:100%;border-radius:10px}
+.menu{display:flex;flex-direction:column}
+.who{display:flex;flex-direction:column;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.mi{all:unset;box-sizing:border-box;padding:14px 4px;border-bottom:1px solid #edf1f5;cursor:pointer;font-weight:600}
+.mi.muted{font-weight:400;cursor:default}
+.danger-t{color:var(--danger)}
+#toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;max-width:calc(100% - 32px);text-align:center;font-size:14px}
+/* PDF report (rendered off-screen, always white paper) */
+.pdf-host{position:fixed;left:-10000px;top:0;width:760px}
+.rep{width:760px;background:#fff;color:#13202e;padding:28px 30px;font-family:var(--font);font-size:13.5px;line-height:1.55}
+.rep-head{display:flex;align-items:center;gap:14px;border-bottom:3px solid #13324f;padding-bottom:12px;margin-bottom:14px}
+.rep-head img{width:52px;height:52px;border-radius:10px}
+.rep-head>div:nth-child(2){flex:1}
+.rep-co{font-weight:700;font-size:15px;color:#13324f}
+.rep-title{font-size:20px;font-weight:700}
+.rep-date{font-size:12px;color:#5d7186}
+.rep h2{font-size:19px;margin:6px 0 10px}
+.rep h3{font-size:15px;margin:16px 0 6px;color:#13324f}
+.rep table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.rep td,.rep th{border:1px solid #d8e0e9;padding:6px 8px;text-align:start;vertical-align:top}
+.rep th{background:#eef2f6;font-weight:600}
+.rep .kvt td:first-child{width:34%;background:#f6f8fa;color:#5d7186}
+.rep .tot td{font-weight:700;background:#f6f8fa}
+.rep-ph{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rep-ph img{width:100%;height:250px;object-fit:cover;border-radius:6px;border:1px solid #d8e0e9}
+.rep .avoid{break-inside:avoid;page-break-inside:avoid}
+.rep-foot{margin-top:18px;font-size:12px;color:#5d7186;border-top:1px solid #d8e0e9;padding-top:8px}
+.rep .notes{white-space:pre-wrap;border:1px solid #d8e0e9;padding:8px;border-radius:6px}
+</style>
+</head>
+<body>
+<header id="bar"></header>
+<main id="app"><div class="center"><div class="spin"></div></div></main>
+<div id="sheet" hidden></div>
+<div id="toast" hidden></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+'use strict';
+const firebaseConfig = {
+  apiKey: "AIzaSyAhG6AT8bJR0qyif41UtQu-7JlSs4k7WKg",
+  authDomain: "aseel-app-26beb.firebaseapp.com",
+  projectId: "aseel-app-26beb",
+  storageBucket: "aseel-app-26beb.firebasestorage.app",
+  messagingSenderId: "833106108057",
+  appId: "1:833106108057:web:5bc60217abbafd18a92208"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const FV = firebase.firestore.FieldValue;
+const OWNER_EMAIL = 'hoshamna@gmail.com';
+
+const T = {
+ar:{
+ appName:'تقارير المواقع', company:'أصيل للألمنيوم والزجاج ذ م م', currency:'درهم',
+ login:'تسجيل الدخول', signup:'إنشاء حساب', email:'البريد الإلكتروني', password:'كلمة المرور', name:'الاسم الكامل',
+ haveAcc:'لديك حساب؟ سجّل الدخول', noAcc:'ليس لديك حساب؟ أنشئ حساباً', forgot:'نسيت كلمة المرور؟',
+ resetSent:'أُرسل رابط إعادة تعيين كلمة المرور إلى بريدك.', enterEmail:'اكتب بريدك الإلكتروني أولاً.',
+ pendingTitle:'حسابك بانتظار الموافقة', pendingMsg:'سيفعّل المدير حسابك قريباً، ثم اضغط «تحقّق من حالة الحساب».', recheck:'تحقّق من حالة الحساب',
+ verifyTitle:'أكّد بريدك الإلكتروني', verifyMsg:'أرسلنا رابط التأكيد إلى بريدك. افتحه، ثم ارجع واضغط «تحقّقت». إن لم تجد الرسالة فابحث في مجلد الرسائل غير المرغوب فيها.',
+ verifyDone:'تحقّقت', resend:'إعادة إرسال الرسالة', sentAgain:'أُعيد إرسال رسالة التأكيد.', notVerifiedYet:'لم يُؤكَّد البريد بعد. افتح الرابط في رسالة التأكيد.',
+ logout:'تسجيل الخروج', projects:'المشاريع', newProject:'مشروع جديد', editProject:'تعديل المشروع',
+ search:'ابحث باسم المشروع أو الموقع', noProjects:'لا توجد مشاريع بعد. اضغط «مشروع جديد» لإضافة أول مشروع.', noMatch:'لا توجد مشاريع مطابقة.',
+ projectName:'اسم المشروع', location:'الموقع', engineerName:'اسم المهندس', engineerPhone:'هاتف المهندس', consultant:'الاستشاري',
+ windows:'عدد النوافذ', doors:'عدد الأبواب', notes:'ملاحظات ومتطلبات الموقع',
+ info:'البيانات', work:'الأعمال', photos:'الصور', payments:'الدفعات', purchases:'المشتريات',
+ task_frame:'تركيب الفريم', task_silicone:'السيليكون', task_glass:'تركيب الزجاج',
+ st0:'لم يبدأ', st1:'قيد التنفيذ', st2:'مكتمل', progress:'نسبة الإنجاز', task:'العمل', status:'الحالة',
+ save:'حفظ', cancel:'إلغاء', edit:'تعديل', del:'حذف', confirmDel:'تأكيد الحذف', back:'رجوع', add:'إضافة', close:'إغلاق', call:'اتصال',
+ addPhoto:'التقاط صورة', fromGallery:'من المعرض', noPhotos:'لا توجد صور بعد.', uploading:'جارٍ رفع الصور…',
+ finance:'الملخص المالي', totalValue:'قيمة المشروع', received:'المبلغ المستلم', remaining:'المتبقي',
+ amount:'المبلغ', date:'التاريخ', note:'ملاحظة', supplier:'المورد', invoicePhoto:'صورة الفاتورة', totalPurchases:'إجمالي المشتريات',
+ addPayment:'إضافة دفعة مستلمة', addPurchase:'إضافة فاتورة شراء', none:'لا توجد سجلات بعد.', viewInvoice:'عرض الفاتورة',
+ shareReport:'مشاركة تقرير PDF', preparing:'جارٍ تجهيز التقرير…', reportReady:'التقرير جاهز', share:'إرسال عبر واتساب أو مشاركة', download:'تنزيل الملف',
+ downloaded:'نُزّل التقرير. أرسله إلى مجموعة واتساب.', siteReport:'تقرير الموقع', ownerReport:'التقرير المالي للمالك', staff:'الموظفون',
+ staffHint:'يُنشئ الموظف حساباً من شاشة الدخول، ثم يظهر هنا لتفعيله.',
+ role_pending:'بانتظار الموافقة', role_engineer:'مهندس', role_admin:'مدير',
+ approveEng:'تفعيل كمهندس', makeAdmin:'تعيين مديراً', makeEng:'تعيين مهندساً', suspend:'إيقاف', you:'أنت',
+ reportDate:'تاريخ التقرير', generatedBy:'أعدّه', project:'المشروع', projectsTotal:'الإجمالي',
+ saved:'تم الحفظ.', deleted:'تم الحذف.', required:'اكتب اسم المشروع.',
+ confirmDelProject:'سيُحذف المشروع مع كل صوره ودفعاته ومشترياته نهائياً.', confirmDelItem:'هل تريد حذف هذا السجل نهائياً؟',
+ errGeneric:'تعذّر إكمال العملية. تحقّق من الاتصال بالإنترنت وحاول مجدداً.', errAuth:'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+ errEmailUsed:'هذا البريد مسجّل مسبقاً. سجّل الدخول بدلاً من ذلك.', errWeak:'كلمة المرور قصيرة. استخدم 6 أحرف على الأقل.',
+ errEmail:'صيغة البريد الإلكتروني غير صحيحة.', errPerm:'لا تملك صلاحية لهذه العملية. تأكّد من نشر قواعد الأمان في Firebase.',
+ installHint:'لإضافة التطبيق إلى الشاشة الرئيسية: من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية». على آيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».'
+},
+en:{
+ appName:'Site Reports', company:'Aseel Aluminium & Glass LLC', currency:'AED',
+ login:'Sign in', signup:'Create account', email:'Email', password:'Password', name:'Full name',
+ haveAcc:'Have an account? Sign in', noAcc:'No account? Create one', forgot:'Forgot password?',
+ resetSent:'A password reset link was sent to your email.', enterEmail:'Enter your email first.',
+ pendingTitle:'Your account is awaiting approval', pendingMsg:'The manager will activate your account soon. Then tap "Check account status".', recheck:'Check account status',
+ verifyTitle:'Confirm your email', verifyMsg:'We sent a confirmation link to your email. Open it, then come back and tap "I have confirmed". If you cannot find it, check your spam folder.',
+ verifyDone:'I have confirmed', resend:'Resend email', sentAgain:'Confirmation email sent again.', notVerifiedYet:'Email not confirmed yet. Open the link in the confirmation email.',
+ logout:'Sign out', projects:'Projects', newProject:'New project', editProject:'Edit project',
+ search:'Search by project or location', noProjects:'No projects yet. Tap "New project" to add the first one.', noMatch:'No matching projects.',
+ projectName:'Project name', location:'Location', engineerName:'Engineer name', engineerPhone:'Engineer phone', consultant:'Consultant',
+ windows:'Windows', doors:'Doors', notes:'Site notes and requirements',
+ info:'Details', work:'Work', photos:'Photos', payments:'Payments', purchases:'Purchases',
+ task_frame:'Frame installation', task_silicone:'Silicone', task_glass:'Glass fitting',
+ st0:'Not started', st1:'In progress', st2:'Done', progress:'Progress', task:'Task', status:'Status',
+ save:'Save', cancel:'Cancel', edit:'Edit', del:'Delete', confirmDel:'Delete', back:'Back', add:'Add', close:'Close', call:'Call',
+ addPhoto:'Take photo', fromGallery:'From gallery', noPhotos:'No photos yet.', uploading:'Uploading photos…',
+ finance:'Financial summary', totalValue:'Project value', received:'Amount received', remaining:'Remaining',
+ amount:'Amount', date:'Date', note:'Note', supplier:'Supplier', invoicePhoto:'Invoice photo', totalPurchases:'Total purchases',
+ addPayment:'Add received payment', addPurchase:'Add purchase invoice', none:'No records yet.', viewInvoice:'View invoice',
+ shareReport:'Share PDF report', preparing:'Preparing report…', reportReady:'Report ready', share:'Send via WhatsApp or share', download:'Download file',
+ downloaded:'Report downloaded. Send it to the WhatsApp group.', siteReport:'Site report', ownerReport:'Owner financial report', staff:'Staff',
+ staffHint:'Staff create an account from the sign-in screen, then appear here for approval.',
+ role_pending:'Awaiting approval', role_engineer:'Engineer', role_admin:'Manager',
+ approveEng:'Approve as engineer', makeAdmin:'Make manager', makeEng:'Make engineer', suspend:'Suspend', you:'You',
+ reportDate:'Report date', generatedBy:'Prepared by', project:'Project', projectsTotal:'Total',
+ saved:'Saved.', deleted:'Deleted.', required:'Enter the project name.',
+ confirmDelProject:'The project and all its photos, payments and purchases will be permanently deleted.', confirmDelItem:'Delete this record permanently?',
+ errGeneric:'Could not complete this. Check your internet connection and try again.', errAuth:'Incorrect email or password.',
+ errEmailUsed:'This email is already registered. Sign in instead.', errWeak:'Password is too short. Use at least 6 characters.',
+ errEmail:'The email address is not valid.', errPerm:'You do not have permission for this. Make sure the security rules are published in Firebase.',
+ installHint:'To add the app to your home screen: open the browser menu and choose "Add to Home screen". On iPhone: tap Share, then "Add to Home Screen".'
+}};
+
+let lang = 'ar';
+try { lang = localStorage.getItem('sr_lang') || 'ar'; } catch (e) {}
+const S = { user:null, profile:null, view:'loading', pid:null, tab:'info', projects:[], unsub:null, authMode:'login', editing:false, q:'' };
+
+const t = k => (T[lang] && T[lang][k]) || T.ar[k] || k;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g,'')); return isFinite(n) ? n : 0; };
+const money = n => (Number(n)||0).toLocaleString('en-US',{maximumFractionDigits:2}) + ' ' + t('currency');
+const isAdmin = () => !!(S.profile && S.profile.role === 'admin');
+const pref = () => db.collection('projects').doc(S.pid);
+const byDate = (a,b) => String(b.date||'').localeCompare(String(a.date||''));
+const spinner = () => '<div class="center"><div class="spin"></div></div>';
+function today(){ const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function fmtDate(d){ try { return d.toLocaleDateString(lang==='ar' ? 'ar-AE-u-nu-latn' : 'en-GB', {year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d.toISOString().slice(0,10); } }
+const fmtTs = ts => ts && ts.toDate ? fmtDate(ts.toDate()) : '';
+function progress(p){ const w = p.work || {}; return Math.round(((Number(w.frame)||0)+(Number(w.silicone)||0)+(Number(w.glass)||0)) / 6 * 100); }
+function waNum(ph){ let d = String(ph).replace(/\D/g,''); if (d.startsWith('00')) d = d.slice(2); else if (d.startsWith('0')) d = '971' + d.slice(1); return d; }
+const kv = (k,v) => `<div class="kv"><span>${k}</span><span>${v}</span></div>`;
+function field(name,label,type='text',val='',req=false,dir=''){
+  const extra = type==='number' ? 'inputmode="decimal" step="any" min="0"' : '';
+  return `<label class="fld"><span>${label}</span><input id="f_${name}" name="${name}" type="${type}" value="${esc(val)}" ${req?'required':''} ${dir?`dir="${dir}"`:''} ${extra}></label>`;
+}
+
+function toast(msg){ const el = $('#toast'); el.textContent = msg; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => { el.hidden = true; }, 3000); }
+function errMsg(err){
+  const c = (err && err.code) || '';
+  if (['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)) return t('errAuth');
+  if (c === 'auth/email-already-in-use') return t('errEmailUsed');
+  if (c === 'auth/weak-password') return t('errWeak');
+  if (c === 'auth/invalid-email') return t('errEmail');
+  if (c === 'permission-denied' || c === 'firestore/permission-denied') return t('errPerm');
+  return t('errGeneric');
+}
+function fail(err){ console.error(err); toast(errMsg(err)); }
+
+function openSheet(html){ const s = $('#sheet'); s.innerHTML = `<div class="sheet-bg" data-act="closeSheet"></div><div class="sheet">${html}</div>`; s.hidden = false; }
+function closeSheet(){ const s = $('#sheet'); s.hidden = true; s.innerHTML = ''; }
+function confirmSheet(msg, fn){ S.confirmFn = fn; openSheet(`<p>${msg}</p><div class="row-btns"><button class="btn danger" data-act="confirmYes">${t('confirmDel')}</button><button class="btn" data-act="closeSheet">${t('cancel')}</button></div>`); }
+
+function setLang(l){
+  lang = l; try { localStorage.setItem('sr_lang', l); } catch(e) {}
+  document.documentElement.lang = l; document.documentElement.dir = l==='ar' ? 'rtl' : 'ltr';
+  render();
+}
+
+/* ---------- rendering ---------- */
+function renderBar(){
+  const showBack = ['project','projectForm','staff','owner'].includes(S.view);
+  let title = t('appName');
+  if (S.view === 'project') { const p = curProject(); if (p) title = p.name; }
+  if (S.view === 'staff') title = t('staff');
+  if (S.view === 'owner') title = t('ownerReport');
+  const arrow = lang==='ar' ? '→' : '←';
+  $('#bar').innerHTML = `<div class="bar-in">
+    ${showBack ? `<button class="icon-btn" data-act="back" aria-label="${t('back')}">${arrow}</button>` : `<img src="icon-192.png" class="logo" alt="">`}
+    <div class="bar-title"><div class="bt">${esc(title)}</div><div class="bs">${t('company')}</div></div>
+    <button class="chip" data-act="lang">${lang==='ar' ? 'EN' : 'ع'}</button>
+    ${S.user ? `<button class="chip" data-act="menu" aria-label="Menu">☰</button>` : ''}
+  </div>`;
+}
+
+function render(){
+  document.title = t('appName');
+  renderBar();
+  const app = $('#app');
+  switch (S.view) {
+    case 'auth': app.innerHTML = authView(); break;
+    case 'verify': app.innerHTML = verifyView(); break;
+    case 'pending': app.innerHTML = pendingView(); break;
+    case 'home': app.innerHTML = homeView(); break;
+    case 'projectForm': app.innerHTML = projectForm(); break;
+    case 'project': renderProject(); break;
+    case 'staff': renderStaff(); break;
+    case 'owner': renderOwner(); break;
+    default: app.innerHTML = spinner();
+  }
+}
+
+function authView(){
+  const su = S.authMode === 'signup';
+  return `<section class="auth">
+    <img src="icon-192.png" class="auth-logo" alt="">
+    <h1>${t('appName')}</h1><div class="muted">${t('company')}</div>
+    <form id="authForm" class="card form">
+      ${su ? field('name', t('name'), 'text', '', true) : ''}
+      ${field('email', t('email'), 'email', '', true, 'ltr')}
+      ${field('password', t('password'), 'password', '', true, 'ltr')}
+      <button class="btn primary" type="submit">${su ? t('signup') : t('login')}</button>
+      <button class="link" type="button" data-act="authMode">${su ? t('haveAcc') : t('noAcc')}</button>
+      ${su ? '' : `<button class="link" type="button" data-act="forgot">${t('forgot')}</button>`}
+    </form>
+    <p class="muted small">${t('installHint')}</p>
+  </section>`;
+}
+const verifyView = () => `<section class="card"><h3>${t('verifyTitle')}</h3><p class="muted">${t('verifyMsg')}</p><div class="muted small" dir="ltr">${esc(S.user && S.user.email)}</div>
+  <div class="row-btns"><button class="btn primary" data-act="verified">${t('verifyDone')}</button><button class="btn" data-act="resend">${t('resend')}</button></div></section>`;
+const pendingView = () => `<section class="card"><h3>${t('pendingTitle')}</h3><p class="muted">${t('pendingMsg')}</p>
+  <div class="row-btns"><button class="btn primary" data-act="recheck">${t('recheck')}</button><button class="btn" data-act="logout">${t('logout')}</button></div></section>`;
+
+function homeView(){
+  return `<div class="toolbar"><input id="q" class="search" type="search" placeholder="${t('search')}" value="${esc(S.q)}"><button class="btn primary" data-act="newProject">＋ ${t('newProject')}</button></div>
+  <div id="plist" style="display:flex;flex-direction:column;gap:10px">${projectList()}</div>`;
+}
+function projectList(){
+  if (!S.projects.length) return `<div class="empty">${t('noProjects')}</div>`;
+  const q = S.q.trim().toLowerCase();
+  const list = S.projects.filter(p => !q || (p.name||'').toLowerCase().includes(q) || (p.location||'').toLowerCase().includes(q));
+  if (!list.length) return `<div class="empty">${t('noMatch')}</div>`;
+  return list.map(p => { const pr = progress(p); return `<button class="pcard" data-act="open" data-id="${p.id}">
+    <div class="pc-top"><b>${esc(p.name)}</b><span class="pct">${pr}%</span></div>
+    <div class="muted small">${esc(p.location || '—')}${p.consultant ? ' · ' + esc(p.consultant) : ''}</div>
+    <div class="meter"><i style="width:${pr}%"></i></div></button>`; }).join('');
+}
+
+function projectForm(){
+  const p = S.editing ? (curProject() || {}) : {};
+  return `<form id="projectForm" class="card form"><h3>${S.editing ? t('editProject') : t('newProject')}</h3>
+    ${field('name', t('projectName'), 'text', p.name, true)}
+    ${field('location', t('location'), 'text', p.location)}
+    <div class="two">${field('engineerName', t('engineerName'), 'text', p.engineerName)}${field('engineerPhone', t('engineerPhone'), 'tel', p.engineerPhone, false, 'ltr')}</div>
+    ${field('consultant', t('consultant'), 'text', p.consultant)}
+    <div class="two">${field('windows', t('windows'), 'number', p.windows ?? '')}${field('doors', t('doors'), 'number', p.doors ?? '')}</div>
+    ${isAdmin() ? field('totalValue', t('totalValue') + ' (' + t('currency') + ')', 'number', S.editing ? (S.formFin || '') : '') : ''}
+    <label class="fld"><span>${t('notes')}</span><textarea id="f_notes" name="notes" rows="4">${esc(p.notes || '')}</textarea></label>
+    <div class="row-btns"><button class="btn primary" type="submit">${t('save')}</button><button class="btn" type="button" data-act="back">${t('cancel')}</button></div>
+  </form>`;
+}
+
+const curProject = () => S.projects.find(p => p.id === S.pid);
+
+async function finance(pid, withPurchases){
+  const ref = db.collection('projects').doc(pid);
+  const jobs = [ref.collection('finance').doc('main').get(), ref.collection('payments').get()];
+  if (withPurchases) jobs.push(ref.collection('purchases').get());
+  const [m, pays, purs] = await Promise.all(jobs);
+  const payments = pays.docs.map(d => ({id:d.id, ...d.data()})).sort(byDate);
+  const purchases = purs ? purs.docs.map(d => ({id:d.id, ...d.data()})).sort(byDate) : [];
+  const received = payments.reduce((s,x) => s + num(x.amount), 0);
+  const purchTotal = purchases.reduce((s,x) => s + num(x.amount), 0);
+  return { total: m.exists ? num(m.data().total) : 0, received, purchTotal, payments, purchases };
+}
+
+async function renderProject(){
+  const app = $('#app'); const p = curProject();
+  if (!p) { S.missing = true; app.innerHTML = spinner(); return; }
+  const tabs = ['info','work','photos'].concat(isAdmin() ? ['payments','purchases'] : []);
+  app.innerHTML = `<nav class="tabs">${tabs.map(k => `<button class="tab ${S.tab===k?'on':''}" data-act="tab" data-id="${k}">${t(k)}</button>`).join('')}</nav>
+    <div id="tabBody">${spinner()}</div>
+    <div class="actions"><button class="btn primary wide" data-act="pdf">${t('shareReport')}</button></div>`;
+  const token = S.tok = Math.random();
+  try {
+    let html = '';
+    if (S.tab === 'info') html = await infoTab(p);
+    else if (S.tab === 'work') html = workTab(p);
+    else if (S.tab === 'photos') html = await photosTab();
+    else if (S.tab === 'payments') html = await paymentsTab();
+    else if (S.tab === 'purchases') html = await purchasesTab();
+    const body = $('#tabBody');
+    if (token === S.tok && body) body.innerHTML = html;
+  } catch (e) { fail(e); }
+}
+
+async function infoTab(p){
+  let fin = '';
+  if (isAdmin()) {
+    const f = await finance(p.id, false);
+    fin = `<div class="card sum"><h3>${t('finance')}</h3>${kv(t('totalValue'), money(f.total))}${kv(t('received'), money(f.received))}${kv(t('remaining'), `<b>${money(f.total - f.received)}</b>`)}</div>`;
+  }
+  const ph = p.engineerPhone ? `<span dir="ltr">${esc(p.engineerPhone)}</span><a class="mini" href="tel:${esc(p.engineerPhone)}">${t('call')}</a><a class="mini" href="https://wa.me/${waNum(p.engineerPhone)}" target="_blank" rel="noopener">WhatsApp</a>` : '—';
+  return `<div class="card">
+    ${kv(t('location'), esc(p.location || '—'))}${kv(t('engineerName'), esc(p.engineerName || '—'))}${kv(t('engineerPhone'), ph)}
+    ${kv(t('consultant'), esc(p.consultant || '—'))}${kv(t('windows'), num(p.windows))}${kv(t('doors'), num(p.doors))}
+    ${p.notes ? `<div class="notes"><span class="muted small">${t('notes')}</span><p>${esc(p.notes)}</p></div>` : ''}
+  </div>${fin}
+  <div class="row-btns"><button class="btn" data-act="editProject">${t('edit')}</button>${isAdmin() ? `<button class="btn danger-ghost" data-act="delProject">${t('del')}</button>` : ''}</div>`;
+}
+
+function workTab(p){
+  const w = p.work || {}; const pr = progress(p);
+  return `<div class="card"><div class="pc-top"><h3>${t('progress')}</h3><b class="pct">${pr}%</b></div><div class="meter big"><i style="width:${pr}%"></i></div></div>
+  <div class="card">${['frame','silicone','glass'].map(k => `<div class="task"><div class="task-name">${t('task_'+k)}</div>
+    <div class="seg">${[0,1,2].map(s => `<button class="segb ${(Number(w[k])||0)===s ? 'on s'+s : ''}" data-act="setWork" data-id="${k}:${s}">${t('st'+s)}</button>`).join('')}</div></div>`).join('')}</div>
+  <div class="card">${kv(t('windows'), num(p.windows))}${kv(t('doors'), num(p.doors))}</div>`;
+}
+
+async function photosTab(){
+  const q = await pref().collection('photos').orderBy('createdAt','desc').get();
+  S.photos = q.docs.map(d => ({id:d.id, ...d.data()}));
+  return `<div class="row-btns"><label class="btn primary">${t('addPhoto')}<input type="file" accept="image/*" capture="environment" hidden data-up="photo"></label>
+    <label class="btn">${t('fromGallery')}<input type="file" accept="image/*" multiple hidden data-up="photo"></label></div>
+  ${S.photos.length ? `<div class="grid">${S.photos.map(x => `<figure class="ph"><img src="${x.data}" alt="" data-act="viewPhoto" data-id="${x.id}">
+    <figcaption><span>${fmtTs(x.createdAt)}</span>${isAdmin() ? `<button class="x" data-act="delPhoto" data-id="${x.id}" aria-label="${t('del')}">✕</button>` : ''}</figcaption></figure>`).join('')}</div>`
+    : `<div class="empty">${t('noPhotos')}</div>`}`;
+}
+
+async function paymentsTab(){
+  const f = await finance(S.pid, false);
+  return `<div class="card sum">${kv(t('totalValue'), money(f.total))}${kv(t('received'), money(f.received))}${kv(t('remaining'), `<b>${money(f.total - f.received)}</b>`)}</div>
+  <form id="payForm" class="card form"><h3>${t('addPayment')}</h3>
+    <div class="two">${field('amount', t('amount') + ' (' + t('currency') + ')', 'number', '', true)}${field('date', t('date'), 'date', today(), true)}</div>
+    ${field('note', t('note'))}<button class="btn primary" type="submit">${t('add')}</button></form>
+  <div class="card">${f.payments.length ? f.payments.map(x => `<div class="li"><div class="grow"><b>${money(x.amount)}</b><div class="muted small">${esc(x.date)}${x.note ? ' · ' + esc(x.note) : ''}</div></div>
+    <button class="x" data-act="delItem" data-id="payments:${x.id}" aria-label="${t('del')}">✕</button></div>`).join('') : `<div class="muted">${t('none')}</div>`}</div>`;
+}
+
+async function purchasesTab(){
+  const f = await finance(S.pid, true);
+  S.purchases = f.purchases; S.invoiceImg = null;
+  return `<div class="card sum">${kv(t('totalPurchases'), `<b>${money(f.purchTotal)}</b>`)}</div>
+  <form id="purForm" class="card form"><h3>${t('addPurchase')}</h3>
+    ${field('supplier', t('supplier'), 'text', '', true)}
+    <div class="two">${field('amount', t('amount') + ' (' + t('currency') + ')', 'number', '', true)}${field('date', t('date'), 'date', today(), true)}</div>
+    ${field('note', t('note'))}
+    <label class="btn">${t('invoicePhoto')}<input type="file" accept="image/*" hidden data-up="invoice"></label>
+    <img id="invPrev" alt="" hidden style="max-height:160px;object-fit:contain;border-radius:10px">
+    <button class="btn primary" type="submit">${t('add')}</button></form>
+  <div class="card">${f.purchases.length ? f.purchases.map(x => `<div class="li">
+    ${x.image ? `<img class="thumb" src="${x.image}" alt="${t('viewInvoice')}" data-act="viewInv" data-id="${x.id}">` : ''}
+    <div class="grow"><b>${esc(x.supplier)}</b> · ${money(x.amount)}<div class="muted small">${esc(x.date)}${x.note ? ' · ' + esc(x.note) : ''}</div></div>
+    <button class="x" data-act="delItem" data-id="purchases:${x.id}" aria-label="${t('del')}">✕</button></div>`).join('') : `<div class="muted">${t('none')}</div>`}</div>`;
+}
+
+async function renderStaff(){
+  const app = $('#app'); app.innerHTML = spinner();
+  try {
+    const q = await db.collection('users').get();
+    const order = {pending:0, engineer:1, admin:2};
+    const us = q.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (order[a.role]??9) - (order[b.role]??9));
+    if (S.view !== 'staff') return;
+    app.innerHTML = `<p class="muted small">${t('staffHint')}</p><div class="card">${us.map(u => {
+      const me = u.id === S.user.uid, owner = (u.email||'').toLowerCase() === OWNER_EMAIL;
+      let btns = '';
+      if (!me && !owner) {
+        if (u.role === 'pending') btns = `<button class="btn primary" data-act="setRole" data-id="${u.id}:engineer">${t('approveEng')}</button>`;
+        else if (u.role === 'engineer') btns = `<button class="btn" data-act="setRole" data-id="${u.id}:admin">${t('makeAdmin')}</button><button class="btn danger-ghost" data-act="setRole" data-id="${u.id}:pending">${t('suspend')}</button>`;
+        else btns = `<button class="btn" data-act="setRole" data-id="${u.id}:engineer">${t('makeEng')}</button><button class="btn danger-ghost" data-act="setRole" data-id="${u.id}:pending">${t('suspend')}</button>`;
+      }
+      return `<div class="li" style="flex-wrap:wrap"><div class="grow"><b>${esc(u.name)}</b>${me ? ` <span class="muted small">(${t('you')})</span>` : ''}
+        <div class="muted small" dir="ltr" style="text-align:start">${esc(u.email)}</div></div><span class="badge ${esc(u.role)}">${t('role_' + u.role)}</span>
+        ${btns ? `<div class="row-btns" style="width:100%">${btns}</div>` : ''}</div>`;
+    }).join('')}</div>`;
+  } catch (e) { fail(e); }
+}
+
+async function ownerRows(){
+  const rows = await Promise.all(S.projects.map(async p => { const f = await finance(p.id, false); return {name:p.name, location:p.location, total:f.total, received:f.received}; }));
+  const tot = rows.reduce((a,r) => ({total:a.total + r.total, received:a.received + r.received}), {total:0, received:0});
+  return {rows, tot};
+}
+async function renderOwner(){
+  const app = $('#app'); app.innerHTML = spinner();
+  try {
+    const {rows, tot} = await ownerRows(); S.ownerData = {rows, tot};
+    if (S.view !== 'owner') return;
+    app.innerHTML = `<div class="card sum">${kv(t('totalValue'), money(tot.total))}${kv(t('received'), money(tot.received))}${kv(t('remaining'), `<b>${money(tot.total - tot.received)}</b>`)}</div>
+    <div class="card tbl-wrap"><table class="t"><thead><tr><th>${t('project')}</th><th>${t('totalValue')}</th><th>${t('received')}</th><th>${t('remaining')}</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td>${esc(r.name)}</td><td>${money(r.total)}</td><td>${money(r.received)}</td><td>${money(r.total - r.received)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${t('projectsTotal')}</td><td>${money(tot.total)}</td><td>${money(tot.received)}</td><td>${money(tot.total - tot.received)}</td></tr></tfoot></table></div>
+    <div class="actions"><button class="btn primary wide" data-act="ownerPdf">${t('shareReport')}</button></div>`;
+  } catch (e) { fail(e); }
+}
+
+/* ---------- PDF ---------- */
+function repHead(title){
+  return `<div class="rep-head"><img src="icon-192.png" alt=""><div><div class="rep-co">${t('company')}</div><div class="rep-title">${title}</div></div><div class="rep-date">${t('reportDate')}: ${fmtDate(new Date())}</div></div>`;
+}
+async function siteReportHtml(p){
+  const phQ = await pref().collection('photos').orderBy('createdAt','desc').limit(8).get();
+  const photos = phQ.docs.map(d => d.data());
+  const f = isAdmin() ? await finance(p.id, true) : null;
+  const w = p.work || {};
+  let h = `<div class="rep" dir="${lang==='ar'?'rtl':'ltr'}" lang="${lang}">${repHead(t('siteReport'))}<h2>${esc(p.name)}</h2>
+  <table class="kvt"><tr><td>${t('location')}</td><td>${esc(p.location||'—')}</td></tr><tr><td>${t('engineerName')}</td><td>${esc(p.engineerName||'—')}</td></tr>
+  <tr><td>${t('engineerPhone')}</td><td dir="ltr" style="text-align:${lang==='ar'?'right':'left'}">${esc(p.engineerPhone||'—')}</td></tr><tr><td>${t('consultant')}</td><td>${esc(p.consultant||'—')}</td></tr>
+  <tr><td>${t('windows')}</td><td>${num(p.windows)}</td></tr><tr><td>${t('doors')}</td><td>${num(p.doors)}</td></tr></table>
+  <div class="avoid"><h3>${t('work')} (${t('progress')}: ${progress(p)}%)</h3><table><tr><th>${t('task')}</th><th>${t('status')}</th></tr>
+  ${['frame','silicone','glass'].map(k => `<tr><td>${t('task_'+k)}</td><td>${t('st' + (Number(w[k])||0))}</td></tr>`).join('')}</table></div>
+  ${p.notes ? `<div class="avoid"><h3>${t('notes')}</h3><div class="notes">${esc(p.notes)}</div></div>` : ''}`;
+  if (f) {
+    h += `<div class="avoid"><h3>${t('finance')}</h3><table class="kvt"><tr><td>${t('totalValue')}</td><td>${money(f.total)}</td></tr><tr><td>${t('received')}</td><td>${money(f.received)}</td></tr>
+    <tr class="tot"><td>${t('remaining')}</td><td>${money(f.total - f.received)}</td></tr></table></div>`;
+    if (f.purchases.length) h += `<div class="avoid"><h3>${t('purchases')}</h3><table><tr><th>${t('date')}</th><th>${t('supplier')}</th><th>${t('note')}</th><th>${t('amount')}</th></tr>
+    ${f.purchases.map(x => `<tr><td>${esc(x.date)}</td><td>${esc(x.supplier)}</td><td>${esc(x.note||'')}</td><td>${money(x.amount)}</td></tr>`).join('')}
+    <tr class="tot"><td colspan="3">${t('totalPurchases')}</td><td>${money(f.purchTotal)}</td></tr></table></div>`;
+  }
+  if (photos.length) h += `<h3>${t('photos')}</h3><div class="rep-ph">${photos.map(x => `<img class="avoid" src="${x.data}" alt="">`).join('')}</div>`;
+  h += `<div class="rep-foot">${t('generatedBy')}: ${esc(S.profile.name)}</div></div>`;
+  return h;
+}
+function ownerReportHtml(){
+  const {rows, tot} = S.ownerData;
+  return `<div class="rep" dir="${lang==='ar'?'rtl':'ltr'}" lang="${lang}">${repHead(t('ownerReport'))}
+  <table><tr><th>${t('project')}</th><th>${t('location')}</th><th>${t('totalValue')}</th><th>${t('received')}</th><th>${t('remaining')}</th></tr>
+  ${rows.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.location||'')}</td><td>${money(r.total)}</td><td>${money(r.received)}</td><td>${money(r.total - r.received)}</td></tr>`).join('')}
+  <tr class="tot"><td colspan="2">${t('projectsTotal')}</td><td>${money(tot.total)}</td><td>${money(tot.received)}</td><td>${money(tot.total - tot.received)}</td></tr></table>
+  <div class="rep-foot">${t('generatedBy')}: ${esc(S.profile.name)}</div></div>`;
+}
+async function makePdf(html, fname){
+  openSheet(`<div class="center" style="padding:24px 0;flex-direction:column;align-items:center;gap:12px"><div class="spin"></div><div>${t('preparing')}</div></div>`);
+  const host = document.createElement('div'); host.className = 'pdf-host'; host.innerHTML = html; document.body.appendChild(host);
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    await Promise.all([...host.querySelectorAll('img')].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+    const blob = await html2pdf().set({
+      margin:[6,6,8,6], image:{type:'jpeg', quality:0.88},
+      html2canvas:{scale:2, backgroundColor:'#ffffff', useCORS:true},
+      jsPDF:{unit:'mm', format:'a4', orientation:'portrait'},
+      pagebreak:{mode:['css','legacy'], avoid:['.avoid','tr']}
+    }).from(host.firstElementChild).outputPdf('blob');
+    S.pdfFile = new File([blob], fname, {type:'application/pdf'});
+    openSheet(`<h3>${t('reportReady')}</h3><div class="muted small" dir="ltr">${esc(fname)}</div>
+      <button class="btn primary" data-act="sharePdf">${t('share')}</button><button class="btn" data-act="downloadPdf">${t('download')}</button><button class="btn" data-act="closeSheet">${t('close')}</button>`);
+  } finally { host.remove(); }
+}
+function downloadPdf(){
+  const u = URL.createObjectURL(S.pdfFile); const a = document.createElement('a');
+  a.href = u; a.download = S.pdfFile.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 5000); toast(t('downloaded'));
+}
+const safeName = s => String(s||'report').replace(/[\\/:*?"<>|]+/g,' ').trim().slice(0,60);
+
+/* ---------- images ---------- */
+function loadImg(src){ return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
+async function compress(file, max, q){
+  const url = URL.createObjectURL(file);
+  try {
+    const im = await loadImg(url);
+    let w = im.naturalWidth, h = im.naturalHeight; const r = Math.min(1, max / Math.max(w, h));
+    w = Math.round(w * r); h = Math.round(h * r);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0,0,w,h); g.drawImage(im, 0, 0, w, h);
+    let out = c.toDataURL('image/jpeg', q);
+    while (out.length > 850000 && q > 0.25) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/* ---------- navigation & data ---------- */
+function goHome(){
+  S.view = 'home'; S.pid = null; S.editing = false;
+  if (!S.unsub) {
+    S.unsub = db.collection('projects').orderBy('updatedAt','desc').onSnapshot(q => {
+      S.projects = q.docs.map(d => ({id:d.id, ...d.data()}));
+      if (S.view === 'home') { const pl = $('#plist'); if (pl) pl.innerHTML = projectList(); else render(); }
+      if (S.view === 'project' && S.missing) { S.missing = false; render(); }
+    }, fail);
+  }
+  render();
+}
+function openProject(id, tab){ S.view = 'project'; S.pid = id; S.tab = tab || 'info'; S.missing = false; window.scrollTo(0,0); render(); }
+
+async function loadProfile(){
+  const u = S.user; const owner = (u.email || '').toLowerCase() === OWNER_EMAIL;
+  if (owner && !u.emailVerified) { S.view = 'verify'; render(); return; }
+  if (owner) await u.getIdToken(true);
+  const ref = db.collection('users').doc(u.uid);
+  let snap = await ref.get();
+  if (!snap.exists) {
+    await ref.set({ name: S.pendingName || u.displayName || u.email, email: u.email, role: owner ? 'admin' : 'pending', createdAt: FV.serverTimestamp() });
+    snap = await ref.get();
+  }
+  S.profile = snap.data();
+  if (owner && S.profile.role !== 'admin') { await ref.update({role:'admin'}); S.profile.role = 'admin'; }
+  if (S.profile.role === 'pending') { S.view = 'pending'; render(); return; }
+  goHome();
+}
+
+auth.onAuthStateChanged(u => {
+  S.user = u;
+  if (S.unsub) { S.unsub(); S.unsub = null; }
+  S.projects = [];
+  if (!u) { S.profile = null; S.view = 'auth'; render(); return; }
+  S.view = 'loading'; render();
+  loadProfile().catch(e => { fail(e); S.view = 'pending'; render(); });
+});
+
+const ACT = {
+  lang(){ setLang(lang === 'ar' ? 'en' : 'ar'); },
+  closeSheet,
+  async confirmYes(){ const fn = S.confirmFn; S.confirmFn = null; closeSheet(); if (fn) await fn(); },
+  authMode(){ S.authMode = S.authMode === 'signup' ? 'login' : 'signup'; render(); },
+  async forgot(){ const em = ($('#f_email').value || '').trim(); if (!em) { toast(t('enterEmail')); return; } await auth.sendPasswordResetEmail(em); toast(t('resetSent')); },
+  async verified(){ await S.user.reload(); S.user = auth.currentUser; if (S.user.emailVerified) { S.view = 'loading'; render(); await loadProfile(); } else toast(t('notVerifiedYet')); },
+  async resend(){ await S.user.sendEmailVerification(); toast(t('sentAgain')); },
+  async recheck(){ S.view = 'loading'; render(); await loadProfile(); },
+  async logout(){ closeSheet(); await auth.signOut(); },
+  menu(){
+    openSheet(`<div class="menu">${S.profile ? `<div class="who"><b>${esc(S.profile.name)}</b><span class="muted small" dir="ltr" style="text-align:start">${esc(S.user.email)}</span><span class="muted small">${t('role_' + S.profile.role)}</span></div>` : ''}
+      ${isAdmin() ? `<button class="mi" data-act="goStaff">${t('staff')}</button><button class="mi" data-act="goOwner">${t('ownerReport')}</button>` : ''}
+      <div class="mi muted small">${t('installHint')}</div><button class="mi danger-t" data-act="logout">${t('logout')}</button></div>`);
+  },
+  goStaff(){ closeSheet(); S.view = 'staff'; render(); },
+  goOwner(){ closeSheet(); S.view = 'owner'; render(); },
+  back(){ if (S.view === 'projectForm' && S.editing && S.pid) { S.editing = false; openProject(S.pid, 'info'); } else goHome(); },
+  newProject(){ S.editing = false; S.pid = null; S.view = 'projectForm'; render(); },
+  open(b, id){ openProject(id, 'info'); },
+  tab(b, id){ S.tab = id; renderProject(); },
+  async editProject(){ S.formFin = isAdmin() ? (await finance(S.pid, false)).total : 0; S.editing = true; S.view = 'projectForm'; render(); },
+  delProject(){
+    confirmSheet(t('confirmDelProject'), async () => {
+      const ref = pref();
+      for (const sub of ['photos','payments','purchases','finance']) { const q = await ref.collection(sub).get(); for (const d of q.docs) await d.ref.delete(); }
+      await ref.delete(); toast(t('deleted')); goHome();
+    });
+  },
+  async setWork(b, id){
+    const [k, s] = id.split(':');
+    await pref().update({['work.' + k]: Number(s), updatedAt: FV.serverTimestamp()});
+    if (S.view === 'project' && S.tab === 'work') { const body = $('#tabBody'); const p = curProject(); if (body && p) body.innerHTML = workTab(p); }
+  },
+  viewPhoto(b, id){ const x = (S.photos||[]).find(p => p.id === id); if (x) openSheet(`<img class="full" src="${x.data}" alt=""><div class="muted small">${fmtTs(x.createdAt)}${x.by ? ' · ' + esc(x.by) : ''}</div><button class="btn" data-act="closeSheet">${t('close')}</button>`); },
+  viewInv(b, id){ const x = (S.purchases||[]).find(p => p.id === id); if (x && x.image) openSheet(`<img class="full" src="${x.image}" alt=""><div><b>${esc(x.supplier)}</b> · ${money(x.amount)}</div><button class="btn" data-act="closeSheet">${t('close')}</button>`); },
+  delPhoto(b, id){ confirmSheet(t('confirmDelItem'), async () => { await pref().collection('photos').doc(id).delete(); toast(t('deleted')); renderProject(); }); },
+  delItem(b, id){ const [col, did] = id.split(':'); confirmSheet(t('confirmDelItem'), async () => { await pref().collection(col).doc(did).delete(); toast(t('deleted')); renderProject(); }); },
+  async setRole(b, id){ const [uid, role] = id.split(':'); await db.collection('users').doc(uid).update({role}); toast(t('saved')); renderStaff(); },
+  async pdf(b){
+    const p = curProject(); if (!p) return; b.disabled = true;
+    try { const html = await siteReportHtml(p); await makePdf(html, safeName(p.name) + ' - ' + today() + '.pdf'); }
+    catch (e) { closeSheet(); fail(e); } finally { b.disabled = false; }
+  },
+  async ownerPdf(b){
+    b.disabled = true;
+    try { await makePdf(ownerReportHtml(), (lang==='ar' ? 'التقرير المالي' : 'Financial report') + ' - ' + today() + '.pdf'); }
+    catch (e) { closeSheet(); fail(e); } finally { b.disabled = false; }
+  },
+  async sharePdf(){
+    const f = S.pdfFile; if (!f) return;
+    if (navigator.canShare && navigator.canShare({files:[f]})) {
+      try { await navigator.share({files:[f], title:f.name}); closeSheet(); }
+      catch (e) { if (e.name !== 'AbortError') downloadPdf(); }
+    } else downloadPdf();
+  },
+  downloadPdf
+};
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const fn = ACT[b.dataset.act]; if (!fn) return;
+  e.preventDefault();
+  try { await fn(b, b.dataset.id, e); } catch (err) { fail(err); }
+});
+
+const SUBMIT = {
+  async authForm(f, fd){
+    const email = String(fd.get('email')).trim(), pw = String(fd.get('password'));
+    if (S.authMode === 'signup') {
+      S.pendingName = String(fd.get('name') || '').trim();
+      const c = await auth.createUserWithEmailAndPassword(email, pw);
+      if (S.pendingName) await c.user.updateProfile({displayName: S.pendingName});
+      if (email.toLowerCase() === OWNER_EMAIL) await c.user.sendEmailVerification();
+    } else await auth.signInWithEmailAndPassword(email, pw);
+  },
+  async projectForm(f, fd){
+    const g = k => String(fd.get(k) || '').trim();
+    const data = { name:g('name'), location:g('location'), engineerName:g('engineerName'), engineerPhone:g('engineerPhone'), consultant:g('consultant'),
+      windows:num(fd.get('windows')), doors:num(fd.get('doors')), notes:g('notes'), updatedAt:FV.serverTimestamp() };
+    if (!data.name) { toast(t('required')); return; }
+    let id = S.pid;
+    if (S.editing && id) await db.collection('projects').doc(id).update(data);
+    else { data.createdAt = FV.serverTimestamp(); data.work = {frame:0, silicone:0, glass:0}; data.createdBy = S.profile.name; id = (await db.collection('projects').add(data)).id; }
+    if (isAdmin() && fd.has('totalValue')) await db.collection('projects').doc(id).collection('finance').doc('main').set({total:num(fd.get('totalValue'))}, {merge:true});
+    S.editing = false; toast(t('saved')); openProject(id, 'info');
+  },
+  async payForm(f, fd){
+    await pref().collection('payments').add({ amount:num(fd.get('amount')), date:String(fd.get('date')), note:String(fd.get('note')||'').trim(), by:S.profile.name, createdAt:FV.serverTimestamp() });
+    toast(t('saved')); renderProject();
+  },
+  async purForm(f, fd){
+    await pref().collection('purchases').add({ supplier:String(fd.get('supplier')).trim(), amount:num(fd.get('amount')), date:String(fd.get('date')), note:String(fd.get('note')||'').trim(),
+      image:S.invoiceImg || null, by:S.profile.name, createdAt:FV.serverTimestamp() });
+    S.invoiceImg = null; toast(t('saved')); renderProject();
+  }
+};
+document.addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, fn = SUBMIT[f.id]; if (!fn) return;
+  const btn = f.querySelector('[type=submit]'); if (btn) btn.disabled = true;
+  try { await fn(f, new FormData(f)); } catch (err) { fail(err); }
+  finally { if (btn && btn.isConnected) btn.disabled = false; }
+});
+document.addEventListener('input', e => { if (e.target.id === 'q') { S.q = e.target.value; const pl = $('#plist'); if (pl) pl.innerHTML = projectList(); } });
+document.addEventListener('change', async e => {
+  const inp = e.target; const kind = inp.dataset && inp.dataset.up; if (!kind) return;
+  const files = [...(inp.files || [])]; if (!files.length) return;
+  try {
+    if (kind === 'photo') {
+      toast(t('uploading'));
+      for (const file of files) { const data = await compress(file, 1280, 0.6); await pref().collection('photos').add({data, by:S.profile.name, createdAt:FV.serverTimestamp()}); }
+      await pref().update({updatedAt: FV.serverTimestamp()});
+      toast(t('saved')); renderProject();
+    } else if (kind === 'invoice') {
+      S.invoiceImg = await compress(files[0], 1100, 0.6);
+      const pv = $('#invPrev'); if (pv) { pv.src = S.invoiceImg; pv.hidden = false; }
+    }
+  } catch (err) { fail(err); }
+  inp.value = '';
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+setLang(lang);
+</script>
+</body>
+</html>

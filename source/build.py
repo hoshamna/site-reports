@@ -1,5 +1,7 @@
 import re, json, pathlib
-src=pathlib.Path('/home/claude/site-reports.html').read_text(encoding='utf8')
+HERE=pathlib.Path(__file__).resolve().parent
+OUT=HERE.parent/'app'
+src=(HERE/'site-reports.html').read_text(encoding='utf8')
 s=src
 def rep(a,b):
     global s
@@ -23,42 +25,114 @@ shim=r'''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/
 <script>
 (function(){
  const SB_URL="https://stbwyyhttjzfhdwsnrws.supabase.co", SB_KEY="sb_publishable_pVBxhRoxsnMPfzQ1LxMgtw_8zwIPwi7";
- const sb=window.supabase&&window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
- window.__media={};
- const pub=id=>`${SB_URL}/storage/v1/object/public/media/${encodeURIComponent(id)}`;
- window.__pub=pub;
+ const sb=window.supabase&&window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"aseel-auth"}});
+ window.__sb=sb;
  const freeze=o=>JSON.parse(JSON.stringify(o||{}));
- const err=e=>({code:(e&&e.code==="42501")?"not_granted":"unavailable",message:(e&&e.message)||"error"});
- // ---- collection cache + realtime ----
+ const err=e=>({code:(e&&(e.code==="42501"||e.code==="PGRST301"))?"not_granted":"unavailable",message:(e&&e.message)||"error"});
+ // ---- accounts (Supabase Auth) ----
+ const A={session:null,me:null,profiles:[],ready:false,subs:new Set(),chan:null};
+ const isAdmin=()=>!!(A.me&&A.me.role==="admin");
+ const profOf=r=>({...(r.data||{}),id:r.id,name:r.name,role:r.role,authId:r.auth_id});
+ async function loadProfiles(){ if(!A.session){ A.profiles=[]; A.me=null; return; }
+   const {data,error}=await sb.from("profiles").select("id,auth_id,name,role,data").order("name"); if(error) throw error;
+   A.profiles=(data||[]).map(profOf); A.me=A.profiles.find(p=>p.authId===A.session.user.id)||null; }
+ const authState=()=>({user:A.me?{...A.me}:null,profiles:A.profiles.map(p=>({...p})),ready:A.ready});
+ const emitAuth=()=>A.subs.forEach(f=>{ try{ f(authState()); }catch(e){ console.warn(e); } });
+ let lastUid;
+ async function onSession(s){ A.session=s||null; try{ await loadProfiles(); }catch(e){ console.warn("profiles",e); }
+   if(A.session&&!A.me){ await sb.auth.signOut().catch(()=>{}); A.session=null; A.profiles=[]; } // حساب بلا ملف مستخدم: لا دخول
+   const u=A.session?A.session.user.id:null; A.ready=true;
+   if(u!==lastUid){ lastUid=u; if(A.chan){ sb.removeChannel(A.chan); A.chan=null; }
+     if(u){ A.chan=sb.channel("rt-profiles").on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>{ loadProfiles().then(emitAuth).catch(()=>{}); }).subscribe(); }
+     else signed.clear();
+     resetTables(); }
+   emitAuth(); }
+ if(sb){ sb.auth.getSession().then(({data})=>onSession(data&&data.session)).catch(()=>onSession(null));
+   sb.auth.onAuthStateChange((ev,s)=>{ if(ev==="INITIAL_SESSION") return; if(ev==="TOKEN_REFRESHED"){ A.session=s; return; } setTimeout(()=>onSession(s),0); }); }
+ else setTimeout(()=>{ A.ready=true; emitAuth(); },0);
+ const tokenHdr=()=>A.session?{Authorization:"Bearer "+A.session.access_token}:{};
+ async function fn(name,body){ let r; try{ r=await fetch(SB_URL+"/functions/v1/"+name,{method:"POST",headers:{"content-type":"application/json",apikey:SB_KEY,...tokenHdr()},body:JSON.stringify(body)}); }catch(e){ throw new Error("network"); }
+   const j=await r.json().catch(()=>({})); if(!r.ok){ const e=new Error(j.error||("HTTP "+r.status)); e.status=r.status; throw e; } return j; }
+ const emailOf=id=>`${id}@users.aseelalum.com`, pwOf=(id,pin)=>`Aseel!${pin}#${id}`;
+ async function signIn(id,pin){ const {error}=await sb.auth.signInWithPassword({email:emailOf(id),password:pwOf(id,pin)}); if(error){ const e=new Error(error.message); e.status=error.status===400?401:error.status; throw e; } }
+ const refresh=async()=>{ await loadProfiles(); emitAuth(); };
+ window.__auth={
+  onChange:f=>{ A.subs.add(f); if(A.ready) setTimeout(()=>f(authState()),0); return ()=>A.subs.delete(f); },
+  list:async()=>{ const {data,error}=await sb.rpc("login_list"); if(error) throw new Error(error.message); return data||[]; },
+  signIn:async(u,pin)=>{ if(u.legacy) await fn("accounts",{action:"claim",id:u.id,pin}); await signIn(u.id,pin); },
+  bootstrap:async(name,pin)=>{ const j=await fn("accounts",{action:"bootstrap",name,pin}); await signIn(j.id,pin); },
+  signOut:async()=>{ await sb.auth.signOut(); },
+  setPin:async(id,pin)=>{ await fn("accounts",{action:"setPin",id,pin}); await refresh(); },
+  create:async(name,role,pin)=>{ await fn("accounts",{action:"create",name,role,pin}); await refresh(); },
+  update:async(id,patch)=>{ await fn("accounts",{action:"update",id,...patch}); await refresh(); },
+  del:async id=>{ await fn("accounts",{action:"delete",id}); await refresh(); }
+ };
+ // ---- collections: cache + realtime (sites = sites + site_fin) ----
+ const FIN=["total","payments","purchases","labor","otherCosts","quotes","quoteNo","schedule"];
  const tables={};
  function table(name){
   if(tables[name]) return tables[name];
-  const t={rows:new Map(),subs:new Set(),loaded:null,chan:null};
+  const t={rows:new Map(),subs:new Set(),docSubs:new Set(),loaded:null,chan:null,pub:new Map(),fin:new Map()};
   const snap=()=>{ const docs=[...t.rows.entries()].map(([id,d])=>({id,exists:true,data:()=>freeze(d)})); return {docs,size:docs.length,empty:!docs.length,docChanges:()=>[],metadata:{}}; };
-  t.emit=()=>{ const sn=snap(); t.subs.forEach(f=>{ try{ f.next(sn); }catch(e){} }); t.docSubs&&t.docSubs.forEach(f=>{ try{ f(); }catch(e){} }); };
-  t.load=()=>{ if(!t.loaded) t.loaded=sb.from(name).select("id,data").then(({data,error})=>{ if(error) throw err(error); t.rows.clear(); (data||[]).forEach(r=>t.rows.set(r.id,r.data)); t.emit(); }); return t.loaded; };
-  t.listen=()=>{ if(t.chan) return; t.chan=sb.channel("rt-"+name).on("postgres_changes",{event:"*",schema:"public",table:name},p=>{
-     if(p.eventType==="DELETE"){ const id=p.old&&p.old.id; if(id) t.rows.delete(id); } else if(p.new){ t.rows.set(p.new.id,p.new.data); }
-     t.emit(); }).subscribe(); };
-  t.snap=snap; t.docSubs=new Set();
+  t.emit=()=>{ const sn=snap(); t.subs.forEach(f=>{ try{ f.next(sn); }catch(e){} }); t.docSubs.forEach(f=>{ try{ f(); }catch(e){} }); };
+  t.merge=id=>{ const p=t.pub.get(id); if(!p){ t.rows.delete(id); return; } t.rows.set(id,{...p,...(t.fin.get(id)||{})}); };
+  t.load=()=>{ if(!A.session){ t.rows.clear(); t.pub.clear(); t.fin.clear(); t.emit(); return Promise.resolve(); }
+    if(!t.loaded){
+      if(name==="sites") t.loaded=Promise.all([sb.from("sites").select("id,data"), isAdmin()?sb.from("site_fin").select("id,data"):Promise.resolve({data:[]})]).then(([a,b])=>{
+        if(a.error) throw err(a.error); if(b.error) throw err(b.error);
+        t.pub.clear(); t.fin.clear(); (a.data||[]).forEach(r=>t.pub.set(r.id,r.data||{})); (b.data||[]).forEach(r=>t.fin.set(r.id,r.data||{}));
+        t.rows.clear(); t.pub.forEach((_,id)=>t.merge(id)); t.emit(); });
+      else t.loaded=sb.from(name).select("id,data").then(({data,error})=>{ if(error) throw err(error); t.rows.clear(); (data||[]).forEach(r=>t.rows.set(r.id,r.data)); t.emit(); });
+      t.loaded.catch(()=>{ t.loaded=null; }); }
+    return t.loaded; };
+  t.listen=()=>{ if(t.chan||!A.session) return; let ch=sb.channel("rt-"+name);
+    const on=(tbl,fnc)=>{ ch=ch.on("postgres_changes",{event:"*",schema:"public",table:tbl},p=>{ const id=(p.new&&p.new.id)||(p.old&&p.old.id); if(!id) return; fnc(id,p.eventType==="DELETE"?null:(p.new&&p.new.data)||{}); t.emit(); }); };
+    if(name==="sites"){ on("sites",(id,d)=>{ if(d) t.pub.set(id,d); else { t.pub.delete(id); t.fin.delete(id); } t.merge(id); });
+      if(isAdmin()) on("site_fin",(id,d)=>{ if(d) t.fin.set(id,d); else t.fin.delete(id); t.merge(id); }); }
+    else on(name,(id,d)=>{ if(d) t.rows.set(id,d); else t.rows.delete(id); });
+    t.chan=ch.subscribe(); };
+  t.reset=()=>{ if(t.chan){ sb.removeChannel(t.chan); t.chan=null; } t.loaded=null; t.rows.clear(); t.pub.clear(); t.fin.clear();
+    if(t.subs.size||t.docSubs.size){ t.load().catch(()=>{}); t.listen(); } };
+  t.snap=snap;
   return tables[name]=t;
  }
- setInterval(()=>{ Object.keys(tables).forEach(n=>{ const t=tables[n]; if(t.subs.size||t.docSubs.size){ t.loaded=null; t.load().catch(()=>{}); } }); },60000);
+ function resetTables(){ Object.values(tables).forEach(t=>t.reset()); }
+ setInterval(()=>{ if(!A.session) return; Object.values(tables).forEach(t=>{ if(t.subs.size||t.docSubs.size){ t.loaded=null; t.load().catch(()=>{}); } }); },60000);
+ const now=()=>new Date().toISOString();
  const db={
   collection:name=>({
     get:async()=>{ const t=table(name); await t.load(); return t.snap(); },
     onSnapshot:(next,onErr)=>{ const t=table(name); const o={next}; t.subs.add(o); t.load().catch(e=>onErr&&onErr(e)); t.listen(); if(t.rows.size) setTimeout(()=>next(t.snap()),0); return ()=>t.subs.delete(o); }
   }),
   doc:path=>{ const [name,id]=path.split("/"); return {
-    set:async body=>{ const t=table(name); t.rows.set(id,body); const {error}=await sb.from(name).upsert({id,data:body,updated_at:new Date().toISOString()}); if(error) throw err(error); },
-    delete:async()=>{ const t=table(name); t.rows.delete(id); const {error}=await sb.from(name).delete().eq("id",id); if(error) throw err(error); },
+    set:async body=>{ const t=table(name); t.rows.set(id,body);
+      if(name==="sites"){ const pub={}, fin={}; Object.keys(body||{}).forEach(k=>{ (FIN.includes(k)?fin:pub)[k]=body[k]; });
+        t.pub.set(id,pub); if(isAdmin()) t.fin.set(id,fin);
+        const {error}=await sb.from("sites").upsert({id,data:pub,updated_at:now()}); if(error) throw err(error);
+        if(isAdmin()){ const r=await sb.from("site_fin").upsert({id,data:fin,updated_at:now()}); if(r.error) throw err(r.error); }
+        return; }
+      const {error}=await sb.from(name).upsert({id,data:body,updated_at:now()}); if(error) throw err(error); },
+    delete:async()=>{ const t=table(name); t.rows.delete(id); t.pub.delete(id); t.fin.delete(id);
+      if(name==="sites"&&isAdmin()){ const r=await sb.from("site_fin").delete().eq("id",id); if(r.error) throw err(r.error); }
+      const {error}=await sb.from(name).delete().eq("id",id); if(error) throw err(error); },
     onSnapshot:(next,onErr)=>{ const t=table(name); const f=()=>{ const d=t.rows.get(id); next({id,exists:!!d,data:()=>d?freeze(d):undefined,metadata:{}}); };
       t.docSubs.add(f); t.load().then(f).catch(e=>onErr&&onErr(e)); t.listen(); return ()=>t.docSubs.delete(f); }
   }; }
  };
- // ---- assets ----
+ // ---- images: private storage, opened with short-lived signed links ----
+ const BLANK="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+ const TTL=2*86400, signed=new Map(), want=new Set(); let wantT=null;
+ try{ const c=JSON.parse(localStorage.getItem("aseel-media")||"{}"); Object.entries(c).forEach(([k,v])=>{ if(v&&v.exp>Date.now()+3600e3) signed.set(k,v); }); }catch(e){}
+ const saveSigned=()=>{ try{ const o={}; signed.forEach((v,k)=>{ if(v.exp>Date.now()) o[k]=v; }); localStorage.setItem("aseel-media",JSON.stringify(o)); }catch(e){} };
+ async function signBatch(){ wantT=null; const ids=[...want]; want.clear(); if(!ids.length||!A.session) return; let got=0;
+   for(let i=0;i<ids.length;i+=100){ const {data}=await sb.storage.from("media").createSignedUrls(ids.slice(i,i+100),TTL).catch(()=>({data:null}));
+     (data||[]).forEach(d=>{ if(d&&d.signedUrl&&d.path){ signed.set(d.path,{url:d.signedUrl,exp:Date.now()+TTL*1000}); got++; } }); }
+   if(got){ saveSigned(); window.dispatchEvent(new Event("aseel-media")); } }
+ window.__pub=id=>{ const v=signed.get(id); if(v&&v.exp>Date.now()+60000) return v.url; if(A.session){ want.add(id); if(!wantT) wantT=setTimeout(signBatch,40); } return BLANK; };
+ window.__mediaBlob=async id=>{ const {data,error}=await sb.storage.from("media").download(id); if(error) throw new Error(error.message||"download"); return data; };
  const assets={
-  upload:async blob=>{ const id=Date.now().toString(36)+Math.random().toString(36).slice(2,10); const {error}=await sb.storage.from("media").upload(id,blob,{contentType:blob.type||"image/jpeg",upsert:true}); if(error) throw {code:"unavailable",message:error.message}; return {id,url:pub(id),sizeBytes:blob.size,contentType:blob.type}; },
+  upload:async blob=>{ const id=Date.now().toString(36)+Math.random().toString(36).slice(2,10); const {error}=await sb.storage.from("media").upload(id,blob,{contentType:blob.type||"image/jpeg",upsert:true}); if(error) throw {code:"unavailable",message:error.message};
+    try{ signed.set(id,{url:URL.createObjectURL(blob),exp:Date.now()+3600e3}); }catch(e){} return {id,url:window.__pub(id),sizeBytes:blob.size,contentType:blob.type}; },
   delete:async id=>{ if(!id||id==="__logo") return {}; await sb.storage.from("media").remove([id]); return {}; },
   list:async()=>({assets:[],usage:{}})
  };
@@ -68,7 +142,7 @@ shim=r'''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/
  window.__ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
  window.__dl=f=>{ if(window.__ios&&navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f]}).catch(()=>{}); return; }
    const u=URL.createObjectURL(f); const a=document.createElement("a"); a.href=u; a.download=f.name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(u); a.remove(); },8000); };
- // ---- AI invoice reading (optional key on this phone) ----
+ // ---- AI invoice reading (optional key on this phone, otherwise the read-doc function) ----
  const KEY=()=>{ try{ return localStorage.getItem("aseel-api-key")||""; }catch(e){ return ""; } };
  const b64=b=>new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result).split(",")[1]); fr.readAsDataURL(b); });
  async function ask(input,opts){ opts=opts||{}; const content=[];
@@ -82,7 +156,7 @@ shim=r'''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/
    const j=await r.json(); return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join(""); }
  const kindOf=t=>/مخطط معماري/.test(t)?"outline":/إثبات دفعة|شيك بنكي/.test(t)?"payment":/فاتورة مشتريات/.test(t)?"invoice":null;
  async function viaServer(input,opts){ const kind=kindOf(String(input)); const im=[].concat(opts&&opts.images||[])[0]; if(!kind||!im) throw {code:"unavailable",message:"unsupported"};
-   let r; try{ r=await fetch(SB_URL+"/functions/v1/read-doc",{method:"POST",headers:{"content-type":"application/json","apikey":SB_KEY},body:JSON.stringify({kind,image:await b64(im),mediaType:im.type||"image/jpeg",lang:document.documentElement.lang==="en"?"en":"ar"})}); }catch(e){ throw {code:"unavailable",message:"network"}; }
+   let r; try{ r=await fetch(SB_URL+"/functions/v1/read-doc",{method:"POST",headers:{"content-type":"application/json","apikey":SB_KEY,...tokenHdr()},body:JSON.stringify({kind,image:await b64(im),mediaType:im.type||"image/jpeg",lang:document.documentElement.lang==="en"?"en":"ar"})}); }catch(e){ throw {code:"unavailable",message:"network"}; }
    const j=await r.json().catch(()=>({})); if(!r.ok){ throw {code:r.status===404?"not_granted":(j.status===429?"rate_limited":"unavailable"),message:j.error||("HTTP "+r.status)}; } return j.text||""; }
  const run=(input,opts)=>KEY()?ask(input,opts):viaServer(input,opts);
  const sample=Object.assign(async(input,opts)=>({text:await run(input,opts),truncated:false}),{
@@ -90,20 +164,7 @@ shim=r'''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/
    limits:async()=>({images:{maxCount:5,maxBytes:5e6,mediaTypes:["image/jpeg","image/png","image/webp"]}}) });
  window.__saveKey=()=>{ const el=document.getElementById("api-key"); const v=(el&&el.value||"").trim(); try{ if(v) localStorage.setItem("aseel-api-key",v); else localStorage.removeItem("aseel-api-key"); }catch(e){} location.reload(); };
  window.__hasKey=()=>!!KEY();
- // ---- one-time migration of the original data ----
- const migrate=(async()=>{ if(!sb) return;
-   try{ const {data:flag}=await sb.from("settings").select("id").eq("id","_migrated").maybeSingle(); if(flag) return;
-     const sd=await fetch("./seed.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null); if(!sd) return;
-     window.__migrating=true;
-     for(const [id,path] of Object.entries(sd.media||{})){ try{ const blob=await fetch(path).then(r=>r.blob()); await sb.storage.from("media").upload(id,blob,{contentType:blob.type||"image/jpeg",upsert:true}); }catch(e){} }
-     const up=(t,obj)=>Object.keys(obj||{}).length?sb.from(t).upsert(Object.entries(obj).map(([id,d])=>({id,data:{...d,id}}))):Promise.resolve({});
-     await up("sites",sd.sites); await up("marks",sd.marks);
-     const {data:cur}=await sb.from("settings").select("data").eq("id","company").maybeSingle();
-     await sb.from("settings").upsert({id:"company",data:{...(sd.settings||{}),...((cur&&cur.data)||{})}});
-     await sb.from("settings").upsert({id:"_migrated",data:{at:new Date().toISOString(),version:sd.version}});
-   }catch(e){ console.warn("migrate",e); }
-   window.__migrating=false; })();
- window.claude={ use:async n=>{ if(n==="db"){ if(!sb) return null; await migrate; return db; } return n==="assets"?(sb?assets:null):n==="downloads"?downloads:n==="sample"?sample:null; } };
+ window.claude={ use:async n=>{ if(n==="db") return sb?db:null; return n==="assets"?(sb?assets:null):n==="downloads"?downloads:n==="sample"?sample:null; } };
  let deferred=null; window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferred=e; window.__canInstall=true; });
  window.__install=async()=>{ if(!deferred) return; deferred.prompt(); await deferred.userChoice; deferred=null; window.__canInstall=false; };
  window.installHint=()=>{ const sa=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone; if(sa) return "";
@@ -111,7 +172,7 @@ shim=r'''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/
    return ios?'<br>📲 <b>لتثبيت التطبيق على الآيفون:</b> افتح الصفحة في Safari، ثم زر المشاركة ⬆️، ثم «إضافة إلى الشاشة الرئيسية».'
      :(window.__canInstall?'<br><button class="primary" onclick="__install()">📲 تثبيت التطبيق على الجوال</button>':'<br>📲 <b>لتثبيت التطبيق:</b> من قائمة Chrome ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».'); };
  if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
- const pushCall=async body=>{ const r=await fetch(SB_URL+"/functions/v1/push",{method:"POST",headers:{"content-type":"application/json","apikey":SB_KEY},body:JSON.stringify(body)}); const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error||("HTTP "+r.status)); return j; };
+ const pushCall=async body=>{ const r=await fetch(SB_URL+"/functions/v1/push",{method:"POST",headers:{"content-type":"application/json","apikey":SB_KEY,...tokenHdr()},body:JSON.stringify(body)}); const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error||("HTTP "+r.status)); return j; };
  const u8=b=>{ b=b.replace(/-/g,"+").replace(/_/g,"/"); while(b.length%4) b+="="; const s=atob(b); return Uint8Array.from(s,c=>c.charCodeAt(0)); };
  window.__push={
    supported:()=>("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window),
@@ -155,11 +216,11 @@ img{{max-width:100%}} [hidden]{{display:none!important}}
 <body>
 '''
 out=head+shim+s.strip()+'\n</body>\n</html>\n'
-pathlib.Path('/home/claude/aseel-app/index.html').write_text(out,encoding='utf8')
+(OUT/'index.html').write_text(out,encoding='utf8')
 manifest={"name":"تقارير مواقع أصيل","short_name":"أصيل","description":"تقارير مواقع أصيل للألمنيوم والزجاج","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f4f2ee","theme_color":"#11823a","lang":"ar","dir":"rtl",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"},{"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
-pathlib.Path('/home/claude/aseel-app/manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=1),encoding='utf8')
-sw='''const C="aseel-v35";
+(OUT/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=1),encoding='utf8')
+sw='''const C="aseel-v36";
 const SHELL=["./","./index.html","./manifest.json","./logo.png","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{ e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())); });
 self.addEventListener("activate",e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
@@ -175,5 +236,5 @@ self.addEventListener("push",e=>{ let d={}; try{ d=e.data?e.data.json():{}; }cat
 self.addEventListener("notificationclick",e=>{ e.notification.close(); const url=(e.notification.data&&e.notification.data.url)||"./";
   e.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(cs=>{ for(const c of cs){ if("focus" in c){ c.postMessage({open:url}); return c.focus(); } } return self.clients.openWindow(url); })); });
 '''
-pathlib.Path('/home/claude/aseel-app/sw.js').write_text(sw,encoding='utf8')
+(OUT/'sw.js').write_text(sw,encoding='utf8')
 print(len(out))

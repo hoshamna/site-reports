@@ -54,12 +54,20 @@ const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 const json = (b, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "content-type": "application/json" } });
 const SUBJECT = "mailto:info@aseelalum.com";
 
+// يقبل الطلب فقط من مستخدم مسجّل الدخول في التطبيق
+async function signedIn(req) {
+  const auth = req.headers.get("authorization") || "";
+  if (!/^Bearer\s+\S+/i.test(auth)) return false;
+  const key = req.headers.get("apikey") || Deno.env.get("SUPABASE_ANON_KEY") || "";
+  try { const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/user`, { headers: { apikey: key, Authorization: auth } }); return r.ok; } catch (_) { return false; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method" }, 405);
   const URL_ = Deno.env.get("SUPABASE_URL") ?? "";
-  const KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || req.headers.get("apikey") || "";
-  const rest = (path, init = {}) => fetch(`${URL_}/rest/v1/${path}`, { ...init, headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, "content-type": "application/json", ...(init.headers || {}) } });
+  const KEY = Deno.env.get("SERVICE_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  const rest = (path, init = {}) => fetch(`${URL_}/rest/v1/${path}`, { ...init, headers: { apikey: KEY, ...(KEY.startsWith("sb_") ? {} : { Authorization: `Bearer ${KEY}` }), "content-type": "application/json", ...(init.headers || {}) } });
   const getVapid = async () => {
     const r = await rest("push_keys?id=eq.vapid&select=data"); const rows = r.ok ? await r.json() : [];
     if (rows[0]?.data?.jwk) return rows[0].data;
@@ -71,6 +79,7 @@ Deno.serve(async (req) => {
   try {
     const { action, sub, userId, name, userIds, title, body, tag, url, endpoint } = await req.json();
     if (action === "key") { const v = await getVapid(); return json({ key: v.pub }); }
+    if (!(await signedIn(req))) return json({ error: "sign in" }, 401);
     const idOf = async (ep) => b64u(await crypto.subtle.digest("SHA-256", enc.encode(ep))).slice(0, 40);
     if (action === "subscribe") {
       if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) return json({ error: "bad subscription" }, 400);

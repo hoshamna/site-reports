@@ -23,9 +23,18 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "content-type": "application/json" } });
 
+// يقبل الطلب فقط من مستخدم مسجّل الدخول في التطبيق
+async function signedIn(req) {
+  const auth = req.headers.get("authorization") || "";
+  if (!/^Bearer\s+\S+/i.test(auth)) return false;
+  const key = req.headers.get("apikey") || Deno.env.get("SUPABASE_ANON_KEY") || "";
+  try { const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/user`, { headers: { apikey: key, Authorization: auth } }); return r.ok; } catch (_) { return false; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method" }, 405);
+  if (!(await signedIn(req))) return json({ error: "sign in" }, 401);
   try {
     const { kind, image, mediaType, lang } = await req.json();
     const make = PROMPTS[kind];

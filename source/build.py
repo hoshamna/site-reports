@@ -159,7 +159,7 @@ pathlib.Path('/home/claude/aseel-app/index.html').write_text(out,encoding='utf8'
 manifest={"name":"تقارير مواقع أصيل","short_name":"أصيل","description":"تقارير مواقع أصيل للألمنيوم والزجاج","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"#f4f2ee","theme_color":"#11823a","lang":"ar","dir":"rtl",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"},{"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
 pathlib.Path('/home/claude/aseel-app/manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=1),encoding='utf8')
-sw='''const C="aseel-v34";
+sw='''const C="aseel-v35";
 const SHELL=["./","./index.html","./manifest.json","./logo.png","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{ e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())); });
 self.addEventListener("activate",e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });

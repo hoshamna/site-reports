@@ -1,0 +1,12 @@
+const STAGES = [["fix","تثبيت الفريم"],["glass","تركيب الزجاج"],["sil","السيليكون"]];
+const MCOL = ["#8a969c","#e07b00","#1f6fd1","#2f9e55"];
+const FACES = [["front","الواجهة الأمامية"],["right","الواجهة اليمنى"],["back","الواجهة الخلفية"],["left","الواجهة اليسرى"],["e5","الواجهة الخامسة"],["e6","الواجهة السادسة"]];
+const BASEF = ["front","right","back","left"];
+const FCOL = {front:"#d32f2f",right:"#7b1fa2",back:"#5d4037",left:"#c2185b",e5:"#00838f",e6:"#455a64"};
+const FLOORN = ["الطابق الأرضي","الطابق الأول","الطابق الثاني","الطابق الثالث","الطابق الرابع","السطح"];
+const MSTAGE = ["لم يبدأ","تثبيت الفريم","تركيب الزجاج","منتهي (سيليكون)"];
+const TABS = [["summary","ملخص الموقع","🏗️"],["plan","الواجهات","🗺️"],["items","المطلوبات","📋"],["photos","الصور","📷"],["issues","المشاكل","⚠️"],["money","المالية","💰"],["purchases","المشتريات","🧾"],["profit","الربح","📈"]];
+const S = { lastSite:(()=>{ try{ return localStorage.getItem("sites-last"); }catch(e){ return null; } })(), sites:{}, settings:{company:"أصيل للألمنيوم والزجاج ذ م م", companyEn:"Aseel Aluminium & Glass LLC", logoId:"__logo", logoWide:true, legalName:"ASEEL ALUMINIUM & GLASS WORKS LLC", poBox:"34438", address:"Ras Al Khor Ind. Area 1, Dubai, UAE", trn:"100431844800003", phone:"+971585982931", email:"info@aseelalum.com", web:"www.aseelalum.com", invPrefix:"TEST", invSeq:0}, view:"list", cur:null, tab:"summary", armed:null, planIdx:0, face:"front", planMode:"stage", addItem:null, zoom:(window.innerWidth<600?2:1), sel:null, selStage:0, mode:"loading", busy:false, lastPdf:null };
+let db=null, assets=null, downloads=null, sample=null, canRead=false;
+const dirty = {}, timers = {}, chains = {};
+const app = document.getElementById("app");

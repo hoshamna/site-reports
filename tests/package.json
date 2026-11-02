@@ -1,0 +1,12 @@
+{
+  "name": "aseel-app-tests",
+  "private": true,
+  "description": "Tests for the Aseel app. Kept in tests/ so Netlify never installs them.",
+  "scripts": {
+    "test": "python3 ../source/build.py --check && node --test --test-concurrency=3 \"**/*.test.js\"",
+    "test:sql": "bash sql/run.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

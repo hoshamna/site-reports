@@ -109,6 +109,7 @@ function usersPanel(){
      <select data-aurole="${esc(u.id)}" ${S.user&&u.id===S.user.id?"disabled":""}>${Object.entries(ROLES).map(([k,[l]])=>`<option value="${k}" ${u.role===k?"selected":""}>${l}</option>`).join("")}</select></div>
      <label class="full small" style="display:flex;flex-direction:row;gap:8px;align-items:center;cursor:pointer;color:var(--fg)"><input type="checkbox" data-aubackup="${esc(u.id)}" ${u.canBackup?"checked":""} style="width:auto;min-height:0"> 💾 يستطيع النسخ الاحتياطي والاستعادة</label>
      <label class="full small" style="display:flex;flex-direction:row;gap:8px;align-items:center;cursor:pointer;color:var(--fg)"><input type="checkbox" data-aunotify="${esc(u.id)}" ${u.notifyLow?"checked":""} style="width:auto;min-height:0"> 🔔 يستقبل تنبيه انخفاض رصيد العهدة</label>
+     <label class="full small" style="display:flex;flex-direction:row;gap:8px;align-items:center;cursor:pointer;color:var(--fg)"><input type="checkbox" data-ausalary="${esc(u.id)}" ${u.notifySalary?"checked":""} style="width:auto;min-height:0"> 👔 يستقبل تذكير المرتبات (يوم 25 الساعة 10 صباحاً)</label>
      <div class="full row"><input id="au-np-${esc(u.id)}" type="password" inputmode="numeric" maxlength="6" placeholder="رمز جديد" dir="ltr" style="width:120px"><button data-act="aunewpin" data-id="${esc(u.id)}">تغيير الرمز</button>
      ${S.user&&u.id===S.user.id?"":`<button class="ghost danger ${S.armed==="au"+u.id?"armed":""}" data-act="audel" data-id="${esc(u.id)}">${S.armed==="au"+u.id?"تأكيد الحذف":"حذف"}</button>`}</div></div>`).join("")}</div>
    <h3>+ مستخدم جديد</h3><div class="grid2"><label>الاسم<input id="au-add-name" autocomplete="off"></label>
@@ -125,6 +126,7 @@ app.addEventListener("change", e=>{ const t=e.target;
     (async()=>{ if(t.checked&&!us.some(x=>x.canBackup)&&S.user&&S.user.id!==u.id) await AU().update(S.user.id,{canBackup:true}).catch(()=>{});
       upd(u.id,{canBackup:t.checked},t.checked?"💾 "+u.name+" "+tr("يستطيع النسخ الاحتياطي"):tr("تم إلغاء صلاحية النسخ الاحتياطي")); })(); return; }
   if(t.dataset&&t.dataset.aunotify){ const u=users().find(x=>x.id===t.dataset.aunotify); if(u) upd(u.id,{notifyLow:t.checked},t.checked?tr("🔔 سيصله تنبيه انخفاض العهدة"):tr("لن يصله تنبيه العهدة")); return; }
+  if(t.dataset&&t.dataset.ausalary){ const u=users().find(x=>x.id===t.dataset.ausalary); if(u) upd(u.id,{notifySalary:t.checked},t.checked?tr("👔 سيصله تذكير المرتبات يوم 25"):tr("لن يصله تذكير المرتبات")); return; }
   if(t.dataset&&t.dataset.aurole){ const u=users().find(x=>x.id===t.dataset.aurole); if(u) upd(u.id,{role:t.value},tr("تم تغيير الصلاحية")); } });
 app.addEventListener("keydown", e=>{ if(e.key==="Enter"&&e.target.id==="au-new2"){ const b=document.querySelector('[data-act="aupinset"]'); b&&b.click(); return; } if(e.key==="Enter"&&e.target.id==="au-pin"){ const b=document.querySelector('[data-act="aulogin"],[data-act="ausetup"]'); b&&b.click(); } });
 app.addEventListener("click", async e=>{

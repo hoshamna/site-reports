@@ -83,7 +83,7 @@
       if(b.action==="setPin"){ const self=b.id===caller.id; if(!self&&caller.role!=="admin") return R({error:"forbidden"},403); const P=DB.profiles[b.id]; mk(b.id,b.pin); P.data={...P.data,mustChange:!self}; save(); notify("profiles","UPDATE",{id:b.id,data:{}}); return R({ok:true}); }
       if(caller.role!=="admin") return R({error:"forbidden"},403);
       if(b.action==="create"){ if(Object.values(DB.profiles).some(p=>p.name===b.name)) return R({error:"name exists"},409); const id="n"+Date.now().toString(36); DB.profiles[id]={id,auth_id:mk(id,b.pin),name:b.name,role:b.role,data:{mustChange:true}}; save(); return R({ok:true,id}); }
-      if(b.action==="update"){ const P=DB.profiles[b.id]; if(b.role!==undefined){ if(b.id===caller.id) return R({error:"own role"},400); P.role=b.role; } ["canBackup","notifyLow"].forEach(k=>{ if(b[k]!==undefined) P.data={...P.data,[k]:!!b[k]}; }); save(); return R({ok:true}); }
+      if(b.action==="update"){ const P=DB.profiles[b.id]; if(b.role!==undefined){ if(b.id===caller.id) return R({error:"own role"},400); P.role=b.role; } ["canBackup","notifyLow","notifySalary"].forEach(k=>{ if(b[k]!==undefined) P.data={...P.data,[k]:!!b[k]}; }); save(); return R({ok:true}); }
       if(b.action==="delete"){ const P=DB.profiles[b.id]; delete DB.users[em(b.id)]; delete DB.profiles[b.id]; save(); return R({ok:true}); }
       return R({error:"unknown"},400); }
     if(u.includes("/functions/v1/")) return R({error:"mock"},404);

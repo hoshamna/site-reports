@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       const r = await rest("app_secrets?id=eq.cron&select=value"); const rows = r.ok ? await r.json() : [];
       if (!key || !rows[0] || rows[0].value !== key) return json({ error: "forbidden" }, 403);
       const p = await rest("profiles?select=id,data"); const profs = p.ok ? await p.json() : [];
-      const ids = profs.filter((x) => x.data?.notifyLow).map((x) => x.id);
+      const ids = profs.filter((x) => x.data?.notifySalary).map((x) => x.id);
       const dubai = new Date(Date.now() + 4 * 3600e3);
       const AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
       const month = `${AR[dubai.getUTCMonth()]} ${dubai.getUTCFullYear()}`;

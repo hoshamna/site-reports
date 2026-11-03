@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       if (b.role !== undefined) { if (!ROLES.includes(b.role)) return fail("bad role"); if (id === me.id) return fail("own role", 400); patch.role = b.role; }
       if (b.name !== undefined) { const nm = String(b.name).trim(); if (!nm) return fail("bad name"); if (await nameTaken(nm, id)) return fail("name exists", 409); patch.name = nm; }
       const flags: Record<string, unknown> = { ...(cur.data || {}) };
-      for (const k of ["canBackup", "notifyLow"]) if (b[k] !== undefined) flags[k] = !!b[k];
+      for (const k of ["canBackup", "notifyLow", "notifySalary"]) if (b[k] !== undefined) flags[k] = !!b[k];
       patch.data = flags;
       const { error } = await admin.from(P ? "profiles" : "legacy_pins").update(patch).eq("id", id);
       if (error) return fail(error.message, 500);

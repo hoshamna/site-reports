@@ -62,3 +62,16 @@ test("sign-in, PIN rules and user management", async (t) => {
   });
   assert.deepEqual(app.errors, []);
 });
+
+test("the salaries reminder is its own choice per user", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  await app.login("هشام", "1234");
+  await app.eval(() => { __T.S.usersOpen = true; __T.render(); });
+  await app.page.check('[data-ausalary="u1"]');
+  await app.page.waitForTimeout(500);
+  const d = (await app.db()).profiles.u1.data;
+  assert.equal(d.notifySalary, true, "saved on the server");
+  assert.equal(d.notifyLow, true, "the custody alert setting is untouched");
+  assert.deepEqual(app.errors, []);
+});

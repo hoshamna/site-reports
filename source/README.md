@@ -27,7 +27,8 @@ cd tests && npm run test:sql     # اختبارات قواعد قاعدة الب
 | `web/js/08…12-custody-*.js` | العهدة: البيانات، الواجهة، قراءة الفواتير، الكشوف، الأزرار |
 | `web/js/13-users.js` | الدخول والمستخدمون والصلاحيات والنسخ الاحتياطي |
 | `web/js/14-reports-pdf.js` | تقارير PDF للمواقع |
-| `web/js/15-start.js` | التشغيل |
+| `web/js/15-voice-notes.js` | الملاحظات الصوتية: التسجيل والتفريغ والتلخيص والحفظ |
+| `web/js/16-start.js` | التشغيل |
 | `web/sw.template.js` | الـ Service Worker (رقم النسخة يُحسب تلقائياً) |
 | `supabase/` | أوامر SQL ودوال Supabase (`accounts`, `read-doc`, `push`) |
 

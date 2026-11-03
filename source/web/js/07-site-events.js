@@ -66,7 +66,7 @@ app.addEventListener("change", e=>{ const t=e.target;
 app.addEventListener("click", async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return; CAM=b.dataset.cam==="1";
   let a=b.dataset.act; let s=site(); const id=b.dataset.id;
-  const QA=["qphoto","qplan","qinv","qchq","qiss","repopen"];
+  const QA=["qvoice","qphoto","qplan","qinv","qchq","qiss","repopen"];
   if(S.view==="list" && QA.includes(a)){ const act=activeSites();
     if(act.length===1){ goSite(act[0].id); s=site(); }
     else if(!act.length){ toast("أضف موقعاً أولاً"); return; }
@@ -74,6 +74,7 @@ app.addEventListener("click", async e=>{
   if(a==="pickgo"){ goSite(id); s=site(); a=b.dataset.q; S.pick=null; }
   if(a==="pickclose"){ S.pick=null; render(); return; }
   if(a==="qchq"){ S.payPick=true; S.afterTab="money"; render(); return; }
+  if(a==="qvoice"){ if(!s) return; S.tab="summary"; S.voice={siteId:s.id,text:"",stage:"text",rec:false}; render(); if(SR) recStart(); return; }
   if(a==="qphoto"||a==="qinv"){ const map={qphoto:["addph","photos"],qinv:["scanpur","purchases"]}; S.afterTab=map[a][1]; a=map[a][0]; CAM=true; }
   const arm=(key,fn)=>{ if(S.armed===key){ S.armed=null; const snapS=(s&&key!=="undo")?JSON.parse(JSON.stringify(s)):null; const snapM=snapS?Object.values(S.mk).filter(m=>m.siteId===s.id).map(m=>({...m})):null; fn(); if(snapS) siteUndo(snapS,snapM,key==="site"?"🗑️ تم حذف الموقع":key==="olclr"?"تم مسح الحدود":"🗑️ تم الحذف"); } else { S.armed=key; setTimeout(()=>{ if(S.armed===key){S.armed=null;render();} },4000);} render(); };
   if((a==="floorsel"||a==="facesel"||a==="tab"||a==="back"||a==="addfloor"||a==="delfloor"||a==="open"||a==="editstart") && (S.outline||S.crop)){ toast("أكمل تحديد الحدود أو القص، أو اضغط إلغاء"); return; }

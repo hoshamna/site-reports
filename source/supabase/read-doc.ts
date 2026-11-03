@@ -2,6 +2,15 @@
 // يقرأ صور الفواتير والشيكات وخرائط الطوابق باستخدام Claude
 // المفتاح السري يُحفظ في Secrets باسم ANTHROPIC_API_KEY ولا يظهر في التطبيق
 
+// summary of a spoken site note (text only, no image)
+const NOTES_PROMPT = (lang: string, text: string) =>
+  `هذا تفريغ صوتي لملاحظة قالها مهندس أو مدير في موقع أعمال ألمنيوم وزجاج (فريم، زجاج، سيليكون، شبابيك، أبواب، واجهات). قد يحتوي أخطاء تفريغ أو لهجة عامية.
+لخّصه ${lang === "en" ? "بالإنجليزية" : "بالعربية الفصحى"} في نقاط قصيرة واضحة، دون إضافة أي معلومة لم تُذكر. استخدم كلمة «الفريم» لا «الإطار».
+أجب بـ JSON فقط بهذا الشكل: {"summary":"جملة واحدة","done":[],"issues":[],"needs":[],"requests":[]}
+done = الأعمال المنجزة. issues = المشاكل الفنية في الموقع (كل مشكلة جملة مستقلة). needs = المطلوبات والنواقص (مواد، زجاج ناقص، عمالة…). requests = طلبات الاستشاري أو العميل أو المالك. اترك القائمة فارغة إذا لم يُذكر شيء.
+النص:
+"""${text}"""`;
+
 const PROMPTS: Record<string, (lang: string) => string> = {
   invoice: (lang) =>
     `هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود/طباعة). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، وتاريخ الفاتورة بصيغة YYYY-MM-DD، ووصفاً مختصراً للمشتريات ${lang === "en" ? "باللغة الإنجليزية" : "بالعربية الفصحى"} في بضع كلمات. أجب بـ JSON فقط بهذا الشكل: {"supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. invoiceNo هو رقم الفاتورة أو الإيصال. plate هو رقم لوحة السيارة إن كان مكتوباً في الفاتورة (شائع في فواتير الوقود والصيانة، مثل Vehicle No أو Plate). payment هو "cash" إذا كُتب أن الدفع نقدي، أو "credit" إذا كُتب آجل أو Credit، وإلا اتركه فارغاً. اترك أي حقل فارغاً إذا لم يكن واضحاً.`,
@@ -36,9 +45,10 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method" }, 405);
   if (!(await signedIn(req))) return json({ error: "sign in" }, 401);
   try {
-    const { kind, image, mediaType, lang } = await req.json();
+    const { kind, image, mediaType, lang, text } = await req.json();
+    const isNotes = kind === "notes";
     const make = PROMPTS[kind];
-    if (!make || typeof image !== "string" || image.length > 8_000_000) return json({ error: "bad request" }, 400);
+    if (isNotes ? (typeof text !== "string" || !text.trim() || text.length > 20_000) : (!make || typeof image !== "string" || image.length > 8_000_000)) return json({ error: "bad request" }, 400);
     const mt = /^image\/(jpeg|png|webp|gif)$/.test(mediaType) ? mediaType : "image/jpeg";
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -49,8 +59,10 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "claude-haiku-5-5",
-        max_tokens: 800,
-        messages: [{ role: "user", content: [
+        max_tokens: isNotes ? 1200 : 800,
+        messages: [{ role: "user", content: isNotes
+          ? [{ type: "text", text: NOTES_PROMPT(lang === "en" ? "en" : "ar", text) }]
+          : [
           { type: "image", source: { type: "base64", media_type: mt, data: image } },
           { type: "text", text: make(lang === "en" ? "en" : "ar") },
         ] }],

@@ -164,6 +164,8 @@ async function makePdf(s, kind){
   });
   [["","صور الموقع"],...usedFaces(s).map(([k,l])=>[k,"صور "+l])].forEach(([k,title])=>{ const ph=s.photos.filter(p=>(p.face||"")===k);
     for(let i=0;i<ph.length;i+=2) blocks.push(`<div class="rb">${i===0?`<h2>${title}</h2>`:""}<div class="ph">${ph.slice(i,i+2).map(p=>`<figure><img src="${imgs[p.fileId]}"><figcaption>${U(p.caption||"")}</figcaption></figure>`).join("")}</div></div>`); });
+  { const vn=(s.voiceNotes||[]).slice(0,6); if(vn.length) blocks.push(`<div class="rb"><h2>ملاحظات الموقع</h2>${vn.map(n=>`<div style="margin:0 0 10px"><b class="num">${U(n.date||"")}</b>${n.by?` — ${U(n.by)}`:""}${n.summary?`<div><b>${U(n.summary)}</b></div>`:""}${
+      NOTE_KEYS.some(([k])=>(n[k]||[]).length)?NOTE_KEYS.filter(([k])=>(n[k]||[]).length).map(([k,l])=>`<div>${l}<ul style="margin:2px 0 4px">${n[k].map(t=>`<li>${U(t)}</li>`).join("")}</ul></div>`).join(""):`<p style="margin:2px 0;white-space:pre-wrap">${U(n.text||"")}</p>`}</div>`).join("")}</div>`); }
   { const iss=s.issues||[]; if(iss.length){
     blocks.push(`<div class="rb"><h2>المشاكل الفنية — مفتوحة <span class="num">${iss.filter(x=>x.status!=="done").length}</span> / <span class="num">${iss.length}</span></h2><table><tr><th>التاريخ</th><th>الواجهة</th><th>المشكلة</th><th>المسؤول / الإجراء</th><th>الحالة</th></tr>
       ${iss.map((x,i)=>`<tr><td class="num">${U(x.date)}</td><td>${faceName(x.face)}</td><td>${U(x.text||"—")}${x.fileId?` <span class="num">(صورة ${i+1})</span>`:""}</td><td>${U(x.action||"—")}</td><td><span class="chip ${x.status==="done"?"done":"ex"}">${x.status==="done"?"تم الحل":"مفتوحة"}</span></td></tr>`).join("")}</table></div>`);

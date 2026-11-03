@@ -366,3 +366,9 @@ label{color:var(--muted);font-weight:500}
 .savepill{top:calc(8px + env(safe-area-inset-top,0px));box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .sheet{border-radius:var(--r) var(--r) 0 0}
 .salbox{border-inline-start:5px solid var(--gold);background:color-mix(in srgb,var(--gold) 9%,var(--surface))}
+.vnsheet{gap:10px}.vnsheet textarea{min-height:64px}
+.vnrec{min-height:64px;font-size:1.1rem;font-weight:700;border-radius:var(--r);background:var(--surface-2)}
+.vnrec.on{background:var(--bad);border-color:var(--bad);color:#fff;animation:vnpulse 1.4s ease-in-out infinite}
+@keyframes vnpulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--bad) 25%,transparent)}}
+@media (prefers-reduced-motion:reduce){.vnrec.on{animation:none}}
+.vnote ul{margin:2px 0 0;padding-inline-start:18px}

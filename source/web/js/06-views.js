@@ -16,6 +16,7 @@ function render(){
   else { S.view="list"; app.innerHTML = listView(); }
   if(S.cuPick) app.insertAdjacentHTML("beforeend", cuPickHtml());
   if(S.logoutAsk) app.insertAdjacentHTML("beforeend", logoutSheet());
+  if(S.voice&&S.view==="site") app.insertAdjacentHTML("beforeend", voiceSheet());
   app.classList.toggle("has-sheet", !!(S.view==="site"&&S.tab==="plan"&&S.sel));
   if(S.canWrite===false||S.canFiles===false){ const nb=document.createElement("div"); nb.className="notice small ro"; nb.innerHTML=S.canWrite===false?`<b>👁️ صلاحيتك على هذه الصفحة «مشاهدة فقط».</b> لا يُحفظ أي تعديل تقوم به. اطلب من المالك أن يغيّر صلاحيتك إلى «مساهم» لتسجيل البيانات، أو «محرر» لرفع الصور أيضاً.`:`<b>📷 صلاحيتك لا تسمح برفع الصور.</b> تستطيع تسجيل البيانات، أما رفع الصور والفواتير فيحتاج صلاحية «محرر» من المالك.`; app.insertBefore(nb,app.children[1]||null); }
   if(S.view==="site") app.querySelectorAll(".panel").forEach(pn=>{ if(pn.querySelector(".savebar")||!pn.querySelector('input:not([type=checkbox]):not([type=file]):not([type=radio]),textarea')) return;
@@ -87,6 +88,7 @@ function tSummary(s){
     <div class="mini">${isEng()?"":`<div><span class="muted small">قيمة المشروع</span><b class="num">${money(c.total)}</b></div><div><span class="muted small">المستلم</span><b class="num">${money(c.received)}</b></div>
     <div class="hl"><span class="small">المتبقي</span><b class="num">${money(c.remaining)}</b></div>`}${open?`<div class="warn" data-act="tab" data-tab="issues" role="button"><span class="small">مشاكل مفتوحة</span><b class="num">${open}</b></div>`:""}</div></div></div>
   ${qgridHtml()}
+  ${voiceNotesPanel(s)}
   <details class="panel" ${(!s.name||s.name===tr("مشروع جديد")||S.newSite===s.id)?"open":""}><summary style="cursor:pointer;font-weight:600">✏️ بيانات المشروع</summary>
    <div class="grid2">${f("name","اسم المشروع",s.name)}${f("location","الموقع",s.location)}
    ${f("engineer","اسم المهندس",s.engineer)}${f("engPhone","هاتف المهندس",s.engPhone,"tel",'dir="ltr" inputmode="tel"')}
@@ -100,7 +102,7 @@ function tSummary(s){
 }
 function activeSites(){ return Object.values(S.sites).filter(x=>x.status!=="منتهي").sort((a,b)=>(a.id===S.lastSite?-1:b.id===S.lastSite?1:0)||(b.updatedAt||0)-(a.updatedAt||0)); }
 function goSite(id){ S.cur=id; S.view="site"; S.tab="summary"; S.lastPdf=null; S.lastSite=id; try{ localStorage.setItem("sites-last",id); }catch(e){} }
-const QACTS=[["qphoto","📷","تصوير الموقع","صورة للأعمال"],["qplan","🗺️","تحديث الإنجاز","فريم · زجاج · سيليكون"],["cuscanc","🧾","تصوير فاتورة","ثم اختر الموقع"],["qchq","💵","دفعة مستلمة","شيك · تحويل · نقداً"],["qiss","⚠️","مشكلة فنية","مع صورة"],["repopen","📄","التقارير","PDF وواتساب"]];
+const QACTS=[["qvoice","🎤","ملاحظة صوتية","تُكتب وتُلخَّص وحدها"],["qphoto","📷","تصوير الموقع","صورة للأعمال"],["qplan","🗺️","تحديث الإنجاز","فريم · زجاج · سيليكون"],["cuscanc","🧾","تصوير فاتورة","ثم اختر الموقع"],["qchq","💵","دفعة مستلمة","شيك · تحويل · نقداً"],["qiss","⚠️","مشكلة فنية","مع صورة"],["repopen","📄","التقارير","PDF وواتساب"]];
 function qgridHtml(){ return `<div class="qgrid">${QACTS.filter(q=>!isEng()||q[0]!=="qchq").map(([a,ic,t,d])=>`<button class="qbtn" data-act="${a}"><span class="qic">${ic}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("")}</div>`; }
 function pickSheetHtml(){ const q=QACTS.find(x=>x[0]===S.pick)||QACTS[0];
   return `<div class="sheet" role="dialog" aria-label="اختر الموقع"><div class="row" style="justify-content:space-between"><h3>${q[1]} ${q[2]} — اختر الموقع</h3><button class="ghost" data-act="pickclose" aria-label="إغلاق">✕</button></div>

@@ -16,8 +16,11 @@
    if(r.status===429) throw {code:"rate_limited",message:"rate"};
    if(!r.ok){ let m=""; try{ m=(await r.json()).error.message; }catch(e){} throw {code:"unavailable",message:m||("HTTP "+r.status)}; }
    const j=await r.json(); return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join(""); }
- const kindOf=t=>/مخطط معماري/.test(t)?"outline":/إثبات دفعة|شيك بنكي/.test(t)?"payment":/فاتورة مشتريات/.test(t)?"invoice":null;
- async function viaServer(input,opts){ const kind=kindOf(String(input)); const im=[].concat(opts&&opts.images||[])[0]; if(!kind||!im) throw {code:"unavailable",message:"unsupported"};
+ const kindOf=t=>/تفريغ صوتي لملاحظة/.test(t)?"notes":/مخطط معماري/.test(t)?"outline":/إثبات دفعة|شيك بنكي/.test(t)?"payment":/فاتورة مشتريات/.test(t)?"invoice":null;
+ async function viaServer(input,opts){ const kind=kindOf(String(input));
+   if(kind==="notes"){ let r; try{ r=await fetch(SB_URL+"/functions/v1/read-doc",{method:"POST",headers:{"content-type":"application/json","apikey":SB_KEY,...tokenHdr()},body:JSON.stringify({kind,text:String(opts&&opts.text||""),lang:document.documentElement.lang==="en"?"en":"ar"})}); }catch(e){ throw {code:"unavailable",message:"network"}; }
+     const j=await r.json().catch(()=>({})); if(!r.ok) throw {code:r.status===400?"unsupported":"unavailable",message:j.error||("HTTP "+r.status)}; return j.text||""; }
+   const im=[].concat(opts&&opts.images||[])[0]; if(!kind||!im) throw {code:"unavailable",message:"unsupported"};
    let r; try{ r=await fetch(SB_URL+"/functions/v1/read-doc",{method:"POST",headers:{"content-type":"application/json","apikey":SB_KEY,...tokenHdr()},body:JSON.stringify({kind,image:await b64(im),mediaType:im.type||"image/jpeg",lang:document.documentElement.lang==="en"?"en":"ar"})}); }catch(e){ throw {code:"unavailable",message:"network"}; }
    const j=await r.json().catch(()=>({})); if(!r.ok){ throw {code:r.status===404?"not_granted":(j.status===429?"rate_limited":"unavailable"),message:j.error||("HTTP "+r.status)}; } return j.text||""; }
  const run=(input,opts)=>KEY()?ask(input,opts):viaServer(input,opts);

@@ -77,8 +77,24 @@ Deno.serve(async (req) => {
     return v;
   };
   try {
-    const { action, sub, userId, name, userIds, title, body, tag, url, endpoint } = await req.json();
+    const { action, sub, userId, name, userIds, title, body, tag, url, endpoint, key } = await req.json();
     if (action === "key") { const v = await getVapid(); return json({ key: v.pub }); }
+    // monthly salary reminder, sent by the database scheduler (pg_cron) with the key stored in app_secrets
+    if (action === "salary-reminder") {
+      const r = await rest("app_secrets?id=eq.cron&select=value"); const rows = r.ok ? await r.json() : [];
+      if (!key || !rows[0] || rows[0].value !== key) return json({ error: "forbidden" }, 403);
+      const p = await rest("profiles?select=id,data"); const profs = p.ok ? await p.json() : [];
+      const ids = profs.filter((x) => x.data?.notifyLow).map((x) => x.id);
+      const dubai = new Date(Date.now() + 4 * 3600e3);
+      const AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+      const month = `${AR[dubai.getUTCMonth()]} ${dubai.getUTCFullYear()}`;
+      const v = await getVapid();
+      const s2 = await rest("push_subs?select=id,data"); const subs = (s2.ok ? await s2.json() : []).filter((x) => ids.includes(x.data?.userId));
+      const payload = { title: "👔 تذكير المرتبات", body: `موعد مرتبات شهر ${month}. افتح تطبيق أصيل لتسجيلها في العهدة.`, tag: "salary", url: "./" };
+      let sent = 0;
+      await Promise.all(subs.map(async (t) => { try { const res = await sendPush(t.data.sub, payload, v, SUBJECT); if (res.ok) sent++; else if (res.status === 404 || res.status === 410) await rest(`push_subs?id=eq.${t.id}`, { method: "DELETE" }); } catch (_) {} }));
+      return json({ ok: true, sent, users: ids.length });
+    }
     if (!(await signedIn(req))) return json({ error: "sign in" }, 401);
     const idOf = async (ep) => b64u(await crypto.subtle.digest("SHA-256", enc.encode(ep))).slice(0, 40);
     if (action === "subscribe") {

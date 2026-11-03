@@ -8,7 +8,7 @@ function cuThumb(x){ return x.fileId?(x.fileType==="image"?`<button class="invbt
 function delBtn(x){ const k="cu"+x.id; return `<button class="ghost danger ${S.armed===k?"armed":""}" data-act="cudel" data-id="${x.id}">${S.armed===k?(x.purId?"تأكيد الحذف (ومن مشتريات الموقع)":"تأكيد الحذف"):"حذف"}</button>`; }
 function cuCompact(x){
   const miss=isExp(x)?cuMissing(x):[], dup=isExp(x)&&cuDupOf(x), c=isExp(x)&&cuCat(x.cat);
-  const title=x.kind==="dep"?tr("📥 توريد من المدير العام"):x.kind==="xfer"?(x.dir==="back"?tr("↩️ إرجاع من ")+(x.to||""):tr("↔️ تحويل إلى ")+(x.to||"")):x.kind==="spay"?tr("💳 سداد للمورد: ")+(x.supplier||""):(x.supplier||tr("فاتورة"));
+  const title=x.kind==="dep"?tr("📥 توريد من المدير العام"):x.kind==="xfer"?(x.dir==="back"?tr("↩️ إرجاع من ")+(x.to||""):tr("↔️ تحويل إلى ")+(x.to||"")):x.kind==="spay"?tr("💳 سداد للمورد: ")+(x.supplier||""):cuName(x);
   const sub=isExp(x)?[cuTargetName(x),c&&c.l,holderOf(x)!=="main"?tr("عهدة ")+holderOf(x):""].filter(Boolean).join(" · "):(x.desc||"");
   return `<div class="entry cuent compact ${x.kind==="dep"?"dep":x.kind==="xfer"?"xfer":x.kind==="spay"?"spay":""} ${miss.length||dup?"miss":""} ${x.pay==="credit"?"cred":""}">
     <div class="full row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><b style="min-width:0"><bdi>${esc(title)}</bdi></b><span class="num" style="white-space:nowrap"><b>${money(x.amount)}</b></span></div>
@@ -21,7 +21,7 @@ function cuCard(x){
   if(x.kind==="xfer"){ const back=x.dir==="back"; const invs=(x.inv||[]).map(i=>S.cu[i]).filter(Boolean);
     return `<div class="entry cuent xfer">
     <div class="full row" style="justify-content:space-between"><b>${back?"↩️ إرجاع إلى العهدة الرئيسية من":"↔️ تحويل من العهدة الرئيسية إلى"} <bdi class="u">${esc(x.to||"…")}</bdi></b><span class="num"><b>${money(x.amount)}</b> درهم</span></div>
-    ${invs.length?`<div class="full small muted">مقابل: ${invs.map(i=>`<bdi class="u">${esc(i.supplier||tr("فاتورة"))}</bdi> <span class="num">${money(i.amount)}</span>`).join(" · ")}</div>`:""}
+    ${invs.length?`<div class="full small muted">مقابل: ${invs.map(i=>`<bdi class="u">${esc(cuName(i))}</bdi> <span class="num">${money(i.amount)}</span>`).join(" · ")}</div>`:""}
     ${csel(x,"to","الشخص",[["","— اختر —"],...[...new Set([...holders(),...users().map(u=>u.name)])].filter(v=>v!==mainHolder()||x.to===v).map(v=>[v,v])])}${cf(x,"amount","المبلغ (درهم)","number")}
     ${cf(x,"date","التاريخ","date")}${cf(x,"desc","ملاحظة")}
     <div class="full row">${cuThumb(x)}<button data-act="cufile" data-id="${x.id}">${x.fileId?"تغيير الإثبات":"إرفاق إشعار التحويل"}</button>${okBtn(x)}${delBtn(x)}</div></div>`; }
@@ -37,7 +37,7 @@ function cuCard(x){
     <div class="full row">${cuThumb(x)}<button data-act="cufile" data-id="${x.id}">${x.fileId?"تغيير الإثبات":"إرفاق صورة الشيك / التحويل"}</button>${okBtn(x)}${delBtn(x)}</div></div>`;
   const miss=cuMissing(x); const c=cuCat(x.cat); const dup=cuDupOf(x);
   return `<div class="entry cuent ${miss.length||dup?"miss":""} ${x.pay==="credit"?"cred":""}">
-    <div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(x.supplier||tr("فاتورة"))}</bdi></b> · <span class="num">${money(x.amount)}</span> درهم</span>
+    <div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span> درهم</span>
       <span class="row" style="gap:4px">${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:""}${miss.length?`<span class="chip bad">ناقصة: ${miss.map(m=>tr(m)).join("، ")}</span>`:""}<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span></span></div>
     <div class="full small muted">${esc(cuTargetName(x))}${x.autoCar&&x.target==="car:"+x.autoCar?" ("+tr("من رقم اللوحة")+")":""}${c?" · "+esc(c.l):""}${x.by?` · صوّرها: <b>${esc(x.by)}</b>`:""}${x.plate&&!String(x.target||"").startsWith("car:")?` · 🚗 لوحة <bdi dir="ltr">${esc(x.plate)}</bdi> غير مسجّلة في السيارات`:""}</div>
     ${dup?`<div class="full notice small dupbox"><b>⚠️ قد تكون مكررة</b><span>تشبه فاتورة <bdi class="u">${esc(dup.supplier||"")}</bdi> بمبلغ <span class="num">${money(dup.amount)}</span> بتاريخ <span class="num">${esc(dup.date||"")}</span>${dup.by?" — "+tr("صوّرها: ")+esc(dup.by):""}.</span><div class="row">${delBtn(x)}<button class="ghost" data-act="cudupok" data-id="${x.id}">ليست مكررة</button></div></div>`:""}
@@ -65,9 +65,12 @@ function cuPickHtml(){
    ${carFirst?carBtns+`<h4>🏗️ المواقع</h4>`+siteBtns:siteBtns+carBtns}
    <div class="cupk"><button class="pkbtn gen" data-act="cupick" data-t="gen">🏢 عام (الشركة)</button></div></div>`;
 }
+function salaryBanner(){ if(!isAdmin()||!S.cuLoaded) return ""; const k=salaryDue(); if(!k) return "";
+  return `<div class="panel salbox"><div class="row" style="justify-content:space-between;align-items:center"><span><b>👔 ${tr("تذكير: مرتبات")} ${esc(monthName(k))}</b><br><span class="small muted">${tr("لم تُسجَّل بعد في العهدة.")}</span></span>
+    <button class="primary" data-act="cusalary" data-m="${k}">✍️ ${tr("سجّل المرتبات")}</button></div></div>`; }
 function cuHome(){
   const c=cuCalc();
-  return `<button class="cuhome" data-act="cuopen"><span class="qic">💼</span><span class="cuh-t"><b>العهدة والموردون</b><span class="small muted">${c.isLow?`<span class="chip bad">⚠️ رصيد العهدة منخفض</span> `:""}${c.miss?`<span class="chip bad">🔎 <span class="num">${c.miss}</span> للمراجعة</span>`:c.isLow?"":tr("الفواتير والتوريدات وحسابات الموردين")}</span></span>
+  return salaryBanner()+`<button class="cuhome" data-act="cuopen"><span class="qic">💼</span><span class="cuh-t"><b>العهدة والموردون</b><span class="small muted">${c.isLow?`<span class="chip bad">⚠️ رصيد العهدة منخفض</span> `:""}${c.miss?`<span class="chip bad">🔎 <span class="num">${c.miss}</span> للمراجعة</span>`:c.isLow?"":tr("الفواتير والتوريدات وحسابات الموردين")}</span></span>
     <span class="cuh-n"><span class="small muted">رصيد العهدة</span><b class="num">${money(c.mainBal)}</b>${c.owed>0?`<span class="small muted">للموردين <b class="num">${money(c.owed)}</b></span>`:""}</span></button>`;
 }
 function meBox(){ return !cuMe?`<div class="panel notice"><b>اكتب اسمك مرة واحدة</b><span class="small">ليظهر من صوّر كل فاتورة.</span><label>اسمك<input id="cu-me" data-cume="1" value="" placeholder="مثال: أحمد"></label></div>`:""; }
@@ -80,7 +83,7 @@ function buyerView(){
   <button class="primary buybig" data-act="cuscan" data-cam="1"><span>📷</span><b>صوّر الفاتورة</b></button>
   <div class="row" style="justify-content:center"><button class="ghost" data-act="cuscan">🖼️ من المعرض</button></div>
   <h2 style="margin-top:14px">آخر فواتيري</h2>
-  ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(x.supplier||tr("فاتورة"))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<span class="chip done">✓</span>`}</div>
+  ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<span class="chip done">✓</span>`}</div>
     <div class="full small muted">${esc(cuTargetName(x))} · <span class="num">${esc(x.date||"")}</span>${!x.target?` · <button class="ghost small" data-act="cupickopen" data-id="${x.id}">اختر الموقع</button>`:""}</div></div>`; }).join("")}</div>`:`<div class="empty">لم تصوّر فواتير بعد.</div>`}`;
 }
 function cuView(){
@@ -92,7 +95,7 @@ function cuView(){
   let body;
   if(cur[0]==="sup") body=supView();
   else { const list=all.filter(cur[2]).filter(x=>!S.cuH||delta(x,S.cuH)!==0||(isExp(x)&&holderOf(x)===S.cuH)); body=list.length?`<div class="list">${list.map(cuCard).join("")}</div>`:`<div class="empty">${cur[0]==="miss"?"لا توجد فواتير تحتاج مراجعة. ✓":"لا يوجد شيء هنا بعد في الفترة الحالية."}</div>`; }
-  return header("💼 العهدة والموردون") + meBox() + `
+  return header("💼 العهدة والموردون") + meBox() + salaryBanner() + `
   <div class="panel"><div class="mini cumini">
     <div class="hl"><span class="small">${HS.length?"رصيد العهدة الرئيسية":"رصيد العهدة"}</span><b class="num">${money(c.mainBal)}</b></div>
     <div><span class="muted small">التوريدات${last?" (الفترة)":""}</span><b class="num">${money(pc.dep)}</b></div>

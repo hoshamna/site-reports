@@ -14,7 +14,7 @@ const MOCK = fs.readFileSync(path.join(__dirname, "mock-supabase.js"), "utf8")
   .replace("__H2__", sha("aseel|u2|5678"));
 
 // internals the tests may call; the list is checked so a rename fails loudly
-const HOOK = `window.__T={get S(){return S},get cuMe(){return cuMe},render,save,cuPut,users,calc,schedule,costs,laborAmt,supKey,supMatch,supCanon,cuCats,cuGuessCat,cuMissing,cuCalc,holderBal,delta,isExp,money};\n`;
+const HOOK = `window.__T={get S(){return S},get cuMe(){return cuMe},render,save,cuPut,users,calc,schedule,costs,laborAmt,supKey,supMatch,supCanon,cuCats,cuGuessCat,cuMissing,cuName,prevMonthOf,salaryDesc,salaryDue,cuCalc,holderBal,delta,isExp,money};\n`;
 
 function serve() {
   return new Promise((resolve) => {

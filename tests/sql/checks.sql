@@ -78,3 +78,10 @@ select pg_temp.expect((select v from r where k = 'x_sites') = '0', 'an account w
 reset request.jwt.claim.sub;
 do $$ begin for i in 1..35 loop perform public.make_backup('auto'); end loop; end $$;
 select pg_temp.expect((select count(*) from backups where kind = 'auto') = 30, 'only the last 30 automatic backups are kept');
+
+-- reminder key is readable by the server only
+set role authenticated; set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+do $$ begin perform 1 from app_secrets; insert into r values ('sec', 'allowed'); exception when others then insert into r values ('sec', 'denied'); end $$;
+reset role; reset request.jwt.claim.sub;
+select pg_temp.expect((select v from r where k = 'sec') = 'denied', 'the reminder key is hidden even from full-access users');
+select pg_temp.expect(length((select value from app_secrets where id = 'cron')) = 64, 'a random reminder key was created');

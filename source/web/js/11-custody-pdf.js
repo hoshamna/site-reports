@@ -33,7 +33,7 @@ async function makeHolderPdf(h, range){
   const all=mov.filter(x=>rel(x)&&inR(x)).sort((a,b)=>dateOf(a).localeCompare(dateOf(b))||(a.createdAt||0)-(b.createdAt||0));
   const opening=range?mov.filter(x=>dateOf(x)<range.from).reduce((a,x)=>a+delta(x,h),0):0;
   const inn=all.reduce((a,x)=>a+Math.max(0,delta(x,h)),0), out=all.reduce((a,x)=>a+Math.max(0,-delta(x,h)),0), closing=opening+inn-out;
-  const label=x=>x.kind==="dep"?tr("توريد من المدير العام"):x.kind==="xfer"?(x.dir==="back"?tr("إرجاع من ")+x.to:(h==="main"?tr("تحويل إلى ")+x.to:tr("تحويل من العهدة الرئيسية"))):x.kind==="spay"?tr("سداد للمورد: ")+x.supplier:(x.supplier||tr("فاتورة"));
+  const label=x=>x.kind==="dep"?tr("توريد من المدير العام"):x.kind==="xfer"?(x.dir==="back"?tr("إرجاع من ")+x.to:(h==="main"?tr("تحويل إلى ")+x.to:tr("تحويل من العهدة الرئيسية"))):x.kind==="spay"?tr("سداد للمورد: ")+x.supplier:cuName(x);
   let run=opening; const B=[];
   B.push(`<div class="rb"><h2>ملخص العهدة</h2><p style="font-size:12px;color:#5d6b73;margin:0 0 8px">الفترة: ${range?`من <span class="num">${fmtD(range.from)}</span> إلى <span class="num">${fmtD(range.to)}</span>`:`من البداية حتى <span class="num">${today()}</span>`}</p>
     <div class="kv" style="grid-template-columns:repeat(4,1fr)"><div>الرصيد الافتتاحي<b class="num">${money(opening)}</b></div><div>الوارد<b class="num">${money(inn)}</b></div><div>المنصرف<b class="num">${money(out)}</b></div><div class="hl">${closing<0&&h!=="main"?tr("المستحق له"):tr("الرصيد الختامي")}<b class="num">${money(closing<0&&h!=="main"?-closing:closing)}</b></div></div></div>`);

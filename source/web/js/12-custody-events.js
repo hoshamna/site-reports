@@ -9,6 +9,7 @@ app.addEventListener("input", e=>{ const t=e.target;
   if(k==="pay"&&x.pay==="credit"&&x.supplier&&!isCreditSup(x.supplier)){ S.settings.cuCredit=[...cuCredit(),x.supplier.trim()]; settingsSave(); }
   if(k==="supplier"&&isCreditSup(x.supplier)) x.pay="credit";
   if(k==="target"&&String(x.target).startsWith("car:")&&(cuCat(x.cat)||{}).t!=="car") x.cat="fuel";
+  if(k==="cat"&&x.cat==="salary"){ if(!x.salMonth) x.salMonth=prevMonthOf(x.date); if(!String(x.desc||"").trim()) x.desc=salaryDesc(x.salMonth); }
   x.updatedAt=Date.now();
   if(t.tagName==="SELECT") render();
   else { const card=t.closest(".cuent"); card&&card.querySelectorAll(".cunsaved,.cucx").forEach(el=>el.hidden=false); }
@@ -40,8 +41,10 @@ app.addEventListener("click", async e=>{
   else if(a==="cupickx"){ S.cuPick=null; toast("حُفظت الفاتورة، اختر الموقع لاحقاً"); render(); }
   else if(a==="cureread"&&x){ try{ const r=await mediaFetch(x.fileId); if(!r.ok) throw 0; const bl=await r.blob(); const f=bl.type&&bl.type.startsWith("image/")?bl:new Blob([bl],{type:"image/jpeg"}); await cuRead(id,f); }catch(err){ toast("تعذر فتح صورة الفاتورة"); } }
   else if(a==="cupickopen"&&x){ S.cuPick=id; S.cuPre=null; render(); }
-  else if(a==="cumanual"){ if(!needMe()) return;
-    const nx={id:uid(),kind:"exp",by:cuMe,holder:"main",target:"gen",cat:"",pay:"cash",supplier:"",amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};
+  else if(a==="cumanual"||a==="cusalary"){ if(!needMe()) return;
+    const sk=a==="cusalary"?(b.dataset.m||salaryDue()||prevMonthOf(today())):null;
+    const nx={id:uid(),kind:"exp",by:cuMe,holder:"main",target:"gen",cat:sk?"salary":"",pay:"cash",supplier:"",amount:0,date:today(),desc:sk?salaryDesc(sk):"",fileId:null,fileType:null,createdAt:Date.now()};
+    if(sk) nx.salMonth=sk; if(a==="cusalary") S.view="cust";
     S.cuF="all"; S.cuEdit=nx.id; cuPut(nx,true); render();
     setTimeout(()=>{ const el=document.getElementById("cu-"+nx.id+"-amount"); if(el){ el.scrollIntoView({block:"center"}); el.focus(); } },80); }
   else if(a==="cudep"){ if(!needMe()) return; const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;

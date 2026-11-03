@@ -122,6 +122,21 @@ const inPeriod=(x,from,to)=>x.kind!=="close"&&(x.createdAt||0)>(from?from.create
 function periodCalc(list,opening){ const sum=f=>list.filter(f).reduce((a,x)=>a+n(x.amount),0);
   const dep=sum(x=>x.kind==="dep"), cash=sum(isCashX), credit=sum(x=>isExp(x)&&x.pay==="credit"), spCash=sum(x=>x.kind==="spay"&&x.method==="cash");
   return {opening,dep,cash,credit,spCash,closing:opening+dep-cash-spCash}; }
+// salaries: an entry in month M is for month M-1; the reminder from the 25th of M is for month M
+const MONTHS_AR=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+const MONTHS_EN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ym=(y,m)=>y+"-"+String(m).padStart(2,"0");
+function prevMonthOf(date){ const [y,m]=String(date||today()).split("-").map(Number); return m===1?ym(y-1,12):ym(y,m-1); }
+function monthName(k){ const [y,m]=k.split("-").map(Number); return (lang==="en"?MONTHS_EN:MONTHS_AR)[m-1]+" "+y; }
+function salaryDesc(k){ return (lang==="en"?"Salaries ":"مرتبات ")+monthName(k); }
+// which month an existing salary entry covers: its own field, else the month before its date (as entered so far)
+const salMonthOf=x=>x.salMonth||prevMonthOf(x.date);
+function salaryDue(){ const t=today(), [y,m,dd]=t.split("-").map(Number);
+  const k=dd>=25?ym(y,m):(dd<=10?prevMonthOf(t):null); if(!k) return null;
+  const done=Object.values(S.cu).some(x=>isExp(x)&&x.cat==="salary"&&salMonthOf(x)===k); return done?null:k; }
+// what an expense is called in lists and statements: supplier, else its description, else its category; "فاتورة" only when there is a document
+function cuName(x){ const sup=String(x.supplier||"").trim(); if(sup) return sup; const ds=String(x.desc||"").trim(); if(ds) return ds;
+  const c=x.cat&&cuCat(x.cat); if(c) return c.l.replace(/^\S+\s/,""); return x.fileId?tr("فاتورة"):tr("مصروف"); }
 function cuMissing(x){ const m=[]; if(x.reading) return m; if(!(n(x.amount)>0)) m.push("المبلغ"); if(!x.target) m.push("الموقع"); if(!String(x.supplier||"").trim()&&x.cat!=="salary") m.push("المورد"); return m; }
 function cuCalc(){
   const all=Object.values(S.cu); const sum=f=>all.filter(f).reduce((a,x)=>a+n(x.amount),0);

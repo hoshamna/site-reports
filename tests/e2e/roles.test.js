@@ -69,7 +69,50 @@ test("an expense without an invoice (e.g. salaries) is deducted from custody", a
   assert.equal(x.amount, 3000); assert.equal(x.cat, "salary"); assert.equal(x.target, "gen");
   assert.equal(await app.eval(() => __T.holderBal("main")), before - 3000, "balance goes down by the amount");
   assert.equal(await app.eval((i) => __T.cuMissing(__T.S.cu[i]).length, id), 0, "a salary needs no supplier");
+  assert.match(await app.eval((i) => __T.cuName(__T.S.cu[i]), id), /^مرتبات /, "listed as salaries of a month, not as an invoice");
+  assert.ok(!(await app.text()).includes("فاتورة · 3,000"), "card title is not 'invoice'");
+  assert.equal(await app.eval(() => __T.cuName({ desc: "دفعة خاصة", cat: "salary" })), "دفعة خاصة", "a written description wins");
+  assert.equal(await app.eval(() => __T.cuName({ cat: "salary" })), "المرتبات", "no description: the category name");
+  assert.equal(await app.eval(() => __T.cuName({ fileId: "f1" })), "فاتورة", "a photographed invoice with nothing else is still 'invoice'");
   await page.waitForTimeout(800);
   assert.equal(JSON.stringify((await app.db()).custody[id] && (await app.db()).custody[id].data.amount), "3000", "saved");
+  assert.deepEqual(app.errors, []);
+});
+
+test("salaries are for the previous month, with a reminder from the 25th", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  const { page } = app;
+  await app.login("هشام", "1234");
+  await page.clock.setFixedTime(new Date("2026-11-03T09:00:00+04:00"));
+
+  await t.test("entered on 3 November → October salaries", async () => {
+    assert.equal(await app.eval(() => __T.prevMonthOf("2026-11-03")), "2026-10");
+    assert.equal(await app.eval(() => __T.prevMonthOf("2027-01-05")), "2026-12", "January entry is for December of the year before");
+    await app.eval(() => { __T.S.view = "cust"; __T.render(); });
+    await page.click('[data-act="cumanual"]'); await page.waitForTimeout(200);
+    const id = await app.eval(() => __T.S.cuEdit);
+    await page.selectOption(`[data-cu="${id}.cat"]`, "salary");
+    const x = await app.eval((i) => __T.S.cu[i], id);
+    assert.equal(x.desc, "مرتبات أكتوبر 2026"); assert.equal(x.salMonth, "2026-10");
+    assert.equal(await app.eval((i) => __T.cuName(__T.S.cu[i]), id), "مرتبات أكتوبر 2026");
+  });
+
+  await t.test("the reminder shows from the 25th and clears once salaries are recorded", async () => {
+    await page.clock.setFixedTime(new Date("2026-11-15T09:00:00+04:00"));
+    assert.equal(await app.eval(() => __T.salaryDue()), null, "no reminder mid-month");
+    await page.clock.setFixedTime(new Date("2026-11-25T10:00:00+04:00"));
+    assert.equal(await app.eval(() => __T.salaryDue()), "2026-11", "on the 25th: November salaries");
+    await app.eval(() => { __T.S.view = "list"; __T.render(); });
+    assert.match(await app.text(), /تذكير: مرتبات نوفمبر 2026/);
+    await page.click('[data-act="cusalary"]'); await page.waitForTimeout(300);
+    const id = await app.eval(() => __T.S.cuEdit);
+    const x = await app.eval((i) => __T.S.cu[i], id);
+    assert.deepEqual([x.cat, x.salMonth, x.desc], ["salary", "2026-11", "مرتبات نوفمبر 2026"]);
+    await page.fill(`#cu-${id}-amount`, "15000"); await page.click(`[data-act="cuok2"][data-id="${id}"]`); await page.waitForTimeout(400);
+    assert.equal(await app.eval(() => __T.salaryDue()), null, "reminder gone after recording");
+    await page.clock.setFixedTime(new Date("2026-12-03T10:00:00+04:00"));
+    assert.equal(await app.eval(() => __T.salaryDue()), null, "still done in early December (November was recorded)");
+  });
   assert.deepEqual(app.errors, []);
 });

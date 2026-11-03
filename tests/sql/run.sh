@@ -13,5 +13,6 @@ run -f "$SB/security-setup.sql"
 run -f "$SB/security-setup.sql"   # must be safe to run twice
 grep -v 'pg_cron\|cron\.schedule' "$SB/backup-setup.sql" > "/tmp/backup-nocron-$$.sql"   # pg_cron is not in plain Postgres
 run -f "/tmp/backup-nocron-$$.sql"; rm -f "/tmp/backup-nocron-$$.sql"
+grep -v 'pg_net\|pg_cron\|cron\.\|net\.http_post\|^  \|^\$job\$' "$SB/reminders-setup.sql" > "/tmp/rem-$$.sql"; run -f "/tmp/rem-$$.sql"; rm -f "/tmp/rem-$$.sql"
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -f checks.sql 2>&1 | sed -n -e 's/^.*NOTICE:  //p' -e 's/^.*ERROR:  /❌ /p'; [ "${PIPESTATUS[0]}" -eq 0 ] || exit 1
 echo "SQL checks passed"

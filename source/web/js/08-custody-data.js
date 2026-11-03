@@ -11,6 +11,7 @@ const CATS0 = [
  ["acc","⚙️ إكسسوارات","site",/handle|hinge|lock|screw|bolt|مقبض|مفصل|قفل|براغي|مسامير|accessor|اكسسوار|إكسسوار/i],
  ["equip","🏗️ معدات وإيجارات","site",/scaffold|سقالة|crane|رافعة|rent|إيجار|ايجار|generator|مولد/i],
  ["trans","🚚 نقل وتوصيل","site",/transport|delivery|نقل|توصيل|شحن|freight/i],
+ ["salary","👔 المرتبات","gen",/salar(y|ies)|payroll|wages?\b|راتب|رواتب|مرتب|مرتبات|أجور|اجور/i],
  ["labor","👷 عمالة خارجية","site",/labou?r|عمال|عمالة|subcontract|مقاول/i],
  ["print","📐 مخططات وطباعة","site",/\bprint(ing|s)?\b|plott|blueprint|\bA[0-3]\b|طباع|مخطط|تصوير مستندات|copy ?cent/i],
  ["tools","🛠️ عدد وأدوات","gen",/tool|drill|دريل|منشار|saw|عدة|أدوات|ادوات|blade|شفرة/i],

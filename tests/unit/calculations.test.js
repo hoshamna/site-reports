@@ -44,3 +44,13 @@ test("calculations", async (t) => {
   });
   assert.deepEqual(app.errors, []);
 });
+
+test("custody categories", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  await app.login("هشام", "1234");
+  await t.test("salaries is a company expense category, recognised from the invoice text", async () => {
+    const c = await app.eval(() => { const x = __T.cuCats().find((k) => k.k === "salary"); return x && { l: x.l, t: x.t, guess: __T.cuGuessCat("رواتب العمال لشهر أكتوبر"), guessEn: __T.cuGuessCat("October payroll") }; });
+    assert.deepEqual(c, { l: "👔 المرتبات", t: "gen", guess: "salary", guessEn: "salary" });
+  });
+});

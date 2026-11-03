@@ -950,6 +950,7 @@ function render(){
   else if(S.view==="cust" && isAdmin()){ app.innerHTML = cuView(); }
   else { S.view="list"; app.innerHTML = listView(); }
   if(S.cuPick) app.insertAdjacentHTML("beforeend", cuPickHtml());
+  if(S.logoutAsk) app.insertAdjacentHTML("beforeend", logoutSheet());
   app.classList.toggle("has-sheet", !!(S.view==="site"&&S.tab==="plan"&&S.sel));
   if(S.canWrite===false||S.canFiles===false){ const nb=document.createElement("div"); nb.className="notice small ro"; nb.innerHTML=S.canWrite===false?`<b>👁️ صلاحيتك على هذه الصفحة «مشاهدة فقط».</b> لا يُحفظ أي تعديل تقوم به. اطلب من المالك أن يغيّر صلاحيتك إلى «مساهم» لتسجيل البيانات، أو «محرر» لرفع الصور أيضاً.`:`<b>📷 صلاحيتك لا تسمح برفع الصور.</b> تستطيع تسجيل البيانات، أما رفع الصور والفواتير فيحتاج صلاحية «محرر» من المالك.`; app.insertBefore(nb,app.children[1]||null); }
   if(S.view==="site") app.querySelectorAll(".panel").forEach(pn=>{ if(pn.querySelector(".savebar")||!pn.querySelector('input:not([type=checkbox]):not([type=file]):not([type=radio]),textarea')) return;
@@ -2213,7 +2214,7 @@ function onAuth(st){
   else if(S.setLoaded&&!S.loginList) loadLoginList();
   if(!document.activeElement || !document.activeElement.matches("input,textarea,select") || was!==(S.user&&S.user.id)) render(); }
 async function logout(){ S.view="list"; S.loginPick=null; S.cuPick=null; S.sites={}; S.cu={}; S.mk={}; try{ await AU().signOut(); }catch(e){} S.user=null; S.loginList=null; loadLoginList(); render(); }
-function userChip(){ return S.user?`<span class="userchip"><bdi class="u">${esc(S.user.name)}</bdi><button class="ghost xs" data-act="aumypin" aria-label="تغيير رمز الدخول">🔑</button><button class="logoutbtn" data-act="aulogoutask"><span aria-hidden="true">🚪</span> <span>خروج</span></button></span>${S.logoutAsk?logoutSheet():""}`:""; }
+function userChip(){ return S.user?`<span class="userchip"><bdi class="u">${esc(S.user.name)}</bdi><button class="ghost xs" data-act="aumypin" aria-label="تغيير رمز الدخول">🔑</button><button class="logoutbtn" data-act="aulogoutask"><span aria-hidden="true">🚪</span> <span>خروج</span></button></span>`:""; }
 function logoutSheet(){ return `<div class="sheet logoutsheet" role="dialog" aria-label="تسجيل الخروج؟"><h3>🚪 <span>تسجيل الخروج؟</span></h3><p class="muted" style="margin:4px 0 12px"><span>ستحتاج إلى رمز الدخول (PIN) للدخول مرة أخرى.</span></p><div class="row"><button class="logoutyes big" data-act="aulogout">نعم، خروج</button><button class="ghost" data-act="aulogoutno">إلغاء</button></div></div>`; }
 function pinChangeView(){ const forced=!!S.user.mustChange;
   return `<div class="top"><div class="brand"><span class="eyebrow u">${esc(coName())}</span><h1>🔑 ${forced?"اختر رمز دخول جديداً":"تغيير رمز الدخول"}</h1></div><button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"English"}</bdi></button></div>

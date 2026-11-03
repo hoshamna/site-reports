@@ -15,6 +15,7 @@ function render(){
   else if(S.view==="cust" && isAdmin()){ app.innerHTML = cuView(); }
   else { S.view="list"; app.innerHTML = listView(); }
   if(S.cuPick) app.insertAdjacentHTML("beforeend", cuPickHtml());
+  if(S.logoutAsk) app.insertAdjacentHTML("beforeend", logoutSheet());
   app.classList.toggle("has-sheet", !!(S.view==="site"&&S.tab==="plan"&&S.sel));
   if(S.canWrite===false||S.canFiles===false){ const nb=document.createElement("div"); nb.className="notice small ro"; nb.innerHTML=S.canWrite===false?`<b>👁️ صلاحيتك على هذه الصفحة «مشاهدة فقط».</b> لا يُحفظ أي تعديل تقوم به. اطلب من المالك أن يغيّر صلاحيتك إلى «مساهم» لتسجيل البيانات، أو «محرر» لرفع الصور أيضاً.`:`<b>📷 صلاحيتك لا تسمح برفع الصور.</b> تستطيع تسجيل البيانات، أما رفع الصور والفواتير فيحتاج صلاحية «محرر» من المالك.`; app.insertBefore(nb,app.children[1]||null); }
   if(S.view==="site") app.querySelectorAll(".panel").forEach(pn=>{ if(pn.querySelector(".savebar")||!pn.querySelector('input:not([type=checkbox]):not([type=file]):not([type=radio]),textarea')) return;

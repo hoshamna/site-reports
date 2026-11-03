@@ -39,6 +39,13 @@ test("sign-in, PIN rules and user management", async (t) => {
   await t.test("sign-out asks first, and Cancel keeps you in", async () => {
     await app.page.click(".logoutbtn");
     assert.ok(await app.page.isVisible(".logoutsheet"));
+    // the title and both buttons must be readable (not white on the white sheet)
+    const look = await app.eval(() => { const c = (sel) => getComputedStyle(document.querySelector(sel));
+      return { sheet: c(".logoutsheet").backgroundColor, title: c(".logoutsheet h3").color, yes: c('[data-act="aulogout"]').backgroundColor, yesText: c('[data-act="aulogout"]').color, no: c('[data-act="aulogoutno"]').color }; });
+    assert.notEqual(look.title, look.sheet, "title readable");
+    assert.notEqual(look.no, look.sheet, "Cancel readable");
+    assert.notEqual(look.yes, look.sheet, "Sign out button has its own colour");
+    assert.equal(look.yes, "rgb(178, 58, 58)", "Sign out button is red");
     await app.page.click('[data-act="aulogoutno"]');
     assert.ok(await app.page.isVisible(".logoutbtn"));
     await app.logout();

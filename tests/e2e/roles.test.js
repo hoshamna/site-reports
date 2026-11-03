@@ -50,3 +50,26 @@ test("roles: buyer, admin reconciliation, engineer", async (t) => {
   });
   assert.deepEqual(app.errors, []);
 });
+
+test("an expense without an invoice (e.g. salaries) is deducted from custody", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  const { page } = app;
+  await app.login("هشام", "1234");
+  await app.eval(() => { __T.S.view = "cust"; __T.render(); });
+  const before = await app.eval(() => __T.holderBal("main"));
+  await page.click('[data-act="cumanual"]');
+  await page.waitForTimeout(300);
+  const id = await app.eval(() => __T.S.cuEdit);
+  await page.fill(`#cu-${id}-amount`, "3000");
+  await page.selectOption(`[data-cu="${id}.cat"]`, "salary");
+  await page.click(`[data-act="cuok2"][data-id="${id}"]`);   // edits are kept until ✓ موافق
+  await page.waitForTimeout(1200);
+  const x = await app.eval((i) => __T.S.cu[i], id);
+  assert.equal(x.amount, 3000); assert.equal(x.cat, "salary"); assert.equal(x.target, "gen");
+  assert.equal(await app.eval(() => __T.holderBal("main")), before - 3000, "balance goes down by the amount");
+  assert.equal(await app.eval((i) => __T.cuMissing(__T.S.cu[i]).length, id), 0, "a salary needs no supplier");
+  await page.waitForTimeout(800);
+  assert.equal(JSON.stringify((await app.db()).custody[id] && (await app.db()).custody[id].data.amount), "3000", "saved");
+  assert.deepEqual(app.errors, []);
+});

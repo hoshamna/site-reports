@@ -40,6 +40,10 @@ app.addEventListener("click", async e=>{
   else if(a==="cupickx"){ S.cuPick=null; toast("حُفظت الفاتورة، اختر الموقع لاحقاً"); render(); }
   else if(a==="cureread"&&x){ try{ const r=await mediaFetch(x.fileId); if(!r.ok) throw 0; const bl=await r.blob(); const f=bl.type&&bl.type.startsWith("image/")?bl:new Blob([bl],{type:"image/jpeg"}); await cuRead(id,f); }catch(err){ toast("تعذر فتح صورة الفاتورة"); } }
   else if(a==="cupickopen"&&x){ S.cuPick=id; S.cuPre=null; render(); }
+  else if(a==="cumanual"){ if(!needMe()) return;
+    const nx={id:uid(),kind:"exp",by:cuMe,holder:"main",target:"gen",cat:"",pay:"cash",supplier:"",amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};
+    S.cuF="all"; S.cuEdit=nx.id; cuPut(nx,true); render();
+    setTimeout(()=>{ const el=document.getElementById("cu-"+nx.id+"-amount"); if(el){ el.scrollIntoView({block:"center"}); el.focus(); } },80); }
   else if(a==="cudep"){ if(!needMe()) return; const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
     const lbl=b.querySelector("b")||b; b.classList.add("busy"); lbl.textContent=tr("جارٍ الرفع…");
     const nx={id:uid(),kind:"dep",by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};

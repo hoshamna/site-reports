@@ -122,7 +122,7 @@ const inPeriod=(x,from,to)=>x.kind!=="close"&&(x.createdAt||0)>(from?from.create
 function periodCalc(list,opening){ const sum=f=>list.filter(f).reduce((a,x)=>a+n(x.amount),0);
   const dep=sum(x=>x.kind==="dep"), cash=sum(isCashX), credit=sum(x=>isExp(x)&&x.pay==="credit"), spCash=sum(x=>x.kind==="spay"&&x.method==="cash");
   return {opening,dep,cash,credit,spCash,closing:opening+dep-cash-spCash}; }
-function cuMissing(x){ const m=[]; if(x.reading) return m; if(!(n(x.amount)>0)) m.push("المبلغ"); if(!x.target) m.push("الموقع"); if(!String(x.supplier||"").trim()) m.push("المورد"); return m; }
+function cuMissing(x){ const m=[]; if(x.reading) return m; if(!(n(x.amount)>0)) m.push("المبلغ"); if(!x.target) m.push("الموقع"); if(!String(x.supplier||"").trim()&&x.cat!=="salary") m.push("المورد"); return m; }
 function cuCalc(){
   const all=Object.values(S.cu); const sum=f=>all.filter(f).reduce((a,x)=>a+n(x.amount),0);
   const dep=sum(x=>x.kind==="dep"), cash=sum(isCashX), credit=sum(x=>isExp(x)&&x.pay==="credit");

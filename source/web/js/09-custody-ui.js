@@ -104,6 +104,7 @@ function cuView(){
   <div class="qgrid cuq">
     <button class="qbtn" data-act="cuscan" data-cam="1"><span class="qic">📷</span><b>صوّر فاتورة</b><span class="small muted">ثم اختر الموقع</span></button>
     <button class="qbtn" data-act="cuscan"><span class="qic">🖼️</span><b>فاتورة من المعرض</b><span class="small muted">صورة أو PDF</span></button>
+    <button class="qbtn" data-act="cumanual"><span class="qic">✍️</span><b>مصروف بدون فاتورة</b><span class="small muted">مثل المرتبات</span></button>
     <button class="qbtn" data-act="cudep"><span class="qic">📥</span><b>إشعار توريد</b><span class="small muted">صورة إشعار التحويل فقط</span></button>
     <button class="qbtn ${S.busy==="cust"?"busy":""}" data-act="cupdf"><span class="qic">📄</span><b>${S.busy==="cust"?"جارٍ التجهيز…":"كشف العهدة"}</b><span class="small muted">PDF للمدير العام</span></button></div>
   ${pdfNotice("cust")}

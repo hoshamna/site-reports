@@ -1,5 +1,7 @@
 [build]
   publish = "app"
+  # deploy only when the app itself changed (each Netlify deploy uses plan credits)
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- app/"
 
 [[headers]]
   for = "/sw.js"

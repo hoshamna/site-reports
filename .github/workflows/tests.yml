@@ -1,7 +1,8 @@
-name: Tests
+name: Tests and publish
 on:
   push:
   pull_request:
+  workflow_dispatch:
 jobs:
   app:
     name: App (build + browser tests)
@@ -27,3 +28,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash tests/sql/run.sh
+  publish:
+    name: Publish app (GitHub Pages)
+    # only from main, and only after every test passed
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [app, database]
+    runs-on: ubuntu-latest
+    permissions: { pages: write, id-token: write, contents: read }
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    concurrency: { group: pages, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: app }
+      - id: deploy
+        uses: actions/deploy-pages@v4

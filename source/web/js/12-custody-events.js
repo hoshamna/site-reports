@@ -22,9 +22,9 @@ app.addEventListener("click", async e=>{
   const needMe=()=>{ if(cuMe) return true; toast("اكتب اسمك أولاً"); const el=document.getElementById("cu-me")||document.getElementById("cu-me2"); el&&el.focus(); return false; };
   if(a==="cuopen"){ S.view="cust"; S.pick=null; S.cuSup=null; render(); window.scrollTo(0,0); }
   else if(a==="cufilter"){ S.cuF=b.dataset.k; S.cuSup=null; S.cuCar=null; render(); }
-  else if(a==="caropen"){ S.carOpen=!b.closest("details").open; }
-  else if(a==="carp"){ S.carP=b.dataset.k; S.carOpen=true; render(); }
-  else if(a==="carshow"){ S.cuCar=b.dataset.k||null; S.cuF="all"; render(); if(S.cuCar) setTimeout(()=>{ const el=document.querySelector(".cuent"); el&&el.scrollIntoView({block:"start"}); },60); }
+  else if(a==="cucaropen"){ S.carOpen=!b.closest("details").open; }
+  else if(a==="cucarp"){ S.carP=b.dataset.k; S.carOpen=true; render(); }
+  else if(a==="cucarshow"){ S.cuCar=b.dataset.k||null; S.cuF="all"; render(); if(S.cuCar) setTimeout(()=>{ const el=document.querySelector(".cuent"); el&&el.scrollIntoView({block:"start"}); },60); }
   else if(a==="cusetopen"){ S.cuSetOpen=!b.closest("details").open; }
   else if(a==="cuview"){ S.cuView=id; render(); }
   else if(a==="cuviewx"){ S.cuView=null; render(); }

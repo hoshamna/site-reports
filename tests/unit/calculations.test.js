@@ -66,7 +66,7 @@ test("reading failures explain themselves", async (t) => {
   assert.match(await why({ code: "unavailable", message: "something odd" }), /something odd/);
 });
 
-test("a person's invoices come off his custody and never ask for a transfer", async (t) => {
+test("a person's invoices come off his custody; a transfer is asked only for what it does not cover", async (t) => {
   const app = await openApp();
   t.after(() => app.close());
   await app.login("هشام", "1234");
@@ -79,7 +79,7 @@ test("a person's invoices come off his custody and never ask for a transfer", as
     return { step1, step2 };
   });
   assert.deepEqual(r.step1, { bal: 70, ask: false }, "covered by his 100: deducted, no question");
-  assert.deepEqual(r.step2, { bal: -20, short: 20, ask: false }, "not covered: still no question; his card shows 20 owed to him");
+  assert.deepEqual(r.step2, { bal: -20, short: 20, ask: true }, "not covered: asks to transfer only the missing 20");
 });
 
 test("vehicle spending: fuel, maintenance and other per car, for a period", async (t) => {
@@ -101,6 +101,6 @@ test("vehicle spending: fuel, maintenance and other per car, for a period", asyn
   assert.equal(r.victorAll, 90, "all periods include October");
   await app.eval(() => { __T.S.view = "cust"; __T.S.carOpen = true; __T.render(); });
   assert.match(await app.text(), /مصروف السيارات/);
-  await app.page.click('[data-act="carshow"][data-k="Mirage"]');
+  await app.page.click('[data-act="cucarshow"][data-k="Mirage"]');
   assert.equal(await app.page.locator(".cuent").count(), 2, "only Mirage's invoices listed");
 });

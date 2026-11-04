@@ -160,8 +160,8 @@ const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=
 const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");
 const isCashX=x=>isExp(x)&&x.pay!=="credit"&&x.pay!=="gm";
 const holderShort=h=>Math.round(Math.max(0,-holderBal(h))*100)/100;
-// decided 4 Nov 2026: never ask "تم التحويل" per invoice; transfers are recorded only when custody is given
-const needsXfer=()=>false;
+// a person's invoices come off his custody; the transfer question appears only when his balance does not cover them (kept as is, 4 Nov 2026)
+const needsXfer=x=>isCashX(x)&&holderOf(x)!=="main"&&!x.xferId&&n(x.amount)>0&&holderShort(holderOf(x))>0;
 // spending per car in a date range (all payment types): fuel / maintenance / other
 function carSpend(from,to){ const rows={}; carList().forEach(c=>{ rows[c.n]={n:c.n,fuel:0,fix:0,other:0,total:0,count:0}; });
   Object.values(S.cu).forEach(x=>{ if(!isExp(x)||!String(x.target||"").startsWith("car:")) return; const d=dateOf(x); if((from&&d<from)||(to&&d>to)) return;

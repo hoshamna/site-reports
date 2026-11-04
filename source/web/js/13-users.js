@@ -194,7 +194,7 @@ async function readCheque(p, file){
       if((d.payer||d.drawer) && !p.note) p.note=String(d.payer||d.drawer).slice(0,120);
       save(site()); toast(p.method==="transfer"?"تمت قراءة إشعار التحويل، راجع المبلغ والتاريخ":"تمت قراءة الشيك، راجع المبلغ والتاريخ");
     }
-  }catch(e){ toast("تعذرت القراءة، أدخل البيانات يدوياً"); }
+  }catch(e){ toast(tr("تعذرت القراءة، أدخل البيانات يدوياً")+aiWhy(e)); }
 }
 async function attachInvoice(s, p, file, b){
   let f=file;

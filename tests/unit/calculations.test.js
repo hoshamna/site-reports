@@ -54,3 +54,14 @@ test("custody categories", async (t) => {
     assert.deepEqual(c, { l: "👔 المرتبات", t: "gen", guess: "salary", guessEn: "salary" });
   });
 });
+
+test("reading failures explain themselves", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  const why = (e) => app.eval((x) => __T.aiWhy(x), e);
+  assert.match(await why({ code: "unavailable", message: "sign in" }), /لم يتعرّف على دخولك/);
+  assert.match(await why({ code: "unavailable", message: "Your credit balance is too low to access the Anthropic API." }), /رصيد مفتاح Claude/);
+  assert.match(await why({ code: "unavailable", message: "invalid x-api-key" }), /غير صالح/);
+  assert.match(await why({ code: "unavailable", message: "network" }), /لا يوجد اتصال/);
+  assert.match(await why({ code: "unavailable", message: "something odd" }), /something odd/);
+});

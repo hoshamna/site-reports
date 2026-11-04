@@ -1,3 +1,14 @@
+// why the AI reading failed, in words the user can act on (shown after the failure message)
+function aiWhy(e){ const m=String(e&&(e.message||e.text)||e&&e.code||e||"").toLowerCase();
+  let why;
+  if(/sign in|not signed|jwt|401/.test(m)) why=tr("الخادم لم يتعرّف على دخولك — اخرج وادخل مرة أخرى");
+  else if(/credit|balance|billing|quota/.test(m)) why=tr("رصيد مفتاح Claude في Supabase انتهى");
+  else if(/x-api-key|api key|authentication|permission/.test(m)) why=tr("مفتاح Claude في Supabase غير صالح");
+  else if(/overloaded|rate|429|529/.test(m)) why=tr("الخدمة مزدحمة الآن، جرّب بعد دقيقة");
+  else if(/network|failed to fetch|load failed/.test(m)) why=tr("لا يوجد اتصال بالإنترنت");
+  else if(/invalid_json/.test(m)) why=tr("الصورة غير واضحة");
+  else why=String(e&&(e.message||e.code)||"").slice(0,90);
+  return why?" — "+why:""; }
 /* ---- AI reading ---- */
 async function cuRead(id, file){
   const x0=S.cu[id]; if(!x0) return;
@@ -6,7 +17,7 @@ async function cuRead(id, file){
   let d=null;
   try{ const img=await compress(file,1400);
     d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، وتاريخ الفاتورة بصيغة YYYY-MM-DD، ووصفاً مختصراً للمشتريات ${lang==="en"?"باللغة الإنجليزية":"بالعربية الفصحى"} في بضع كلمات. أجب بـ JSON فقط بهذا الشكل: {"supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. invoiceNo هو رقم الفاتورة أو الإيصال. plate هو رقم لوحة السيارة إن كان مكتوباً في الفاتورة (شائع في فواتير الوقود والصيانة). payment هو "cash" إذا كُتب أن الدفع نقدي، أو "credit" إذا كُتب آجل/Credit، وإلا اتركه فارغاً. اترك الحقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
-  }catch(e){ console.warn("cu read",e); toast("تعذرت قراءة الفاتورة، أكمل البيانات يدوياً"); }
+  }catch(e){ console.warn("cu read",e); toast(tr("تعذرت قراءة الفاتورة، أكمل البيانات يدوياً")+aiWhy(e)); }
   const x=S.cu[id]; if(!x) return; delete x.reading;
   if(d&&typeof d==="object"){
     if(d.supplier&&!x.supplier) x.supplier=String(d.supplier).slice(0,120);
@@ -29,7 +40,7 @@ async function cuReadDep(id, file){
   const x0=S.cu[id]; if(!x0||!canRead||!sample) return; x0.reading=true; render(); let d=null;
   try{ const img=await compress(file,1400);
     d=await sample.json(`هذه صورة إثبات دفعة: شيك بنكي أو إشعار تحويل أو سند قبض. استخرج المبلغ والتاريخ. أجب بـ JSON فقط: {"type":"","amount":0,"date":"","chequeNo":"","ref":"","bank":"","payer":""}`,{images:[img],cache:false});
-  }catch(e){ toast("تعذرت القراءة، أدخل المبلغ يدوياً"); }
+  }catch(e){ toast(tr("تعذرت القراءة، أدخل المبلغ يدوياً")+aiWhy(e)); }
   const x=S.cu[id]; if(!x) return; delete x.reading;
   if(d&&typeof d==="object"){ if(n(d.amount)>0) x.amount=n(d.amount); if(/^\d{4}-\d{2}-\d{2}$/.test(d.date||"")) x.date=d.date;
     const ref=[d.chequeNo&&(tr("شيك ")+d.chequeNo),d.ref,d.bank].filter(Boolean).join(" — "); if(ref&&!x.desc) x.desc=String(ref).slice(0,120);

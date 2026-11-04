@@ -86,6 +86,18 @@ function buyerView(){
   ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<span class="chip done">✓</span>`}</div>
     <div class="full small muted">${esc(cuTargetName(x))} · <span class="num">${esc(x.date||"")}</span>${!x.target?` · <button class="ghost small" data-act="cupickopen" data-id="${x.id}">اختر الموقع</button>`:""}</div></div>`; }).join("")}</div>`:`<div class="empty">لم تصوّر فواتير بعد.</div>`}`;
 }
+function carPanel(){
+  const R=carRange(); const rows=carSpend(R.from,R.to); if(!rows.length) return "";
+  const tot=rows.reduce((a,r)=>({fuel:a.fuel+r.fuel,fix:a.fix+r.fix,other:a.other+r.other,total:a.total+r.total}),{fuel:0,fix:0,other:0,total:0});
+  const P=[["this","هذا الشهر"],["last","الشهر الماضي"],["all","الكل"],["custom","من … إلى"]];
+  return `<details class="panel carbox" ${S.carOpen?"open":""}><summary style="cursor:pointer;font-weight:600" data-act="caropen">🚗 مصروف السيارات <span class="small muted">— ${esc(R.label)}</span></summary>
+   <div class="seg pmseg">${P.map(([k,l])=>`<button aria-pressed="${(S.carP||"this")===k}" data-act="carp" data-k="${k}">${tr(l)}</button>`).join("")}</div>
+   ${(S.carP==="custom")?`<div class="grid2"><label>${tr("من")}<input type="date" id="car-from" data-carr="from" value="${esc(S.carFrom||"")}"></label><label>${tr("إلى")}<input type="date" id="car-to" data-carr="to" value="${esc(S.carTo||"")}"></label></div>`:""}
+   <div class="tbl-wrap"><table><tr><th>${tr("السيارة")}</th><th>⛽ ${tr("وقود")}</th><th>🔧 ${tr("صيانة")}</th><th>${tr("أخرى")}</th><th>${tr("الإجمالي")}</th><th>${tr("فواتير")}</th></tr>
+   ${rows.map(r=>`<tr><td><button class="ghost small carname" data-act="carshow" data-k="${esc(r.n)}">🚗 ${esc(r.n)}</button></td><td class="num">${money(r.fuel)}</td><td class="num">${money(r.fix)}</td><td class="num">${money(r.other)}</td><td class="num"><b>${money(r.total)}</b></td><td class="num">${r.count}</td></tr>`).join("")}
+   <tr><th>${tr("الإجمالي")}</th><th class="num">${money(tot.fuel)}</th><th class="num">${money(tot.fix)}</th><th class="num">${money(tot.other)}</th><th class="num">${money(tot.total)}</th><th></th></tr></table></div>
+   <p class="small muted" style="margin:0">${tr("اضغط اسم السيارة لعرض فواتيرها. تُحسب كل الفواتير المسجّلة على حساب السيارة، نقداً أو آجلاً.")}</p></details>`;
+}
 function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
@@ -94,7 +106,7 @@ function cuView(){
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();
-  else { const list=all.filter(cur[2]).filter(x=>!S.cuH||delta(x,S.cuH)!==0||(isExp(x)&&holderOf(x)===S.cuH)); body=list.length?`<div class="list">${list.map(cuCard).join("")}</div>`:`<div class="empty">${cur[0]==="miss"?"لا توجد فواتير تحتاج مراجعة. ✓":"لا يوجد شيء هنا بعد في الفترة الحالية."}</div>`; }
+  else { const list=(S.cuCar?Object.values(S.cu).filter(x=>isExp(x)&&x.target==="car:"+S.cuCar).sort((a,b)=>(b.date||"").localeCompare(a.date||"")):all.filter(cur[2])).filter(x=>!S.cuH||delta(x,S.cuH)!==0||(isExp(x)&&holderOf(x)===S.cuH)); body=list.length?`<div class="list">${list.map(cuCard).join("")}</div>`:`<div class="empty">${cur[0]==="miss"?"لا توجد فواتير تحتاج مراجعة. ✓":"لا يوجد شيء هنا بعد في الفترة الحالية."}</div>`; }
   return header("💼 العهدة والموردون") + meBox() + salaryBanner() + `
   <div class="panel"><div class="mini cumini">
     <div class="hl"><span class="small">${HS.length?"رصيد العهدة الرئيسية":"رصيد العهدة"}</span><b class="num">${money(c.mainBal)}</b></div>
@@ -111,9 +123,11 @@ function cuView(){
     <button class="qbtn" data-act="cudep"><span class="qic">📥</span><b>إشعار توريد</b><span class="small muted">صورة إشعار التحويل فقط</span></button>
     <button class="qbtn ${S.busy==="cust"?"busy":""}" data-act="cupdf"><span class="qic">📄</span><b>${S.busy==="cust"?"جارٍ التجهيز…":"كشف العهدة"}</b><span class="small muted">PDF للمدير العام</span></button></div>
   ${pdfNotice("cust")}
+  ${carPanel()}
   ${HS.length?`<div class="panel"><h2>العُهد</h2><div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
       return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):tr("الرصيد")}</span></button>
       ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له المستحق <span class="num">${money(holderShort(h))}</span></button>`:""}</div>`; }).join("")}</div>
+    ${S.cuCar?`<p class="small" style="margin:0">${tr("عرض فواتير")}: <b>🚗 ${esc(S.cuCar)}</b> <button class="ghost xs" data-act="carshow" data-k="">✕ إلغاء التصفية</button></p>`:""}
     ${S.cuH?`<p class="small" style="margin:0">عرض حركات: <b>${esc(hName(S.cuH))}</b> <button class="ghost xs" data-act="cuhold" data-h="">✕ إلغاء التصفية</button></p>`:""}
     <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:`<div class="row"><button class="ghost" data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div>`}
   <div class="tabs" role="tablist">${F.map(([k,l,fn])=>`<button role="tab" aria-selected="${cur[0]===k}" data-act="cufilter" data-k="${k}">${l}${fn?` <span class="num">${all.filter(fn).length}</span>`:""}</button>`).join("")}</div>

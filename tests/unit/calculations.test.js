@@ -66,7 +66,7 @@ test("reading failures explain themselves", async (t) => {
   assert.match(await why({ code: "unavailable", message: "something odd" }), /something odd/);
 });
 
-test("a person's invoices come off his custody; a transfer is asked only for what it does not cover", async (t) => {
+test("a person's invoices come off his custody and never ask for a transfer", async (t) => {
   const app = await openApp();
   t.after(() => app.close());
   await app.login("هشام", "1234");
@@ -79,5 +79,28 @@ test("a person's invoices come off his custody; a transfer is asked only for wha
     return { step1, step2 };
   });
   assert.deepEqual(r.step1, { bal: 70, ask: false }, "covered by his 100: deducted, no question");
-  assert.deepEqual(r.step2, { bal: -20, short: 20, ask: true }, "not covered: asks to transfer only the missing 20");
+  assert.deepEqual(r.step2, { bal: -20, short: 20, ask: false }, "not covered: still no question; his card shows 20 owed to him");
+});
+
+test("vehicle spending: fuel, maintenance and other per car, for a period", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  await app.login("هشام", "1234");
+  await app.page.clock.setFixedTime(new Date("2026-11-20T10:00:00+04:00"));
+  const r = await app.eval(() => {
+    __T.S.cu = {
+      a: { id: "a", kind: "exp", target: "car:Mirage", cat: "fuel", pay: "cash", amount: 70, date: "2026-11-03" },
+      b: { id: "b", kind: "exp", target: "car:Mirage", cat: "carfix", pay: "credit", amount: 300, date: "2026-11-10" },
+      c: { id: "c", kind: "exp", target: "car:Victor", cat: "fuel", pay: "cash", amount: 50, date: "2026-11-04" },
+      d: { id: "d", kind: "exp", target: "car:Victor", cat: "fuel", pay: "cash", amount: 40, date: "2026-10-28" },
+      e: { id: "e", kind: "exp", target: "s1", cat: "glass", pay: "cash", amount: 999, date: "2026-11-05" } };
+    const nov = __T.carSpend("2026-11-01", "2026-11-30"); const all = __T.carSpend("", "");
+    return { nov: nov.filter((x) => x.count).map((x) => [x.n, x.fuel, x.fix, x.other, x.total, x.count]), victorAll: all.find((x) => x.n === "Victor").fuel };
+  });
+  assert.deepEqual(r.nov, [["Mirage", 70, 300, 0, 370, 2], ["Victor", 50, 0, 0, 50, 1]]);
+  assert.equal(r.victorAll, 90, "all periods include October");
+  await app.eval(() => { __T.S.view = "cust"; __T.S.carOpen = true; __T.render(); });
+  assert.match(await app.text(), /مصروف السيارات/);
+  await app.page.click('[data-act="carshow"][data-k="Mirage"]');
+  assert.equal(await app.page.locator(".cuent").count(), 2, "only Mirage's invoices listed");
 });

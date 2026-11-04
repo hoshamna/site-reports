@@ -372,3 +372,4 @@ label{color:var(--muted);font-weight:500}
 @keyframes vnpulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--bad) 25%,transparent)}}
 @media (prefers-reduced-motion:reduce){.vnrec.on{animation:none}}
 .vnote ul{margin:2px 0 0;padding-inline-start:18px}
+.carbox table td,.carbox table th{text-align:start}.carname{padding:0 4px;min-height:0;font-weight:600;color:var(--fg)}

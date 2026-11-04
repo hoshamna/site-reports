@@ -42,6 +42,8 @@ async function makeHolderPdf(h, range){
     ...all.map(x=>{ const d=delta(x,h); run+=d; return `<tr><td class="num">${esc(dateOf(x))}</td><td>${U(label(x))}${isExp(x)&&(x.pay==="credit"||x.pay==="gm")?" ("+payLbl(x)+")":""}</td><td>${isExp(x)?U(cuTargetName(x)):"—"}</td><td class="num">${d>0?money(d):""}</td><td class="num">${d<0?money(-d):""}</td><td class="num">${money(run)}</td></tr>`; })],
     `<tr><th colspan="5">${tr("الرصيد الختامي")}</th><th class="num">${money(closing)}</th></tr>`)}</div>`);
   const ex=all.filter(x=>isCashX(x)&&holderOf(x)===h);
+  if(h==="main"){ const cr=carSpend(range&&range.from,range&&range.to).filter(r=>r.count);
+    if(cr.length) B.push(`<div class="rb"><h2>مصروف السيارات</h2>${tbl(["السيارة","وقود","صيانة","أخرى","الإجمالي","فواتير"],cr.map(r=>`<tr><td>${U(r.n)}</td><td class="num">${money(r.fuel)}</td><td class="num">${money(r.fix)}</td><td class="num">${money(r.other)}</td><td class="num">${money(r.total)}</td><td class="num">${r.count}</td></tr>`))}</div>`); }
   if(ex.length){ const g={}; ex.forEach(x=>{ const k=cuTargetName(x); g[k]=(g[k]||0)+n(x.amount); }); B.push(`<div class="rb"><h2>المصروف حسب الموقع والسيارة</h2>${tbl(["البند","المبلغ"],Object.entries(g).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${U(k)}</td><td class="num">${money(v)}</td></tr>`),`<tr><th>الإجمالي</th><th class="num">${money(ex.reduce((a,x)=>a+n(x.amount),0))}</th></tr>`)}</div>`); }
   await cuPdf(`كشف ${esc(hName(h))}${range?` من <span class="num">${fmtD(range.from)}</span> إلى <span class="num">${fmtD(range.to)}</span>`:""}`, B, `${tr("كشف")} ${h==="main"?tr("العهدة الرئيسية"):h} ${range?range.from+" - "+range.to:today()}.pdf`, "cust");
 }

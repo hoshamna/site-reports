@@ -160,7 +160,19 @@ const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=
 const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");
 const isCashX=x=>isExp(x)&&x.pay!=="credit"&&x.pay!=="gm";
 const holderShort=h=>Math.round(Math.max(0,-holderBal(h))*100)/100;
-const needsXfer=x=>isCashX(x)&&holderOf(x)!=="main"&&!x.xferId&&n(x.amount)>0&&holderShort(holderOf(x))>0;
+// decided 4 Nov 2026: never ask "تم التحويل" per invoice; transfers are recorded only when custody is given
+const needsXfer=()=>false;
+// spending per car in a date range (all payment types): fuel / maintenance / other
+function carSpend(from,to){ const rows={}; carList().forEach(c=>{ rows[c.n]={n:c.n,fuel:0,fix:0,other:0,total:0,count:0}; });
+  Object.values(S.cu).forEach(x=>{ if(!isExp(x)||!String(x.target||"").startsWith("car:")) return; const d=dateOf(x); if((from&&d<from)||(to&&d>to)) return;
+    const k=x.target.slice(4); const r=rows[k]||(rows[k]={n:k,fuel:0,fix:0,other:0,total:0,count:0}); const a=n(x.amount);
+    if(x.cat==="fuel") r.fuel+=a; else if(x.cat==="carfix") r.fix+=a; else r.other+=a; r.total+=a; r.count++; });
+  return Object.values(rows).sort((a,b)=>b.total-a.total); }
+function carRange(){ const t=today(), [y,m]=t.split("-").map(Number), p=S.carP||"this";
+  if(p==="last"){ const k=prevMonthOf(t); const [py,pm]=k.split("-").map(Number); return {from:k+"-01",to:k+"-"+String(new Date(py,pm,0).getDate()).padStart(2,"0"),label:monthName(k)}; }
+  if(p==="all") return {from:"",to:"",label:tr("كل الفترات")};
+  if(p==="custom") return {from:S.carFrom||"",to:S.carTo||"",label:tr("فترة مخصصة")};
+  return {from:ym(y,m)+"-01",to:t,label:monthName(ym(y,m))}; }
 const hName=h=>h==="main"?tr("💼 العهدة الرئيسية")+(mainHolder()?" — "+mainHolder():""):"🧾 "+tr("عهدة ")+h;
 function cuSuppliers(){
   const g={}; const add=(name)=>{ const k=supCanon(name); const key=supKey(k)||k; return g[key]=g[key]||{name:k,key,inv:[],pay:[]}; };

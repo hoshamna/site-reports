@@ -70,8 +70,8 @@ Deno.serve(async (req) => {
     });
     const j = await r.json();
     if (!r.ok) return json({ error: j?.error?.message ?? `HTTP ${r.status}`, status: r.status }, 502);
-    const text = (j.content ?? []).filter((c: { type: string }) => c.type === "text").map((c: { text: string }) => c.text).join("");
-    return json({ text });
+    const answer = (j.content ?? []).filter((c: { type: string }) => c.type === "text").map((c: { text: string }) => c.text).join("");
+    return json({ text: answer });
   } catch (e) {
     return json({ error: String(e) }, 500);
   }

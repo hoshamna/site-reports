@@ -10,6 +10,7 @@ function compress(file, max=1600, type="image/jpeg"){
     img.src=url;
   });
 }
+const isPdfFile=f=>!!f&&(f.type==="application/pdf"||/\.pdf$/i.test(f.name||""));
 async function pdfPages(file, max=8){
   try{
     const lib=window.pdfjsLib; if(!lib) throw 0;

@@ -50,6 +50,7 @@ async function openApp(options = {}) {
   if (options.init) await ctx.addInitScript(options.init, options.initArg);
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) =>
     r.request().url().includes("supabase-js") ? r.fulfill({ status: 200, contentType: "text/javascript", body: "" }) : r.abort());
+  if (options.routes) await options.routes(ctx); // registered last, so they win over the block above
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));

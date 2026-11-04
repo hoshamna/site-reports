@@ -145,8 +145,10 @@ app.addEventListener("click", async e=>{
     const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
     S.payPick=false; const p={id:uid(),date:today(),amount:0,note:"",chequeNo:"",bank:"",ref:"",method:b.dataset.m||"cheque",fileId:null,fileType:null}; s.payments.push(p); save(s); hold(s);
     b.classList.add("busy"); b.textContent=tr("جارٍ الرفع…");
-    try{ const r=await upload(files[0]); if(r){ p.fileId=r.id; p.fileType=r.type; save(s);
-      if(r.type==="image" && canRead){ b.textContent=tr("جارٍ القراءة…"); await readCheque(p, files[0]); } } }
+    try{ let f=files[0]; if(isPdfFile(f)) f=(await pdfPages(f,1))[0]; // a PDF advice is read from its first page as an image
+      const r=await upload(f); if(r){ p.fileId=r.id; p.fileType=r.type; save(s);
+      if(r.type==="image" && canRead){ b.textContent=tr("جارٍ القراءة…"); await readCheque(p, f); }
+      else if(isPdfFile(f)) toast("تعذر فتح ملف PDF للقراءة، أدخل المبلغ يدوياً أو ارفع لقطة شاشة"); } }
     catch(err){ toast("تعذر رفع الملف، حاول مرة أخرى"); }
     release(s); save(s); if(S.afterTab){ S.tab=S.afterTab; S.afterTab=null; } render();
   }
@@ -225,7 +227,8 @@ app.addEventListener("click", async e=>{
         const r=await upload(file); if(!r) break;
         if(a==="cover"){ dropAsset(s.coverId); s.coverId=r.id; }
         else if(a==="chq"){ const p=s.payments.find(x=>x.id===id); dropAsset(p.fileId); p.fileId=r.id; p.fileType=r.type;
-          if(r.type==="image" && canRead){ save(s); b.textContent=tr("جارٍ قراءة الشيك…"); await readCheque(p, file); } }
+          if(r.type==="image" && canRead){ save(s); b.textContent=tr("جارٍ قراءة الشيك…"); await readCheque(p, file); }
+          else if(isPdfFile(file)) toast("تعذر فتح ملف PDF للقراءة، أدخل المبلغ يدوياً أو ارفع لقطة شاشة"); }
         else if(a==="addquote"){ s.quotes=s.quotes||[]; s.quotes.push({id:uid(),fileId:r.id,fileType:r.type}); }
         else if(a=="addiss"){ const is=s.issues.find(x=>x.id===id); if(is){ dropAsset(is.fileId); is.fileId=r.id; } }
         else s.photos.push({id:uid(),fileId:r.id,caption:"",date:today(),face:b.dataset.face||"",fl:b.dataset.fl||((floors(s)[S.planIdx]||{}).id)||""});

@@ -617,6 +617,7 @@ Object.entries({"💼 العهدة الرئيسية": "💼 Main custody", "ال
 Object.entries({"تم": "Done", "🗑️ تم حذف الموقع": "🗑️ Site deleted", "تم مسح الحدود": "Outline cleared", "✓ تم تسجيل الفاتورة": "✓ Invoice recorded", "✓ تم تسجيل الفاتورة على هذا الموقع": "✓ Invoice recorded for this site", "✓ تم تسجيل توريد ": "✓ Deposit recorded: ", "✓ تم تسجيل التوريد": "✓ Deposit recorded", "تم إنشاء تحويل جديد": "New transfer created", "تم إنشاء سداد جديد": "New payment created", "تم: ليست مكررة": "Marked as not a duplicate", "🗑️ تم حذف البند": "🗑️ Category deleted", "🗑️ تم حذف المستخدم": "🗑️ User deleted"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"💾 النسخ الاحتياطي": "💾 Backup", "لم تُحفظ نسخة بعد": "No backup yet", "آخر نسخة قبل ": "Last backup ", " يوم": " days ago", "ملف واحد فيه كل البيانات: المواقع، والعلامات، والعهدة، والإعدادات. احفظه في مكان آمن مرة كل أسبوع على الأقل. الصور تبقى محفوظة في التخزين ولا تُنسخ داخل الملف.": "One file with all the data: sites, marks, custody and settings. Keep it somewhere safe at least once a week. Photos stay in storage and aren’t copied into the file.", "آخر نسخة: ": "Last backup: ", "💾 تنزيل نسخة احتياطية الآن": "💾 Download a backup now", "📂 استعادة من ملف": "📂 Restore from file", "استعادة نسخة ": "Restore backup ", "فيها ": "It has ", " موقع، و": " sites, ", " حركة عهدة، و": " custody entries and ", " علامة. تُكتب فوق البيانات التي لها نفس المعرّف، ولا يُحذف شيء آخر. المستخدمون الحاليون يبقون كما هم.": " marks. Records with the same ID are overwritten; nothing else is deleted. Current users stay as they are.", "اضغط مرة أخرى لتأكيد الاستعادة": "Tap again to confirm restore", "♻️ استعادة": "♻️ Restore", "✓ تم تنزيل النسخة الاحتياطية": "✓ Backup downloaded", "هذا الملف ليس نسخة احتياطية من التطبيق": "This file isn’t a backup from this app", "✓ تمت الاستعادة: ": "✓ Restored: "}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"💾 يستطيع النسخ الاحتياطي والاستعادة": "💾 Can back up and restore", "يجب أن يبقى شخص واحد على الأقل يستطيع النسخ الاحتياطي": "At least one person must keep backup access", "يستطيع النسخ الاحتياطي": "can back up", "تم إلغاء صلاحية النسخ الاحتياطي": "Backup access removed", "ليست لديك صلاحية النسخ الاحتياطي": "You don’t have backup access"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"تعذر فتح ملف PDF للقراءة، أدخل المبلغ يدوياً أو ارفع لقطة شاشة": "Couldn’t open the PDF to read it; enter the amount by hand or upload a screenshot"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 const PH = Object.keys(EN).sort((a,b)=>b.length-a.length);
 let lang = "ar"; try{ lang = localStorage.getItem("sites-lang")||"ar"; }catch(e){}
 const AR=/[\u0621-\u064A\u0670-\u06D3]/;
@@ -898,6 +899,7 @@ function compress(file, max=1600, type="image/jpeg"){
     img.src=url;
   });
 }
+const isPdfFile=f=>!!f&&(f.type==="application/pdf"||/\.pdf$/i.test(f.name||""));
 async function pdfPages(file, max=8){
   try{
     const lib=window.pdfjsLib; if(!lib) throw 0;
@@ -1534,8 +1536,10 @@ app.addEventListener("click", async e=>{
     const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
     S.payPick=false; const p={id:uid(),date:today(),amount:0,note:"",chequeNo:"",bank:"",ref:"",method:b.dataset.m||"cheque",fileId:null,fileType:null}; s.payments.push(p); save(s); hold(s);
     b.classList.add("busy"); b.textContent=tr("جارٍ الرفع…");
-    try{ const r=await upload(files[0]); if(r){ p.fileId=r.id; p.fileType=r.type; save(s);
-      if(r.type==="image" && canRead){ b.textContent=tr("جارٍ القراءة…"); await readCheque(p, files[0]); } } }
+    try{ let f=files[0]; if(isPdfFile(f)) f=(await pdfPages(f,1))[0]; // a PDF advice is read from its first page as an image
+      const r=await upload(f); if(r){ p.fileId=r.id; p.fileType=r.type; save(s);
+      if(r.type==="image" && canRead){ b.textContent=tr("جارٍ القراءة…"); await readCheque(p, f); }
+      else if(isPdfFile(f)) toast("تعذر فتح ملف PDF للقراءة، أدخل المبلغ يدوياً أو ارفع لقطة شاشة"); } }
     catch(err){ toast("تعذر رفع الملف، حاول مرة أخرى"); }
     release(s); save(s); if(S.afterTab){ S.tab=S.afterTab; S.afterTab=null; } render();
   }
@@ -1614,7 +1618,8 @@ app.addEventListener("click", async e=>{
         const r=await upload(file); if(!r) break;
         if(a==="cover"){ dropAsset(s.coverId); s.coverId=r.id; }
         else if(a==="chq"){ const p=s.payments.find(x=>x.id===id); dropAsset(p.fileId); p.fileId=r.id; p.fileType=r.type;
-          if(r.type==="image" && canRead){ save(s); b.textContent=tr("جارٍ قراءة الشيك…"); await readCheque(p, file); } }
+          if(r.type==="image" && canRead){ save(s); b.textContent=tr("جارٍ قراءة الشيك…"); await readCheque(p, file); }
+          else if(isPdfFile(file)) toast("تعذر فتح ملف PDF للقراءة، أدخل المبلغ يدوياً أو ارفع لقطة شاشة"); }
         else if(a==="addquote"){ s.quotes=s.quotes||[]; s.quotes.push({id:uid(),fileId:r.id,fileType:r.type}); }
         else if(a=="addiss"){ const is=s.issues.find(x=>x.id===id); if(is){ dropAsset(is.fileId); is.fileId=r.id; } }
         else s.photos.push({id:uid(),fileId:r.id,caption:"",date:today(),face:b.dataset.face||"",fl:b.dataset.fl||((floors(s)[S.planIdx]||{}).id)||""});

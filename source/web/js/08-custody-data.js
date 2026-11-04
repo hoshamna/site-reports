@@ -159,7 +159,8 @@ function delta(x,h){ const a=n(x.amount);
 const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=>a+delta(x,h),0);
 const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");
 const isCashX=x=>isExp(x)&&x.pay!=="credit"&&x.pay!=="gm";
-const needsXfer=x=>isCashX(x)&&holderOf(x)!=="main"&&!x.xferId&&n(x.amount)>0;
+const holderShort=h=>Math.round(Math.max(0,-holderBal(h))*100)/100;
+const needsXfer=x=>isCashX(x)&&holderOf(x)!=="main"&&!x.xferId&&n(x.amount)>0&&holderShort(holderOf(x))>0;
 const hName=h=>h==="main"?tr("💼 العهدة الرئيسية")+(mainHolder()?" — "+mainHolder():""):"🧾 "+tr("عهدة ")+h;
 function cuSuppliers(){
   const g={}; const add=(name)=>{ const k=supCanon(name); const key=supKey(k)||k; return g[key]=g[key]||{name:k,key,inv:[],pay:[]}; };

@@ -46,7 +46,7 @@ function cuCard(x){
     ${cf(x,"amount","المبلغ شامل الضريبة (درهم)","number")}${cf(x,"date","التاريخ","date")}
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
     ${x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
-    ${needsXfer(x)?`<div class="full notice small xferbox"><b>⏳ لم تُحوَّل قيمتها إلى <bdi class="u">${esc(holderOf(x))}</bdi> بعد</b><button class="primary" data-act="cuxinv" data-id="${x.id}">↔️ تم تحويل <span class="num">${money(x.amount)}</span> إلى <bdi class="u">${esc(holderOf(x))}</bdi></button></div>`:""}
+    ${needsXfer(x)?`<div class="full notice small xferbox"><b>⏳ ${tr("عهدة")} <bdi class="u">${esc(holderOf(x))}</bdi> ${tr("لا تكفي — المستحق له")} <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span></b><button class="primary" data-act="cuxinv" data-id="${x.id}">↔️ تم تحويل <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span> إلى <bdi class="u">${esc(holderOf(x))}</bdi></button></div>`:""}
     ${x.xferId&&S.cu[x.xferId]?`<div class="full small" style="color:var(--ok)">✓ حُوِّلت قيمتها إلى <bdi class="u">${esc(holderOf(x))}</bdi> بتاريخ <span class="num">${esc(S.cu[x.xferId].date||"")}</span></div>`:""}
     <div class="full row">${cuThumb(x)}${x.fileId&&x.fileType==="image"&&!x.reading&&(!n(x.amount)||!x.supplier)?`<button class="primary" data-act="cureread" data-id="${x.id}">🔄 قراءة الفاتورة</button>`:""}${miss.includes("الموقع")&&!x.reading?`<button data-act="cupickopen" data-id="${x.id}">📍 اختر الموقع</button>`:""}${x.reading?"":okBtn(x)}${delBtn(x)}</div></div>`;
 }
@@ -113,7 +113,7 @@ function cuView(){
   ${pdfNotice("cust")}
   ${HS.length?`<div class="panel"><h2>العُهد</h2><div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
       return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):tr("الرصيد")}</span></button>
-      ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له كل المستحق (<span class="num">${pend.length}</span> ${tr("فاتورة")})</button>`:""}</div>`; }).join("")}</div>
+      ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له المستحق <span class="num">${money(holderShort(h))}</span></button>`:""}</div>`; }).join("")}</div>
     ${S.cuH?`<p class="small" style="margin:0">عرض حركات: <b>${esc(hName(S.cuH))}</b> <button class="ghost xs" data-act="cuhold" data-h="">✕ إلغاء التصفية</button></p>`:""}
     <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:`<div class="row"><button class="ghost" data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div>`}
   <div class="tabs" role="tablist">${F.map(([k,l,fn])=>`<button role="tab" aria-selected="${cur[0]===k}" data-act="cufilter" data-k="${k}">${l}${fn?` <span class="num">${all.filter(fn).length}</span>`:""}</button>`).join("")}</div>

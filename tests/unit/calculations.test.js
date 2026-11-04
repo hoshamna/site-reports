@@ -65,3 +65,19 @@ test("reading failures explain themselves", async (t) => {
   assert.match(await why({ code: "unavailable", message: "network" }), /لا يوجد اتصال/);
   assert.match(await why({ code: "unavailable", message: "something odd" }), /something odd/);
 });
+
+test("a person's invoices come off his custody; a transfer is asked only for what it does not cover", async (t) => {
+  const app = await openApp();
+  t.after(() => app.close());
+  await app.login("هشام", "1234");
+  const r = await app.eval(() => {
+    __T.S.cu = { d: { id: "d", kind: "dep", amount: 5000 }, x: { id: "x", kind: "xfer", dir: "out", to: "A", amount: 100 },
+      i1: { id: "i1", kind: "exp", pay: "cash", holder: "A", amount: 30 } };
+    const step1 = { bal: __T.holderBal("A"), ask: __T.needsXfer(__T.S.cu.i1) };
+    __T.S.cu.i2 = { id: "i2", kind: "exp", pay: "cash", holder: "A", amount: 90 };       // 30 + 90 = 120 > 100
+    const step2 = { bal: __T.holderBal("A"), short: __T.holderShort("A"), ask: __T.needsXfer(__T.S.cu.i2) };
+    return { step1, step2 };
+  });
+  assert.deepEqual(r.step1, { bal: 70, ask: false }, "covered by his 100: deducted, no question");
+  assert.deepEqual(r.step2, { bal: -20, short: 20, ask: true }, "not covered: asks to transfer only the missing 20");
+});

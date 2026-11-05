@@ -36,9 +36,7 @@ test("roles: buyer, admin reconciliation, engineer", async (t) => {
   });
 
   await t.test("engineer sees no finance and his saves never write finance", async () => {
-    await app.eval(() => { __T.S.view = "settings"; __T.S.usersOpen = true; __T.render(); });
-    await app.page.fill("#au-add-name", "محمد"); await app.page.selectOption("#au-add-role", "eng"); await app.page.fill("#au-add-pin", "1111");
-    await app.page.click('[data-act="auadd"]'); await app.page.waitForFunction(() => __T.users().some((u) => u.name === "محمد"), null, { timeout: 15000 });
+    await app.addUser("محمد", "eng", "1111");
     await app.logout();
     await app.login("محمد", "1111"); await app.setPin("2222");
     assert.equal(await app.eval(() => __T.S.sites.s1.total), undefined);

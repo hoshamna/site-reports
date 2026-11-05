@@ -29,9 +29,7 @@ test("sign-in, PIN rules and user management", async (t) => {
   });
 
   await t.test("a full-access user can add a user, who must change the PIN", async () => {
-    await app.eval(() => { __T.S.view = "settings"; __T.S.usersOpen = true; __T.render(); });
-    await app.page.fill("#au-add-name", "محمد"); await app.page.selectOption("#au-add-role", "eng"); await app.page.fill("#au-add-pin", "1111");
-    await app.page.click('[data-act="auadd"]'); await app.page.waitForFunction(() => __T.users().some((u) => u.name === "محمد"), null, { timeout: 15000 });
+    await app.addUser("محمد", "eng", "1111");
     const u = (await app.eval(() => __T.users())).find((x) => x.name === "محمد");
     assert.equal(u.role, "eng"); assert.equal(u.mustChange, true);
   });

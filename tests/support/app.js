@@ -66,15 +66,30 @@ async function openApp(options = {}) {
     clearLog: () => page.evaluate(() => { window.__log.length = 0; }),
     async login(name, pin) {
       await page.click(`button.userbtn:has-text("${name}")`);
-      await page.fill("#au-pin", pin);
+      // the sign-in screen can redraw just after the name is tapped (the user list refreshes); make sure the PIN is really in the box
+      for (let i = 0; i < 5; i++) { await page.waitForSelector("#au-pin"); await page.fill("#au-pin", pin); await page.waitForTimeout(150);
+        if ((await page.inputValue("#au-pin").catch(() => "")) === pin) break; }
+      await page.evaluate(() => document.querySelectorAll(".toast").forEach((x) => x.setAttribute("data-old", "1")));
       await page.click('[data-act="aulogin"]');
-      await page.waitForTimeout(700);
+      // wait for the sign-in to finish (PIN box gone) or be refused (a message) — slow runners need more than a fixed pause
+      await page.waitForFunction(() => (window.__T && __T.S.user) || document.querySelector(".toast:not([data-old])"), null, { timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout(400);
     },
     async setPin(pin) {
       await page.waitForSelector("#au-new1");
       await page.fill("#au-new1", pin); await page.fill("#au-new2", pin);
       await page.click('[data-act="aupinset"]');
       await page.waitForTimeout(600);
+    },
+    // adds a user from the Settings screen; re-fills if the screen redraws while typing
+    async addUser(name, role, pin) {
+      await page.evaluate(() => { __T.S.view = "settings"; __T.S.usersOpen = true; __T.render(); });
+      for (let i = 0; i < 5; i++) {
+        await page.waitForSelector("#au-add-name"); await page.fill("#au-add-name", name); await page.selectOption("#au-add-role", role); await page.fill("#au-add-pin", pin);
+        await page.waitForTimeout(150);
+        if ((await page.inputValue("#au-add-name").catch(() => "")) === name && (await page.inputValue("#au-add-pin").catch(() => "")) === pin) break; }
+      await page.click('[data-act="auadd"]');
+      await page.waitForFunction((n) => __T.users().some((u) => u.name === n), name, { timeout: 15000 });
     },
     async logout() {
       await page.click(".logoutbtn"); await page.click('[data-act="aulogout"]');

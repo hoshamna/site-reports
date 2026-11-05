@@ -38,7 +38,7 @@ function pinChangeView(){ const forced=!!S.user.mustChange;
 function loginView(){
   if(!S.loginList) return `<div class="empty">جارٍ التحميل…</div>`;
   const us=S.loginList;
-  const top=`<div class="top"><div class="brand"><span class="eyebrow u">${esc(coName())}</span><h1>${!us.length?"إعداد أول مستخدم":"تسجيل الدخول"}</h1></div><button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"English"}</bdi></button></div>`;
+  const top=`<div class="top"><div class="brand"><span class="eyebrow u">${esc(coName())}</span><h1>${!us.length?"إعداد أول مستخدم":"تسجيل الدخول"}</h1>${TAGLINE()}</div><button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"English"}</bdi></button></div>`;
   if(!us.length) return top+`<div class="panel loginbox"><p class="small" style="margin:0">أنشئ حسابك الأول بصلاحيات كاملة. بعدها تضيف بقية المستخدمين من الإعدادات.</p>
     <label>الاسم<input id="au-name" autocomplete="off" placeholder="مثال: هشام"></label>
     <label>رمز الدخول (PIN) من 4 إلى 6 أرقام<input id="au-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" dir="ltr"></label>

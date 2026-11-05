@@ -118,3 +118,6 @@ app.addEventListener("click", e=>{ const b=e.target.closest("[data-act]"); if(!b
   else if(a==="theme"){ try{ localStorage.setItem("sites-theme",b.dataset.k); }catch(x){} applyTheme(); render(); } });
 app.addEventListener("input", e=>{ if(e.target.id==="site-q"){ S.q=e.target.value; applySearch(); } });
 if(window.matchMedia) try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme); }catch(e){}
+/* greeting by the time of day (Dubai time on the phone): morning 5–12, day 12–17, evening 17–5 */
+function greeting(){ const h=new Date().getHours(); const g=h>=5&&h<12?"صباح الخير":h<17&&h>=12?"نهارك سعيد":"مساء الخير"; return S.user?`${tr(g)}${lang==="en"?",":"،"} <bdi class="u">${esc(S.user.name)}</bdi>`:tr(g); }
+const TAGLINE=()=>`<p class="tagline"><span class="w1">${tr("أصيل في العمل،")}</span> <span class="w2">${tr("أصيل في الوعد")}</span></p>`;

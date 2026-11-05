@@ -6,7 +6,7 @@ function dateShow(i){ if(i.parentNode&&i.parentNode.classList&&i.parentNode.clas
 document.addEventListener("input",e=>{ const t=e.target; if(t&&t.type==="date"&&t.nextSibling&&t.nextSibling.className==="dshow") t.nextSibling.textContent=fmtDate(t.value); },true);
 function render(){
   document.documentElement.dir = lang==="en"?"ltr":"rtl"; document.documentElement.lang = lang; applyTheme();
-  if(!(S.mode==="loading"||!S.setLoaded)){ const sp=document.getElementById("splash"); if(sp&&!sp.classList.contains("gone")){ sp.classList.add("gone"); setTimeout(()=>sp.remove(),450); } }
+  if(!(S.mode==="loading"||!S.setLoaded)){ const sp=document.getElementById("splash"); if(sp&&!sp.dataset.going){ sp.dataset.going="1"; const wait=Math.max(0,3300-(Date.now()-(window.__splashT0||0))); setTimeout(()=>{ sp.classList.add("gone"); setTimeout(()=>sp.remove(),500); },wait); } }
   if(S.mode==="loading"||!S.setLoaded){ app.innerHTML=`<div class="empty">جارٍ التحميل…</div>`; translate(app); return; }
   if(!S.user){ app.innerHTML=loginView(); translate(app); return; }
   if(S.user.mustChange||S.pinView){ const keep=["au-new1","au-new2"].map(k=>(document.getElementById(k)||{}).value||""); app.innerHTML=pinChangeView(); translate(app); ["au-new1","au-new2"].forEach((k,i)=>{ const el=document.getElementById(k); if(el&&keep[i]) el.value=keep[i]; }); return; }
@@ -43,7 +43,7 @@ function listView(){
   const act=list.filter(s=>s.status!=="منتهي"); const open=list.reduce((a,s)=>a+(s.issues||[]).filter(x=>x.status!=="done").length,0);
   const stats=list.length?`<div class="hstats"><div class="stat"><span class="small muted">مواقع جارية</span><b class="num">${act.length}</b></div>
    <div class="stat ${open?"badst":""}" ${open?'data-act="sfilt" data-k="issue" role="button"':""}><span class="small muted">مشكلات مفتوحة</span><b class="num">${open}</b></div></div>`:"";
-  return header("تقارير المواقع") + stats + homeAlerts() + (isAdmin()?salaryBanner():"") + (list.length?`<h2 class="hsec">إضافة سريعة</h2>${quickStrip()}<h2 class="hsec">المواقع</h2>`:"") + homeList(list)
+  return header("تقارير المواقع",greeting()) + stats + homeAlerts() + (isAdmin()?salaryBanner():"") + (list.length?`<h2 class="hsec">إضافة سريعة</h2>${quickStrip()}<h2 class="hsec">المواقع</h2>`:"") + homeList(list)
    + (isAdmin()&&list.length?`<button class="fab" data-act="new">${ico("plus")}<span>موقع جديد</span></button>`:"") + (S.pick?pickSheetHtml():"");
 }
 function siteView(s){

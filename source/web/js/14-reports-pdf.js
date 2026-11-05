@@ -82,11 +82,10 @@ async function makePdf(s, kind){
   const rep=document.getElementById("report"); rep.dir = lang==="en"?"ltr":"rtl";
   const blocks=[];
   const logo=co.logoId?await toDataUrl(co.logoId):null;
-  const contacts=[co.address,co.phone&&`☎ <span dir="ltr">${esc(co.phone)}</span>`,co.email&&`<span dir="ltr">${esc(co.email)}</span>`,co.web&&`<span dir="ltr">${esc(co.web)}</span>`,co.trn&&`TRN: <span dir="ltr">${esc(co.trn)}</span>`].filter(Boolean);
+  /* contact details go in the page footer; the TRN appears only on the tax invoice */
   blocks.push(`<div class="lh">${logo&&co.logoWide?`<div class="lhtop"><img class="lhbanner" src="${logo}"></div>`:`<div class="lhtop">
       <div class="lhname u">${lang==="en"?`<div class="lhar" dir="ltr">${esc(co.companyEn||co.company)}</div>${co.companyEn?`<div class="lhen">${esc(co.company)}</div>`:""}`:`<div class="lhar">${esc(co.company)}</div>${co.companyEn?`<div class="lhen" dir="ltr">${esc(co.companyEn)}</div>`:""}`}</div>
       ${logo?`<img class="lhlogo" src="${logo}">`:`<div class="lhmono">${esc([...String(co.companyEn||co.company||"A")][0])}</div>`}</div>`}
-    ${contacts.length?`<div class="lhc">${contacts.map(x=>`<span>${String(x).startsWith("<")||String(x).startsWith("☎")||String(x).startsWith("TRN")?x:esc(x)}</span>`).join("")}</div>`:""}
     <div class="lhband"></div>
     <div class="lhtitle"><h1>${kind==="fin"?"التقرير المالي":kind==="pur"?"التقرير الداخلي":"تقرير الأعمال"}: ${U(s.name)}</h1><div class="lhdate">تاريخ التقرير <b class="num">${today()}</b></div></div></div>`);
   blocks.push(`<div class="rb"><div class="info"><div><span>اسم المشروع: </span>${U(s.name)}</div><div><span>الموقع: </span>${U(s.location||"—")}</div><div><span>العميل: </span>${U(s.client||"—")}</div>
@@ -187,7 +186,7 @@ async function makePdf(s, kind){
     pdf.addImage(cv.toDataURL("image/jpeg",0.86),"JPEG",(W-w)/2,y,w,h); y+=h;
   }
   const pages=pdf.getNumberOfPages();
-  let foot=null; try{ const fe=document.createElement("div"); fe.className="lhfoot"; fe.innerHTML=`<span class="u">${lang==="en"?esc(co.companyEn||co.company):esc(co.company)}</span>${[co.phone,co.email].filter(Boolean).map(x=>`<span dir="ltr">${esc(x)}</span>`).join("")}`;
+  let foot=null; try{ const fe=document.createElement("div"); fe.className="lhfoot"; fe.innerHTML=`<span class="u"><b>${lang==="en"?esc(co.companyEn||co.company):esc(co.company)}</b></span>${co.address?`<span class="u">📍 ${esc(co.address)}</span>`:""}${co.phone?`<span dir="ltr">☎ ${esc(co.phone)}</span>`:""}${co.email?`<span dir="ltr">✉ ${esc(co.email)}</span>`:""}${co.web?`<span dir="ltr">${esc(co.web)}</span>`:""}`;
     rep.appendChild(fe); translate(fe); const fc=await html2canvas(fe,{scale:2,backgroundColor:"#ffffff",logging:false}); foot={d:fc.toDataURL("image/png"),r:fc.height/fc.width}; fe.remove(); }catch(e){}
   for(let p=1;p<=pages;p++){ pdf.setPage(p);
     if(foot){ const fw=W-24, fh=fw*foot.r; pdf.addImage(foot.d,"PNG",12,H-fh-6.5,fw,fh); }

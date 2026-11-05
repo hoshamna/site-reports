@@ -123,6 +123,10 @@ function cuDupOf(x){ if(!isExp(x)||x.dupOk||x.reading) return null; const a=n(x.
     (x.fileId&&o.fileId===x.fileId) ||
     (x.invNo&&o.invNo&&invKey(x.invNo)===invKey(o.invNo)&&(!x.supplier||!o.supplier||supMatch(x.supplier,o.supplier))) ||
     (a>0&&n(o.amount)===a&&o.date===x.date&&x.supplier&&supMatch(x.supplier,o.supplier))))||null; }
+/* the general manager's own review mark (Nov 2026): only a confirmation, never changes the balance.
+   Invoices entered before 6 Nov 2026 count as reviewed. */
+const REV0=Date.parse("2026-11-06T00:00:00+04:00");
+const unrev=x=>isExp(x)&&!x.rev&&(x.createdAt||0)>=REV0;
 const needsReview=x=>isExp(x)&&(cuMissing(x).length>0||!!cuDupOf(x));
 function cuCloses(){ return Object.values(S.cu).filter(x=>x.kind==="close").sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)); }
 function cuLast(){ const c=cuCloses(); return c[c.length-1]||null; }

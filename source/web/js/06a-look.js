@@ -45,7 +45,9 @@ function siteCard(s){ const c=calc(s); const st=siteState(s,c); const jt=jobType
     <span class="sprog"><span class="bar"><i style="width:${c.pct}%"></i></span><span class="num small">${c.pct}%</span></span>
     ${(due.length||open||!isEng()||s.example)?`<span class="sfoot small">${!isEng()?`<span class="muted">المتبقي <span class="num">${money(c.remaining)}</span> درهم</span>`:""}${open?`<span class="chip bad">${ico("alert")} <span class="num">${open}</span> مشكلة</span>`:""}${due.length?`<span class="chip bad">💰 دفعة مستحقة</span>`:""}${s.example?`<span class="chip ex">بيانات مثال</span>`:""}</span>`:""}
    </span></button>`; }
-function homeAlerts(){ if(!isAdmin()||!S.cuLoaded) return ""; const c=cuCalc(); if(!c.isLow&&!c.miss) return "";
+function homeAlerts(){ if(!isAdmin()||!S.cuLoaded) return ""; const nr=Object.values(S.cu).filter(unrev).length;
+  return (nr?`<button class="hbanner rev" data-act="curevopen">🧾 <span>فواتير جديدة لم تراجعها: <b class="num">${nr}</b></span></button>`:"")+cuAlert(); }
+function cuAlert(){ const c=cuCalc(); if(!c.isLow&&!c.miss) return "";
   return `<button class="hbanner warn" data-act="cuopen">${ico("wallet")}<span>${c.isLow?`رصيد العهدة منخفض: <span class="num">${money(c.mainBal)}</span> درهم`:""}${c.isLow&&c.miss?" · ":""}${c.miss?`<span class="num">${c.miss}</span> فاتورة للمراجعة`:""}</span></button>`; }
 function homeList(list){
   if(S.mode==="loading") return `<div class="empty">جارٍ تحميل المواقع…</div>`;
@@ -65,7 +67,7 @@ function applySearch(){ const q=(S.q||"").trim().toLowerCase(); const cards=[...
   const m=document.querySelector(".qmiss"); if(m) m.hidden=!(q&&cards.length&&!shown); }
 /* ---- bottom bar ---- */
 function bottomNav(){ if(!S.user||isBuyer()) return ""; const v=S.view==="cust"?"cust":S.view==="settings"?"settings":S.view==="site"?"list":"list";
-  const dot=isAdmin()&&S.cuLoaded&&(()=>{ const c=cuCalc(); return c.isLow||c.miss; })();
+  const dot=isAdmin()&&S.cuLoaded&&(()=>{ const c=cuCalc(); return c.isLow||c.miss||Object.values(S.cu).some(unrev); })();
   const it=(k,act,icon,l,extra="")=>`<button class="${v===k?"on":""}" data-act="${act}" ${v===k?'aria-current="page"':""}>${ico(icon)}<span>${l}</span>${extra}</button>`;
   return `<nav class="bnav" aria-label="الأقسام">${it("list","navlist","sites","المواقع")}${isAdmin()?it("cust","cuopen","wallet","العهدة",dot?`<i class="tdot"></i>`:""):""}${it("rep","navrep","report","التقارير")}${it("settings","navset","gear","الإعدادات")}</nav>`; }
 /* ---- theme ---- */

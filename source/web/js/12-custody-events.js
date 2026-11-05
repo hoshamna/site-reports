@@ -62,6 +62,9 @@ app.addEventListener("click", async e=>{
   else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer").map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
   else if(a==="cuvat5"&&x){ x.vat=vat5(x.amount); cuPut(x,true); render(); }
   else if(a==="vatshowx"){ S.vatShow=null; render(); }
+  else if(a==="curev"&&x){ if(!isAdmin()) return; x.rev={by:cuMe||"",at:new Date().toISOString()}; cuPut(x,true); render(); }
+  else if(a==="curevall"){ if(!isAdmin()) return; const last=cuLast(); const xs=Object.values(S.cu).filter(y=>unrev(y)&&inPeriod(y,last,null)); const at=new Date().toISOString(); xs.forEach(y=>{ y.rev={by:cuMe||"",at}; cuPut(y,true); }); toast("✓ "+tr("رُوجعت")+" "+xs.length); render(); }
+  else if(a==="curevopen"){ S.view="cust"; S.cuF="rev"; S.cuSup=null; render(); window.scrollTo(0,0); }
   else if(a==="cusup"){ S.cuSup=b.dataset.k; render(); window.scrollTo(0,0); }
   else if(a==="cusupx"){ S.cuSup=null; render(); }
   else if(a==="cuspay"){ if(!needMe()) return; const s=cuSuppliers().find(v=>v.key===b.dataset.k); if(!s) return;

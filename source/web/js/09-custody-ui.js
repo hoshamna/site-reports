@@ -6,6 +6,7 @@ function targetOpts(x){ const o=[["","— اختر —"],...activeSites().map(s=
 function catOpts(){ return [["","— بدون بند —"],...cuCats().map(c=>[c.k,c.l])]; }
 function cuThumb(x){ return x.fileId?(x.fileType==="image"?`<button class="invbtn" data-act="cuview" data-id="${x.id}" aria-label="فتح الصورة"><img class="inv" src="${blobUrl(x.fileId)}" alt="الصورة"><span>🔍 فتح</span></button>`:`<span class="chip">ملف PDF مرفق</span>`):""; }
 function delBtn(x){ const k="cu"+x.id; return `<button class="ghost danger ${S.armed===k?"armed":""}" data-act="cudel" data-id="${x.id}">${S.armed===k?(x.purId?"تأكيد الحذف (ومن مشتريات الموقع)":"تأكيد الحذف"):"حذف"}</button>`; }
+const revMark=x=>!isAdmin()||!isExp(x)?"":x.rev?`<span class="chip done" title="${esc(x.rev.by||"")}">✓ ${tr("رُوجعت")} <span class="num">${esc(String(x.rev.at||"").slice(0,10))}</span></span>`:unrev(x)?`<button class="small revbtn" data-act="curev" data-id="${x.id}">✓ ${tr("راجعتها")}</button>`:"";
 function cuCompact(x){
   const miss=isExp(x)?cuMissing(x):[], dup=isExp(x)&&cuDupOf(x), c=isExp(x)&&cuCat(x.cat);
   const title=x.kind==="dep"?tr("📥 توريد من المدير العام"):x.kind==="xfer"?(x.dir==="back"?tr("↩️ إرجاع من ")+(x.to||""):tr("↔️ تحويل إلى ")+(x.to||"")):x.kind==="spay"?tr("💳 سداد للمورد: ")+(x.supplier||""):cuName(x);
@@ -13,7 +14,7 @@ function cuCompact(x){
   return `<div class="entry cuent compact ${x.kind==="dep"?"dep":x.kind==="xfer"?"xfer":x.kind==="spay"?"spay":""} ${miss.length||dup?"miss":""} ${x.pay==="credit"?"cred":""}">
     <div class="full row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><b style="min-width:0"><bdi>${esc(title)}</bdi></b><span class="num" style="white-space:nowrap"><b>${money(x.amount)}</b></span></div>
     <div class="full row" style="justify-content:space-between;gap:6px"><span class="small muted" style="min-width:0"><span class="num">${esc(x.date||"")}</span>${sub?" · "+esc(sub):""}</span>
-      <span class="row" style="gap:4px">${miss.length?`<span class="chip bad">${tr("ناقصة")}</span>`:""}${dup?`<span class="chip bad">${tr("مكررة؟")}</span>`:""}${isExp(x)?`<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span>`:""}${needsXfer(x)?`<span class="chip ex">${tr("لم تُحوَّل")}</span>`:""}<button class="ghost small" data-act="cuedit" data-id="${x.id}">✏️ تعديل</button></span></div></div>`;
+      <span class="row" style="gap:4px">${miss.length?`<span class="chip bad">${tr("ناقصة")}</span>`:""}${dup?`<span class="chip bad">${tr("مكررة؟")}</span>`:""}${isExp(x)?`<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span>`:""}${needsXfer(x)?`<span class="chip ex">${tr("لم تُحوَّل")}</span>`:""}${revMark(x)}<button class="ghost small" data-act="cuedit" data-id="${x.id}">✏️ تعديل</button></span></div></div>`;
 }
 const okBtn=x=>`<span class="chip bad cunsaved" ${cuOrig[x.id]?"":"hidden"}>${tr("✏️ لم يُحفظ — اضغط ✓ موافق")}</span><button class="primary" data-act="cuok2" data-id="${x.id}">✓ موافق</button><button class="ghost cucx" data-act="cucancel" data-id="${x.id}" ${cuOrig[x.id]||S.cuEdit===x.id?"":"hidden"}>${tr("إلغاء التعديل")}</button>`;
 function cuCard(x){
@@ -38,7 +39,7 @@ function cuCard(x){
   const miss=cuMissing(x); const c=cuCat(x.cat); const dup=cuDupOf(x);
   return `<div class="entry cuent ${miss.length||dup?"miss":""} ${x.pay==="credit"?"cred":""}">
     <div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span> درهم</span>
-      <span class="row" style="gap:4px">${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:""}${miss.length?`<span class="chip bad">ناقصة: ${miss.map(m=>tr(m)).join("، ")}</span>`:""}<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span></span></div>
+      <span class="row" style="gap:4px">${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:""}${miss.length?`<span class="chip bad">ناقصة: ${miss.map(m=>tr(m)).join("، ")}</span>`:""}<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span>${revMark(x)}</span></div>
     <div class="full small muted">${esc(cuTargetName(x))}${x.autoCar&&x.target==="car:"+x.autoCar?" ("+tr("من رقم اللوحة")+")":""}${c?" · "+esc(c.l):""}${x.by?` · صوّرها: <b>${esc(x.by)}</b>`:""}${x.plate&&!String(x.target||"").startsWith("car:")?` · 🚗 لوحة <bdi dir="ltr">${esc(x.plate)}</bdi> غير مسجّلة في السيارات`:""}</div>
     ${dup?`<div class="full notice small dupbox"><b>⚠️ قد تكون مكررة</b><span>تشبه فاتورة <bdi class="u">${esc(dup.supplier||"")}</bdi> بمبلغ <span class="num">${money(dup.amount)}</span> بتاريخ <span class="num">${esc(dup.date||"")}</span>${dup.by?" — "+tr("صوّرها: ")+esc(dup.by):""}.</span><div class="row">${delBtn(x)}<button class="ghost" data-act="cudupok" data-id="${x.id}">ليست مكررة</button></div></div>`:""}
     ${csel(x,"target","على حساب",targetOpts(x))}${csel(x,"cat","البند",catOpts())}
@@ -104,11 +105,12 @@ function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
   if(S.cuH&&S.cuH!=="main"&&!HS.includes(S.cuH)) S.cuH=null;
-  const F=[["all","الكل",x=>x.kind!=="spay"&&x.kind!=="xfer"],["miss","للمراجعة",x=>needsReview(x)],["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
+  const F=[["all","الكل",x=>x.kind!=="spay"&&x.kind!=="xfer"],["miss","للمراجعة",x=>needsReview(x)],...(isAdmin()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();
   else { const list=(S.vatShow?Object.values(S.cu).filter(x=>S.vatShow.has(x.id)).sort((a,b)=>(a.date||"").localeCompare(b.date||"")):S.cuCar?Object.values(S.cu).filter(x=>isExp(x)&&x.target==="car:"+S.cuCar).sort((a,b)=>(b.date||"").localeCompare(a.date||"")):all.filter(cur[2])).filter(x=>!S.cuH||delta(x,S.cuH)!==0||(isExp(x)&&holderOf(x)===S.cuH)); body=list.length?`<div class="list">${list.map(cuCard).join("")}</div>`:`<div class="empty">${cur[0]==="miss"?"لا توجد فواتير تحتاج مراجعة. ✓":"لا يوجد شيء هنا بعد في الفترة الحالية."}</div>`; }
+  if(cur[0]==="rev"){ const nr=all.filter(unrev).length; if(nr) body=`<div class="row" style="justify-content:space-between"><span class="small muted">${tr("الفواتير الجديدة التي لم تراجعها بعد. المراجعة للتأكيد فقط، والفواتير مخصومة من العهدة.")}</span><button class="primary" data-act="curevall">✓ ${tr("راجعت الكل")} (<span class="num">${nr}</span>)</button></div>`+body; else body=emptyHtml("check",tr("راجعت كل الفواتير"),""); }
   return header("💼 العهدة والموردون") + meBox() + salaryBanner() + `
   <div class="panel"><div class="mini cumini">
     <div class="hl"><span class="small">${HS.length?"رصيد العهدة الرئيسية":"رصيد العهدة"}</span><b class="num">${money(c.mainBal)}</b></div>

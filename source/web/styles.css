@@ -521,3 +521,7 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 #report h2::before{content:"";width:6px;height:18px;border-radius:3px;background:#f2b705;flex:0 0 auto}
 /* report footer: the same green contact band as the tax invoice (no TRN) */
 #report .lhfoot,.lhfoot{width:794px;box-sizing:border-box;direction:ltr;display:flex;justify-content:center;flex-wrap:wrap;gap:2px 14px;background:#2fbf3a;color:#fff;font-family:Arimo,Arial,sans-serif;font-size:12.5px;padding:12px 24px;text-align:center;border:none}
+/* brand tile: the real Aseel mark (triangle + ASEEL), a little larger so the word reads */
+.top .brand{padding-inline-start:62px}
+.top .brand::before{width:52px;height:52px;border-radius:12px;background:#fff url("./mark.png") no-repeat center/auto 84%}
+.top-site .brand{padding-inline-start:50px!important}

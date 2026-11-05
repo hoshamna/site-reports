@@ -14,6 +14,7 @@ function render(){
   if(isBuyer()){ S.view="buyer"; app.innerHTML = buyerView(); }
   else if(S.view==="site" && site()){ attachMarks(site()); app.innerHTML = siteView(site()); }
   else if(S.view==="cust" && isAdmin()){ app.innerHTML = cuView(); }
+  else if(S.view==="docs" && isAdmin()){ app.innerHTML = docsView(); }
   else if(S.view==="settings"){ app.innerHTML = settingsView(); }
   else { S.view="list"; app.innerHTML = listView(); }
   if(S.view!=="site") app.insertAdjacentHTML("beforeend", bottomNav());
@@ -30,6 +31,7 @@ function render(){
   app.querySelectorAll('input:not([type]),input[type="text"],textarea').forEach(i=>{ if(!i.hasAttribute("dir")) i.dir="auto"; });
   app.querySelectorAll('input[type="date"]').forEach(dateShow);
   if(S.view==="list"&&S.q) applySearch();
+  if(S.view==="docs"){ fitDocPrev(); if(S.docQ){ const q=document.getElementById("doc-q"); if(q) q.dispatchEvent(new Event("input",{bubbles:true})); } }
   if(S.needSave){ const ns=S.needSave; S.needSave=null; save(ns); }
   const pw2=document.getElementById("planWrap"); if(pw2&&sc){ pw2.scrollLeft=sc[0]; pw2.scrollTop=sc[1]; window.scrollTo(0,wy); }
 }
@@ -369,7 +371,8 @@ function tMoney(s){
     ${pmOf(p)==="cheque"?pf(i,"chequeNo","رقم الشيك",p.chequeNo||"")+pf(i,"bank","البنك",p.bank||""):pmOf(p)==="transfer"?pf(i,"ref","رقم مرجع التحويل",p.ref||"")+pf(i,"bank","البنك",p.bank||""):pf(i,"ref","رقم سند القبض (اختياري)",p.ref||"")+pf(i,"receivedBy","استلمها",p.receivedBy||"")}
     <div class="full">${pf(i,"note","البيان / اسم الدافع",p.note)}</div>
     <div class="full row">${p.fileId?(p.fileType==="image"?`<button class="invbtn" data-act="viewdoc" data-k="pay" data-id="${p.id}" aria-label="فتح للمراجعة"><img class="inv" src="${blobUrl(p.fileId)}" alt="${PM[pmOf(p)][2]}"><span>🔍 فتح للمراجعة</span></button>`:`<span class="chip">ملف PDF مرفق</span>`):""}
-      <button class="${p.invoice?"":"primary"}" data-act="taxinv" data-id="${p.id}">🧾 ${p.invoice?`فاتورة <bdi class="u" dir="ltr">${esc(p.invoice.no)}</bdi>`:"إصدار فاتورة ضريبية"}</button>
+      <button class="${p.rv?"":"primary"}" data-act="payrv" data-id="${p.id}">🧾 ${p.rv?`Receipt Voucher <bdi class="u" dir="ltr">${esc(p.rv.no)}</bdi>`:"إصدار Receipt Voucher"}</button>
+      <button class="${p.invoice?"":"primary"}" data-act="taxinv" data-id="${p.id}">🧾 ${p.invoice?`فاتورة <bdi class="u" dir="ltr">${esc(p.invoice.no)}</bdi>`:"إصدار Tax Invoice"}</button>
       <button data-act="chq" data-id="${p.id}">${p.fileId?"تغيير ":"إرفاق "}${PM[pmOf(p)][2]}</button>
       <button class="ghost danger ${S.armed===p.id?"armed":""}" data-act="delpay" data-id="${p.id}">${S.armed===p.id?"تأكيد الحذف":"حذف الدفعة"}</button></div></div>`).join("")}</div>`
     :`<div class="empty">لم تُسجل دفعات بعد.</div>`}

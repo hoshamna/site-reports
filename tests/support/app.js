@@ -104,4 +104,17 @@ async function openApp(options = {}) {
   return app;
 }
 
-module.exports = { openApp };
+// Real libraries from cdnjs for tests that need them (PDF reading, PDF making). Offline: set LIBS_DIR to a folder
+// holding pdf.js, pdf.worker.js and html2canvas.min.js. jsPDF is replaced by a recorder (the page image is what matters).
+async function libRoutes(ctx) {
+  const dir = process.env.LIBS_DIR;
+  const map = [[/pdf\.js\/3\.11\.174\/pdf\.min\.js$/, "pdf.js"], [/pdf\.js\/3\.11\.174\/pdf\.worker\.min\.js$/, "pdf.worker.js"], [/html2canvas\/1\.4\.1\/html2canvas\.min\.js$/, "html2canvas.min.js"]];
+  for (const [re, local] of map)
+    await ctx.route(re, (r) => dir ? r.fulfill({ status: 200, contentType: "text/javascript", body: fs.readFileSync(path.join(dir, local)) }) : r.continue());
+  await ctx.addInitScript(() => {
+    window.jspdf = { jsPDF: function (o) { this.o = o; this.addImage = (...a) => { (window.__pdfPages = window.__pdfPages || []).push({ o, w: a[4], h: a[5], len: String(a[0]).length }); };
+      this.output = () => new Blob(["%PDF-1.4 test"], { type: "application/pdf" }); } };
+  });
+}
+
+module.exports = { openApp, libRoutes };

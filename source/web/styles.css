@@ -550,3 +550,61 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .top .tagline{font-size:.9rem;color:#f2d98a;margin-top:2px}
 .top .eyebrow bdi.u{color:inherit}
 @media (prefers-reduced-motion:reduce){#splash .tag span,.tagline span,#splash img,#splash b,#splash i{animation:none;clip-path:none}#splash .tag span{color:#fff}#splash .tag::after{transform:scaleX(1);animation:none}}
+/* ---------- المستندات (Receipt Voucher / Tax Invoice / Progress Invoice): paper sheets, always white ---------- */
+.isheet,.vsheet{position:relative;background:#fff;color:#121212;direction:ltr;text-align:left;box-sizing:border-box;overflow:hidden}
+.isheet{width:794px;min-height:1123px;display:flex;flex-direction:column;padding:30px 58px 0;font-family:Caladea,Cambria,Georgia,serif;font-size:14px;line-height:1.42}
+.isheet .ih img{width:100%;display:block}
+.isheet .ititle{font-family:Arimo,Arial,sans-serif;font-weight:700;font-size:17px;text-decoration:underline;text-underline-offset:3px;text-align:center;margin:20px 0 18px}
+.isheet .ico{display:flex;justify-content:space-between;gap:16px;font-size:13px}
+.isheet .ico .col{display:flex;flex-direction:column} .isheet .ico .trn{margin-top:8px} .isheet .ico .cor{text-align:right;white-space:nowrap}
+.isheet .ito{margin-top:14px;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.isheet .ito .who{font-size:14.5px;font-weight:700} .isheet .ito .who.sm{font-size:13.5px}
+.isheet .ikv{display:grid;grid-template-columns:130px 1fr;gap:4px 6px;margin:10px 0 0}
+.isheet .ikv dt{margin:0} .isheet .ikv dd{margin:0;overflow-wrap:anywhere}
+.isheet .lt{width:100%;border-collapse:collapse;margin-top:18px;font-size:13.5px;border:1.4px solid #1d1d1d}
+.isheet .lt th,.isheet .lt td{border:1px solid #1d1d1d;padding:6px 8px;vertical-align:top;color:#121212;background:#fff;white-space:normal}
+.isheet .lt th{background:#c4c4c4;font-family:Arimo,Arial,sans-serif;font-size:13px;text-align:left;font-weight:700}
+.isheet .lt th.desc{text-align:center;font-size:14.5px}
+.isheet .lt .c{text-align:center} .isheet .lt .r{text-align:right;font-variant-numeric:tabular-nums}
+.isheet .lt td.amt{font-weight:700;white-space:nowrap} .isheet .lt tr.tot td.lbl{text-align:right}
+.isheet .lt tr.words td{font-weight:700;text-align:center;padding:8px}
+.isheet .dt{white-space:pre-wrap;overflow-wrap:anywhere}
+.isheet .isign{display:grid;grid-template-columns:1.25fr 1fr .8fr;align-items:end;gap:10px;margin-top:34px;font-size:13px}
+.isheet .isign .sl{display:flex;flex-direction:column;gap:14px} .isheet .isign .for{font-weight:700;font-size:14px}
+.isheet .isign img.sig{width:112px;display:block;margin:-4px 0 -10px 18px}
+.isheet .isign .sm{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90px;gap:4px}
+.isheet .isign .sm img{width:170px;transform:rotate(-4deg)} .isheet .isign .sm img.paid{width:128px;transform:none}
+.isheet .isign .sr{text-align:right}
+.isheet .ifoot{margin:auto -58px 0;padding-top:40px} .isheet .ifoot img{width:96.5%;display:block} .isheet .ifoot{background:linear-gradient(#fff 0 40px,#33cc33 40px)}
+.vsheet{width:1123px;height:794px;display:flex;flex-direction:column;padding:30px 40px 24px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;color:#1d1d1f}
+.vsheet .vhead{width:100%;display:block}
+.vsheet .vtop{display:grid;grid-template-columns:repeat(3,1fr);gap:46px;padding:8px 5% 0 16%;margin-top:4px}
+.vsheet .vk{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.vsheet .vk>b{font-family:Poppins,Arial,sans-serif;font-weight:700;font-size:21px;line-height:1.1}
+.vsheet .vbox{width:100%;height:44px;border:2px solid #2a2a2c;display:flex;align-items:center;justify-content:center;padding:0 10px;min-width:0}
+.vsheet .vx,.vsheet .vv{font-family:Poppins,"IBM Plex Sans Arabic",Arial,sans-serif;font-weight:500;font-size:19px;color:#1f2f6e;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vsheet .rvno{font-family:"Courier New",Courier,monospace;font-size:30px;color:#cf1f2b;letter-spacing:2px}
+.vsheet .vrows{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.vsheet .vr{display:grid;grid-template-columns:25% 1fr;gap:10px;height:50px} .vsheet .vr.two{grid-template-columns:25% 1fr 27%}
+.vsheet .vl{background:#a3a3a6;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:500;white-space:nowrap;line-height:1}
+.vsheet .vr>.vv{border:2px solid #2a2a2c;display:flex;align-items:center;padding:0 14px;gap:12px;unicode-bidi:plaintext}
+.vsheet .k2{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:23px;font-weight:500;color:#1d1d1f;white-space:nowrap}
+.vsheet .vsign{display:grid;grid-template-columns:1fr 210px 1fr;align-items:end;gap:16px;margin-top:auto;padding-top:8px;min-height:108px}
+.vsheet .vs-l,.vsheet .vs-r{display:flex;align-items:flex-end;gap:6px;font-family:Poppins,Arial,sans-serif;font-weight:600;font-size:16px;white-space:nowrap;position:relative}
+.vsheet .vs-r{justify-content:flex-end} .vsheet .dots{flex:1;border-bottom:2px dotted #333;margin-bottom:5px;min-width:120px}
+.vsheet .vs-m{display:flex;justify-content:center;align-items:center} .vsheet .vs-m img{width:190px;transform:rotate(-5deg)}
+.vsheet .vs-r img.sig{position:absolute;right:46px;bottom:12px;width:118px}
+.dvoid{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) rotate(-24deg);font:700 120px Arimo,Arial,sans-serif;color:rgba(200,16,46,.22);border:10px solid rgba(200,16,46,.22);padding:0 40px;border-radius:24px;letter-spacing:8px;pointer-events:none}
+#dochost{position:fixed;top:0;left:-14000px;background:#fff}
+.docprev{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-s);background:#e9ece9;margin-top:6px}
+.docprev>.isheet,.docprev>.vsheet{transform-origin:top left;position:absolute;left:0;top:0}
+.doctabs{margin-bottom:10px} .doctabs button{flex:1 1 auto}
+.docrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;width:100%;text-align:start;cursor:pointer;color:var(--fg);font:inherit}
+.docrow .docno{font-family:"Courier New",monospace;font-weight:700;color:var(--bronze);white-space:nowrap}
+.docrow .docp{display:flex;flex-direction:column;min-width:0} .docrow .docp b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.docrow .docamt{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.docrow.void{opacity:.6} .docrow.void .docno{text-decoration:line-through}
+.dline{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:start;margin-bottom:8px}
+@media (max-width:520px){.dline{grid-template-columns:1fr 96px auto}}
+.dchk{display:flex;flex-direction:row;align-items:center;gap:8px;cursor:pointer} .dchk input{width:auto;min-height:0}
+.docvoidbar{border:1px solid var(--bad);color:var(--bad);font-weight:700}

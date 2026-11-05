@@ -17,7 +17,9 @@ function vatQuarters(count){ const t=today(); let y=+t.slice(0,4), q=Math.floor(
     q--; if(q<0){ q=3; y--; } }
   return out; }
 function vatData(P){ const inR=d=>d>=P.from&&d<=P.to;
-  const sales=[]; Object.values(S.sites).forEach(s=>(s.payments||[]).forEach(p=>{ const v=p.invoice; if(!v) return; const d=/^\d{4}-\d{2}-\d{2}$/.test(v.date||"")?v.date:(p.date||""); if(!inR(d)) return;
+  const sales=[]; Object.values(S.docs||{}).forEach(x=>{ if(x.kind==="rv"||x.status!=="issued"||!inR(x.invoiceDate||"")) return; const c=docCalc(x); if(!c.vat) return;
+    sales.push({date:x.invoiceDate,no:x.no||"",to:x.to||"",site:(S.sites[x.siteId]||{}).name||x.project||"",net:c.sub,vat:c.vat,gross:c.total}); });
+  Object.values(S.sites).forEach(s=>(s.payments||[]).forEach(p=>{ const v=p.invoice; if(!v||v.docId) return; const d=/^\d{4}-\d{2}-\d{2}$/.test(v.date||"")?v.date:(p.date||""); if(!inR(d)) return;
     const sp=vatSplit(v.gross,n(v.rate)); sales.push({date:d,no:v.no||"",to:v.to||"",site:s.name||"",net:sp.net,vat:sp.vat,gross:sp.gross}); }));
   const pur=[], out=[], miss=[];
   Object.values(S.cu).filter(x=>isExp(x)&&inR(dateOf(x))).forEach(x=>{ const why=vatOut(x); const row={id:x.id,date:dateOf(x),supplier:cuName(x),invNo:x.invNo||"",trn:x.supTrn||"",gross:n(x.amount),why};

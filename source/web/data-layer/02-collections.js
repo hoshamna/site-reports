@@ -54,3 +54,10 @@
       t.docSubs.add(f); t.load().then(f).catch(e=>onErr&&onErr(e)); t.listen(); return ()=>t.docSubs.delete(f); }
   }; }
  };
+
+ // document numbers come from the database (one counter, locked while taken), never from the phone
+ window.__docNo={
+  next:async counter=>{ const {data,error}=await sb.rpc("next_doc_no",{p_counter:counter}); if(error) throw err(error); return data; },
+  set:async(counter,last)=>{ const {error}=await sb.rpc("set_doc_counter",{p_counter:counter,p_last:last}); if(error) throw err(error); },
+  counters:async()=>{ const {data,error}=await sb.from("doc_counters").select("counter,last"); if(error) throw err(error); return Object.fromEntries((data||[]).map(r=>[r.counter,r.last])); }
+ };

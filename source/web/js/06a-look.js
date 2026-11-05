@@ -5,6 +5,7 @@ const IC={
   door:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3h12v18"/><path d="M9 6h6v6H9zM3 21h18"/><circle cx="15" cy="15" r=".9"/></svg>`,
   rail:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18M3 9v11M21 9v11M7.5 9v11M12 9v11M16.5 9v11M2 20h20"/></svg>`,
   sites:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-5h6v5M8 9h2M14 9h2M3 21h18"/></svg>`,
+  receipt:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>`,
   wallet:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 8V5a1 1 0 0 0-1-1H6a2 2 0 0 0 0 4h13a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V6"/><path d="M21 12v4h-4a2 2 0 0 1 0-4z"/></svg>`,
   report:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2zM9 13h6M9 17h6M9 9h1"/></svg>`,
   gear:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.4 1.8 3 0 3.4a1.7 1.7 0 0 0-1 2.6c.9 1.5-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.5-1c-1.6.9-3.3-.9-2.4-2.4a1.7 1.7 0 0 0-1.1-2.6c-1.8-.4-1.8-3 0-3.4a1.7 1.7 0 0 0 1.1-2.5c-.9-1.6.8-3.3 2.4-2.4a1.7 1.7 0 0 0 2.5-1.1z"/><circle cx="12" cy="12" r="3"/></svg>`,
@@ -66,10 +67,10 @@ function applySearch(){ const q=(S.q||"").trim().toLowerCase(); const cards=[...
   cards.forEach(c=>{ const ok=!q||(c.dataset.k||"").includes(q)||(c.textContent||"").toLowerCase().includes(q); c.hidden=!ok; if(ok) shown++; });
   const m=document.querySelector(".qmiss"); if(m) m.hidden=!(q&&cards.length&&!shown); }
 /* ---- bottom bar ---- */
-function bottomNav(){ if(!S.user||isBuyer()) return ""; const v=S.view==="cust"?"cust":S.view==="settings"?"settings":S.view==="site"?"list":"list";
+function bottomNav(){ if(!S.user||isBuyer()) return ""; const v=S.view==="cust"?"cust":S.view==="docs"?"docs":S.view==="settings"?"settings":S.view==="site"?"list":"list";
   const dot=isAdmin()&&S.cuLoaded&&(()=>{ const c=cuCalc(); return c.isLow||c.miss||Object.values(S.cu).some(unrev); })();
   const it=(k,act,icon,l,extra="")=>`<button class="${v===k?"on":""}" data-act="${act}" ${v===k?'aria-current="page"':""}>${ico(icon)}<span>${l}</span>${extra}</button>`;
-  return `<nav class="bnav" aria-label="الأقسام">${it("list","navlist","sites","المواقع")}${isAdmin()?it("cust","cuopen","wallet","العهدة",dot?`<i class="tdot"></i>`:""):""}${it("rep","navrep","report","التقارير")}${it("settings","navset","gear","الإعدادات")}</nav>`; }
+  return `<nav class="bnav" aria-label="الأقسام">${it("list","navlist","sites","المواقع")}${isAdmin()?it("cust","cuopen","wallet","العهدة",dot?`<i class="tdot"></i>`:""):""}${isAdmin()?it("docs","docsopen","receipt","المستندات"):""}${it("rep","navrep","report","التقارير")}${it("settings","navset","gear","الإعدادات")}</nav>`; }
 /* ---- theme ---- */
 function themePref(){ try{ return localStorage.getItem("sites-theme")||"auto"; }catch(e){ return "auto"; } }
 function applyTheme(){ const p=themePref(); const r=document.documentElement; if(p==="auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme",p);

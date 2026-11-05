@@ -13,7 +13,7 @@
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700&family=Noto+Serif:wght@400;700&family=Arimo:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700&family=Noto+Serif:wght@400;700&family=Arimo:wght@400;700&family=Caladea:wght@400;700&family=Barlow+Condensed:wght@500;600&family=Poppins:wght@400;500;600;700&display=swap">
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -576,6 +576,64 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .top .tagline{font-size:.9rem;color:#f2d98a;margin-top:2px}
 .top .eyebrow bdi.u{color:inherit}
 @media (prefers-reduced-motion:reduce){#splash .tag span,.tagline span,#splash img,#splash b,#splash i{animation:none;clip-path:none}#splash .tag span{color:#fff}#splash .tag::after{transform:scaleX(1);animation:none}}
+/* ---------- المستندات (Receipt Voucher / Tax Invoice / Progress Invoice): paper sheets, always white ---------- */
+.isheet,.vsheet{position:relative;background:#fff;color:#121212;direction:ltr;text-align:left;box-sizing:border-box;overflow:hidden}
+.isheet{width:794px;min-height:1123px;display:flex;flex-direction:column;padding:30px 58px 0;font-family:Caladea,Cambria,Georgia,serif;font-size:14px;line-height:1.42}
+.isheet .ih img{width:100%;display:block}
+.isheet .ititle{font-family:Arimo,Arial,sans-serif;font-weight:700;font-size:17px;text-decoration:underline;text-underline-offset:3px;text-align:center;margin:20px 0 18px}
+.isheet .ico{display:flex;justify-content:space-between;gap:16px;font-size:13px}
+.isheet .ico .col{display:flex;flex-direction:column} .isheet .ico .trn{margin-top:8px} .isheet .ico .cor{text-align:right;white-space:nowrap}
+.isheet .ito{margin-top:14px;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.isheet .ito .who{font-size:14.5px;font-weight:700} .isheet .ito .who.sm{font-size:13.5px}
+.isheet .ikv{display:grid;grid-template-columns:130px 1fr;gap:4px 6px;margin:10px 0 0}
+.isheet .ikv dt{margin:0} .isheet .ikv dd{margin:0;overflow-wrap:anywhere}
+.isheet .lt{width:100%;border-collapse:collapse;margin-top:18px;font-size:13.5px;border:1.4px solid #1d1d1d}
+.isheet .lt th,.isheet .lt td{border:1px solid #1d1d1d;padding:6px 8px;vertical-align:top;color:#121212;background:#fff;white-space:normal}
+.isheet .lt th{background:#c4c4c4;font-family:Arimo,Arial,sans-serif;font-size:13px;text-align:left;font-weight:700}
+.isheet .lt th.desc{text-align:center;font-size:14.5px}
+.isheet .lt .c{text-align:center} .isheet .lt .r{text-align:right;font-variant-numeric:tabular-nums}
+.isheet .lt td.amt{font-weight:700;white-space:nowrap} .isheet .lt tr.tot td.lbl{text-align:right}
+.isheet .lt tr.words td{font-weight:700;text-align:center;padding:8px}
+.isheet .dt{white-space:pre-wrap;overflow-wrap:anywhere}
+.isheet .isign{display:grid;grid-template-columns:1.25fr 1fr .8fr;align-items:end;gap:10px;margin-top:34px;font-size:13px}
+.isheet .isign .sl{display:flex;flex-direction:column;gap:14px} .isheet .isign .for{font-weight:700;font-size:14px}
+.isheet .isign img.sig{width:112px;display:block;margin:-4px 0 -10px 18px}
+.isheet .isign .sm{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90px;gap:4px}
+.isheet .isign .sm img{width:170px;transform:rotate(-4deg)} .isheet .isign .sm img.paid{width:128px;transform:none}
+.isheet .isign .sr{text-align:right}
+.isheet .ifoot{margin:auto -58px 0;padding-top:40px} .isheet .ifoot img{width:96.5%;display:block} .isheet .ifoot{background:linear-gradient(#fff 0 40px,#33cc33 40px)}
+.vsheet{width:1123px;height:794px;display:flex;flex-direction:column;padding:30px 40px 24px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;color:#1d1d1f}
+.vsheet .vhead{width:100%;display:block}
+.vsheet .vtop{display:grid;grid-template-columns:repeat(3,1fr);gap:46px;padding:8px 5% 0 16%;margin-top:4px}
+.vsheet .vk{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.vsheet .vk>b{font-family:Poppins,Arial,sans-serif;font-weight:700;font-size:21px;line-height:1.1}
+.vsheet .vbox{width:100%;height:44px;border:2px solid #2a2a2c;display:flex;align-items:center;justify-content:center;padding:0 10px;min-width:0}
+.vsheet .vx,.vsheet .vv{font-family:Poppins,"IBM Plex Sans Arabic",Arial,sans-serif;font-weight:500;font-size:19px;color:#1f2f6e;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vsheet .rvno{font-family:"Courier New",Courier,monospace;font-size:30px;color:#cf1f2b;letter-spacing:2px}
+.vsheet .vrows{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.vsheet .vr{display:grid;grid-template-columns:25% 1fr;gap:10px;height:50px} .vsheet .vr.two{grid-template-columns:25% 1fr 27%}
+.vsheet .vl{background:#a3a3a6;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:500;white-space:nowrap;line-height:1}
+.vsheet .vr>.vv{border:2px solid #2a2a2c;display:flex;align-items:center;padding:0 14px;gap:12px;unicode-bidi:plaintext}
+.vsheet .k2{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:23px;font-weight:500;color:#1d1d1f;white-space:nowrap}
+.vsheet .vsign{display:grid;grid-template-columns:1fr 210px 1fr;align-items:end;gap:16px;margin-top:auto;padding-top:8px;min-height:108px}
+.vsheet .vs-l,.vsheet .vs-r{display:flex;align-items:flex-end;gap:6px;font-family:Poppins,Arial,sans-serif;font-weight:600;font-size:16px;white-space:nowrap;position:relative}
+.vsheet .vs-r{justify-content:flex-end} .vsheet .dots{flex:1;border-bottom:2px dotted #333;margin-bottom:5px;min-width:120px}
+.vsheet .vs-m{display:flex;justify-content:center;align-items:center} .vsheet .vs-m img{width:190px;transform:rotate(-5deg)}
+.vsheet .vs-r img.sig{position:absolute;right:46px;bottom:12px;width:118px}
+.dvoid{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) rotate(-24deg);font:700 120px Arimo,Arial,sans-serif;color:rgba(200,16,46,.22);border:10px solid rgba(200,16,46,.22);padding:0 40px;border-radius:24px;letter-spacing:8px;pointer-events:none}
+#dochost{position:fixed;top:0;left:-14000px;background:#fff}
+.docprev{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-s);background:#e9ece9;margin-top:6px}
+.docprev>.isheet,.docprev>.vsheet{transform-origin:top left;position:absolute;left:0;top:0}
+.doctabs{margin-bottom:10px} .doctabs button{flex:1 1 auto}
+.docrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;width:100%;text-align:start;cursor:pointer;color:var(--fg);font:inherit}
+.docrow .docno{font-family:"Courier New",monospace;font-weight:700;color:var(--bronze);white-space:nowrap}
+.docrow .docp{display:flex;flex-direction:column;min-width:0} .docrow .docp b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.docrow .docamt{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.docrow.void{opacity:.6} .docrow.void .docno{text-decoration:line-through}
+.dline{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:start;margin-bottom:8px}
+@media (max-width:520px){.dline{grid-template-columns:1fr 96px auto}}
+.dchk{display:flex;flex-direction:row;align-items:center;gap:8px;cursor:pointer} .dchk input{width:auto;min-height:0}
+.docvoidbar{border:1px solid var(--bad);color:var(--bad);font-weight:700}
 </style>
 </head>
 <body>
@@ -680,6 +738,13 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
     onSnapshot:(next,onErr)=>{ const t=table(name); const f=()=>{ const d=t.rows.get(id); next({id,exists:!!d,data:()=>d?freeze(d):undefined,metadata:{}}); };
       t.docSubs.add(f); t.load().then(f).catch(e=>onErr&&onErr(e)); t.listen(); return ()=>t.docSubs.delete(f); }
   }; }
+ };
+
+ // document numbers come from the database (one counter, locked while taken), never from the phone
+ window.__docNo={
+  next:async counter=>{ const {data,error}=await sb.rpc("next_doc_no",{p_counter:counter}); if(error) throw err(error); return data; },
+  set:async(counter,last)=>{ const {error}=await sb.rpc("set_doc_counter",{p_counter:counter,p_last:last}); if(error) throw err(error); },
+  counters:async()=>{ const {data,error}=await sb.from("doc_counters").select("counter,last"); if(error) throw err(error); return Object.fromEntries((data||[]).map(r=>[r.counter,r.last])); }
  };
  // ---- images: private storage, opened with short-lived signed links ----
  const BLANK="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -798,6 +863,23 @@ Object.entries({"تم": "Done", "🗑️ تم حذف الموقع": "🗑️ Sit
 Object.entries({"💾 النسخ الاحتياطي": "💾 Backup", "لم تُحفظ نسخة بعد": "No backup yet", "آخر نسخة قبل ": "Last backup ", " يوم": " days ago", "ملف واحد فيه كل البيانات: المواقع، والعلامات، والعهدة، والإعدادات. احفظه في مكان آمن مرة كل أسبوع على الأقل. الصور تبقى محفوظة في التخزين ولا تُنسخ داخل الملف.": "One file with all the data: sites, marks, custody and settings. Keep it somewhere safe at least once a week. Photos stay in storage and aren’t copied into the file.", "آخر نسخة: ": "Last backup: ", "💾 تنزيل نسخة احتياطية الآن": "💾 Download a backup now", "📂 استعادة من ملف": "📂 Restore from file", "استعادة نسخة ": "Restore backup ", "فيها ": "It has ", " موقع، و": " sites, ", " حركة عهدة، و": " custody entries and ", " علامة. تُكتب فوق البيانات التي لها نفس المعرّف، ولا يُحذف شيء آخر. المستخدمون الحاليون يبقون كما هم.": " marks. Records with the same ID are overwritten; nothing else is deleted. Current users stay as they are.", "اضغط مرة أخرى لتأكيد الاستعادة": "Tap again to confirm restore", "♻️ استعادة": "♻️ Restore", "✓ تم تنزيل النسخة الاحتياطية": "✓ Backup downloaded", "هذا الملف ليس نسخة احتياطية من التطبيق": "This file isn’t a backup from this app", "✓ تمت الاستعادة: ": "✓ Restored: "}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"💾 يستطيع النسخ الاحتياطي والاستعادة": "💾 Can back up and restore", "يجب أن يبقى شخص واحد على الأقل يستطيع النسخ الاحتياطي": "At least one person must keep backup access", "يستطيع النسخ الاحتياطي": "can back up", "تم إلغاء صلاحية النسخ الاحتياطي": "Backup access removed", "ليست لديك صلاحية النسخ الاحتياطي": "You don’t have backup access"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"تعذر فتح ملف PDF للقراءة، أدخل المبلغ يدوياً أو ارفع لقطة شاشة": "Couldn’t open the PDF to read it; enter the amount by hand or upload a screenshot"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"المستندات":"Documents","مستند جديد":"New document","نوع المستند":"Document type","جديد":"new","بحث بالرقم أو الاسم أو المشروع":"Search by number, name or project","لا توجد مستندات بعد.":"No documents yet.",
+ "المستندات غير مفعّلة بعد في قاعدة البيانات.":"Documents are not set up in the database yet.","شغّل ملف docs-setup.sql مرة واحدة في Supabase (SQL Editor ← New query ← الصق ← Run).":"Run docs-setup.sql once in Supabase (SQL Editor → New query → paste → Run).",
+ "🔢 الترقيم":"🔢 Numbering","آخر رقم Receipt Voucher صدر":"Last Receipt Voucher number issued","آخر رقم فاتورة صدر (Tax و Progress)":"Last invoice number issued (Tax and Progress)","حفظ الترقيم":"Save numbering",
+ "الرقم التالي يُؤخذ من قاعدة البيانات، فلا يتكرر حتى لو أصدر شخصان مستنداً في نفس اللحظة. ولا يُقبل رقم أقل من رقم صدر فعلاً.":"The next number comes from the database, so it never repeats, even if two people issue a document at the same moment. A number below one already issued is not accepted.",
+ "الموقع (اختياري)":"Site (optional)","— بدون موقع —":"— No site —","received from m/s. (اسم الدافع)":"received from m/s. (payer)","Amount (درهم)":"Amount (AED)","being (البيان)":"being (description)",
+ "الختم":"Stamp","توقيع المحاسب":"Accountant's signature","التوقيع":"Signature","ختم PAID":"PAID stamp","تاريخ الدفع":"Paid date","الاسم (بالإنجليزية)":"Name (in English)","للعميل رقم ضريبي (TRN)":"Client has a TRN","TRN العميل":"Client TRN",
+ "Progress Invoice لا تُظهر أي رقم ضريبي.":"A Progress Invoice shows no TRN.","البنود":"Lines","+ بند":"+ Line","المبلغ قبل الضريبة":"Amount before VAT","حذف البند":"Remove line","نسبة الإنجاز من قيمة العقد":"Progress % of the contract value","أضف البند":"Add line",
+ "خصم المبالغ المستلمة سابقاً":"Deduct amounts already received","المستلم سابقاً شامل الضريبة (درهم)":"Received before, incl. VAT (AED)","قبل الضريبة":"Before VAT","المطلوب":"Due","المعاينة":"Preview","صادر":"Issued","ملغى":"Cancelled",
+ "هذا المستند ملغى. رقمه محفوظ ولا يُستخدم مرة أخرى.":"This document is cancelled. Its number is kept and never used again.","✓ إصدار برقم جديد وتنزيل PDF":"✓ Issue with a new number and download PDF","جارٍ الإصدار…":"Issuing…",
+ "💾 حفظ التعديلات":"💾 Save changes","⬇️ تنزيل PDF":"⬇️ Download PDF","🚫 إلغاء المستند (يبقى رقمه محفوظاً)":"🚫 Cancel document (its number stays used)","اضغط مرة أخرى لتأكيد الإلغاء":"Press again to confirm cancelling",
+ "لا يأخذ المستند رقماً حتى تضغط «إصدار». بعد الإصدار لا يُحذف، ويمكن إلغاؤه فقط.":"A document gets its number only when you press «Issue». Once issued it is never deleted, only cancelled.",
+ "✓ الملف جاهز.":"✓ File ready.","✓ تم حفظ الملف في التنزيلات.":"✓ File saved to Downloads.","أرسله للعميل بزر «مشاركة»، أو من الواتساب: 📎 ثم «مستند».":"Send it to the client with «Share», or in WhatsApp: 📎 then «Document».",
+ "اكتب اسم الدافع (received from)":"Enter the payer (received from)","اكتب اسم العميل بالإنجليزية":"Enter the client name in English","اكتب المبلغ":"Enter the amount","اكتب مبلغ البند":"Enter the line amount","اكتب النسبة":"Enter the percentage","اكتب رقماً صحيحاً":"Enter a whole number",
+ "المستندات تحتاج الاتصال بقاعدة البيانات":"Documents need the database connection","المستندات غير مفعّلة بعد في قاعدة البيانات: شغّل ملف docs-setup.sql في Supabase":"Documents are not set up in the database yet: run docs-setup.sql in Supabase",
+ "✓ صدر برقم ":"✓ Issued as ","صدر المستند، لكن تعذر تجهيز PDF: ":"Issued, but the PDF could not be made: ","تعذر إنشاء الملف: ":"Could not make the file: ","تم إلغاء المستند ":"Cancelled document ","✓ تم حفظ الترقيم":"✓ Numbering saved",
+ "لا يمكن: صدر مستند برقم أكبر من هذا":"Not possible: a document with a higher number was already issued","قاعدة البيانات غير متصلة":"The database is not connected","لم يُصدر المستند بعد. اضغط مرة أخرى للخروج بدون إصدار":"Not issued yet. Press again to leave without issuing",
+ "إصدار Receipt Voucher":"Issue Receipt Voucher","إصدار Tax Invoice":"Issue Tax Invoice","✓ تم الحفظ":"✓ Saved"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 /* English for the Nov 2026 look refresh (added before the phrase list is built in 03-calc) */
 Object.assign(EN, {"واجهات ونوافذ": "Facades & windows", "أبواب فقط": "Doors only", "هندريل فقط": "Handrail only", "قارب الانتهاء": "Nearly done", "فيه مشكلة": "Has an issue", "الكل": "All", "فيه مشكلات": "With issues", "مشكلة": "issue", "💰 دفعة مستحقة": "💰 Payment due", "بيانات مثال": "Sample data", "رصيد العهدة منخفض:": "Custody balance is low:", "فاتورة للمراجعة": "invoices to review", "ابدأ بأول موقع": "Start with your first site", "أضف اسم الموقع وقيمة المشروع وعدد الشبابيك والأبواب، ثم تابع الإنجاز والصور من هنا.": "Add the site name, project value and the number of windows and doors, then follow progress and photos from here.", "+ موقع جديد": "+ New site", "ابحث عن موقع أو مهندس": "Search for a site or engineer", "تصفية المواقع": "Filter sites", "لا توجد مواقع هنا": "No sites here", "جرّب تصفية أخرى.": "Try another filter.", "لا يوجد موقع بهذا الاسم": "No site matches that name", "إضافة سريعة": "Quick add", "الأقسام": "Sections", "العهدة": "Custody", "الإعدادات": "Settings", "🔑 تغيير رمز الدخول": "🔑 Change PIN", "🚪 تسجيل الخروج": "🚪 Sign out", "المظهر": "Appearance", "اللغة": "Language", "الوضع": "Mode", "تلقائي": "Automatic", "فاتح": "Light", "داكن": "Dark", "«تلقائي» يتبع إعداد الهاتف: داكن في الليل إذا كان الهاتف داكناً.": "“Automatic” follows the phone setting: dark at night if the phone is dark.", "📲 أضف التطبيق إلى الشاشة الرئيسية": "📲 Add the app to your home screen", "مواقع جارية": "Active sites", "مشكلات مفتوحة": "Open issues", "مشكلة مفتوحة": "open issue", "الاستشاري: ": "Consultant: ", "الفريم": "Frame", "الزجاج": "Glass", "لتثبيت التطبيق:": "To install the app:", "لتثبيت التطبيق على الآيفون:": "To install the app on iPhone:", "من قائمة Chrome ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».": "From the Chrome ⋮ menu choose “Install app” or “Add to Home screen”.", "افتح الصفحة في Safari، ثم زر المشاركة ⬆️، ثم «إضافة إلى الشاشة الرئيسية».": "Open the page in Safari, tap Share ⬆️, then “Add to Home Screen”.", "📲 تثبيت التطبيق على الجوال": "📲 Install the app on your phone", "تحويلات عُهد قديمة": "Old custody transfers", "لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.": "There is no personal custody any more; every invoice comes off the main custody. These transfers no longer affect the balance, and you can delete them for good.", "اضغط مرة أخرى لتأكيد الحذف": "Tap again to confirm deleting", "حذف التحويلات القديمة": "Delete old transfers", "حُذفت التحويلات القديمة": "Old transfers deleted", "وقود": "Fuel", "مرتبات": "Salaries", "رسوم حكومية": "Government fees", "الربع": "Quarter", "🧾 تقرير الضريبة (كل 3 أشهر)": "🧾 VAT report (every 3 months)", "الفترة": "Period", "ضريبة المبيعات": "Output VAT (sales)", "ضريبة المشتريات": "Input VAT (purchases)", "المستحق للهيئة": "Payable to the FTA", "المسترد من الهيئة": "Refundable from the FTA", "لا تدخل في المشتريات: الوقود، والمرتبات، والرسوم الحكومية (تجديد الإقامة وبطاقة العمل وغيرها) —": "Not counted in purchases: fuel, salaries and government fees (residence and labour card renewals, etc.) —", "فاتورة بقيمة": "invoices worth", "فاتورة لم تُسجَّل ضريبتها": "invoices with no VAT entered", "تُحسب ضريبتها صفراً حتى تُدخلها. افتح الفاتورة واكتب مبلغ الضريبة كما هو مكتوب فيها، أو احسب 5% للكل إذا كانت كلها من موردين مسجّلين في الضريبة.": "Their VAT counts as zero until you enter it. Open the invoice and type the VAT shown on it, or work out 5% for all of them if they are all from VAT-registered suppliers.", "اضغط مرة أخرى للتأكيد": "Tap again to confirm", "احسب 5% لهذه الفواتير": "Work out 5% for these invoices", "عرضها": "Show them", "ملخص الضريبة": "VAT summary", "المبيعات (الفواتير الضريبية)": "Sales (tax invoices)", "لا توجد فواتير ضريبية في هذه الفترة.": "No tax invoices in this period.", "لا توجد مشتريات في هذه الفترة.": "No purchases in this period.", "فواتير لم تُسجَّل ضريبتها، وحُسبت ضريبتها صفراً": "Invoices with no VAT entered, counted as zero", "لا تدخل في الضريبة": "Not counted for VAT", "السبب": "Reason", "تقرير الضريبة": "VAT report", "لم تُسجَّل الضريبة": "VAT not entered", "ملاحظة": "Note", "حُسبت ضريبة 5% لـ ": "5% VAT worked out for ", " فاتورة": " invoices", "عرض الفواتير التي لم تُسجَّل ضريبتها": "Showing invoices with no VAT entered", "✕ إلغاء التصفية": "✕ Clear filter", "لا تدخل في تقرير الضريبة": "Not counted in the VAT report", "الضريبة VAT (درهم)": "VAT (AED)", "TRN المورد": "Supplier TRN", "احسب 5%": "Work out 5%", "🧾 يستقبل تنبيهاً بكل فاتورة جديدة": "🧾 Gets an alert for every new invoice", "سيصله تنبيه بكل فاتورة جديدة": "will get an alert for every new invoice", "لن يصله تنبيه الفواتير": "Won't get invoice alerts", "رُوجعت": "Reviewed", "راجعتها": "Reviewed it", "لم أراجعها": "Not reviewed", "الفواتير الجديدة التي لم تراجعها بعد. المراجعة للتأكيد فقط، والفواتير مخصومة من العهدة.": "New invoices you haven't reviewed yet. Reviewing is only a confirmation; the invoices are already deducted from custody.", "راجعت الكل": "Reviewed all", "راجعت كل الفواتير": "All invoices reviewed", "فاتورة جديدة لم تراجعها": "new invoice not reviewed", "فواتير جديدة لم تراجعها": "new invoices not reviewed", "فواتير جديدة لم تراجعها:": "New invoices not reviewed:", "صباح الخير": "Good morning", "نهارك سعيد": "Good afternoon", "مساء الخير": "Good evening", "أصيل في العمل،": "Genuine in work,", "أصيل في الوعد": "genuine in promise"});
 const PH = Object.keys(EN).sort((a,b)=>b.length-a.length);
@@ -1059,6 +1141,7 @@ async function boot(){
       if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render();
     }, ()=>toast("انقطع الاتصال بقاعدة البيانات"));
     db.collection("custody").onSnapshot(q=>{ cuMerge(q.docs); S.cuLoaded=true; cuRecover(); cuCheckLow(); setTimeout(cuRecover,50000); if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, ()=>{});
+    db.collection("docs").onSnapshot(q=>{ docMerge(q.docs); S.docsLoaded=true; S.docsOk=true; if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, err=>{ if(isAdmin()&&/PGRST20[0-9]|42P01|Could not find|does not exist|schema cache/i.test(String(err&&(err.message||err.code)||""))){ S.docsOk=false; if(S.view==="docs") render(); } });
     db.doc("settings/company").onSnapshot(d=>{ if(d.exists){ S.settings={...S.settings,...JSON.parse(JSON.stringify(d.data()||{}))}; } if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); },()=>{});
     if(AU()) AU().onChange(onAuth); else { S.setLoaded=true; render(); }
   } else {
@@ -1144,6 +1227,7 @@ function render(){
   if(isBuyer()){ S.view="buyer"; app.innerHTML = buyerView(); }
   else if(S.view==="site" && site()){ attachMarks(site()); app.innerHTML = siteView(site()); }
   else if(S.view==="cust" && isAdmin()){ app.innerHTML = cuView(); }
+  else if(S.view==="docs" && isAdmin()){ app.innerHTML = docsView(); }
   else if(S.view==="settings"){ app.innerHTML = settingsView(); }
   else { S.view="list"; app.innerHTML = listView(); }
   if(S.view!=="site") app.insertAdjacentHTML("beforeend", bottomNav());
@@ -1160,6 +1244,7 @@ function render(){
   app.querySelectorAll('input:not([type]),input[type="text"],textarea').forEach(i=>{ if(!i.hasAttribute("dir")) i.dir="auto"; });
   app.querySelectorAll('input[type="date"]').forEach(dateShow);
   if(S.view==="list"&&S.q) applySearch();
+  if(S.view==="docs"){ fitDocPrev(); if(S.docQ){ const q=document.getElementById("doc-q"); if(q) q.dispatchEvent(new Event("input",{bubbles:true})); } }
   if(S.needSave){ const ns=S.needSave; S.needSave=null; save(ns); }
   const pw2=document.getElementById("planWrap"); if(pw2&&sc){ pw2.scrollLeft=sc[0]; pw2.scrollTop=sc[1]; window.scrollTo(0,wy); }
 }
@@ -1499,7 +1584,8 @@ function tMoney(s){
     ${pmOf(p)==="cheque"?pf(i,"chequeNo","رقم الشيك",p.chequeNo||"")+pf(i,"bank","البنك",p.bank||""):pmOf(p)==="transfer"?pf(i,"ref","رقم مرجع التحويل",p.ref||"")+pf(i,"bank","البنك",p.bank||""):pf(i,"ref","رقم سند القبض (اختياري)",p.ref||"")+pf(i,"receivedBy","استلمها",p.receivedBy||"")}
     <div class="full">${pf(i,"note","البيان / اسم الدافع",p.note)}</div>
     <div class="full row">${p.fileId?(p.fileType==="image"?`<button class="invbtn" data-act="viewdoc" data-k="pay" data-id="${p.id}" aria-label="فتح للمراجعة"><img class="inv" src="${blobUrl(p.fileId)}" alt="${PM[pmOf(p)][2]}"><span>🔍 فتح للمراجعة</span></button>`:`<span class="chip">ملف PDF مرفق</span>`):""}
-      <button class="${p.invoice?"":"primary"}" data-act="taxinv" data-id="${p.id}">🧾 ${p.invoice?`فاتورة <bdi class="u" dir="ltr">${esc(p.invoice.no)}</bdi>`:"إصدار فاتورة ضريبية"}</button>
+      <button class="${p.rv?"":"primary"}" data-act="payrv" data-id="${p.id}">🧾 ${p.rv?`Receipt Voucher <bdi class="u" dir="ltr">${esc(p.rv.no)}</bdi>`:"إصدار Receipt Voucher"}</button>
+      <button class="${p.invoice?"":"primary"}" data-act="taxinv" data-id="${p.id}">🧾 ${p.invoice?`فاتورة <bdi class="u" dir="ltr">${esc(p.invoice.no)}</bdi>`:"إصدار Tax Invoice"}</button>
       <button data-act="chq" data-id="${p.id}">${p.fileId?"تغيير ":"إرفاق "}${PM[pmOf(p)][2]}</button>
       <button class="ghost danger ${S.armed===p.id?"armed":""}" data-act="delpay" data-id="${p.id}">${S.armed===p.id?"تأكيد الحذف":"حذف الدفعة"}</button></div></div>`).join("")}</div>`
     :`<div class="empty">لم تُسجل دفعات بعد.</div>`}
@@ -1563,6 +1649,7 @@ const IC={
   door:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3h12v18"/><path d="M9 6h6v6H9zM3 21h18"/><circle cx="15" cy="15" r=".9"/></svg>`,
   rail:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18M3 9v11M21 9v11M7.5 9v11M12 9v11M16.5 9v11M2 20h20"/></svg>`,
   sites:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-5h6v5M8 9h2M14 9h2M3 21h18"/></svg>`,
+  receipt:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>`,
   wallet:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 8V5a1 1 0 0 0-1-1H6a2 2 0 0 0 0 4h13a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V6"/><path d="M21 12v4h-4a2 2 0 0 1 0-4z"/></svg>`,
   report:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2zM9 13h6M9 17h6M9 9h1"/></svg>`,
   gear:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.4 1.8 3 0 3.4a1.7 1.7 0 0 0-1 2.6c.9 1.5-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.5-1c-1.6.9-3.3-.9-2.4-2.4a1.7 1.7 0 0 0-1.1-2.6c-1.8-.4-1.8-3 0-3.4a1.7 1.7 0 0 0 1.1-2.5c-.9-1.6.8-3.3 2.4-2.4a1.7 1.7 0 0 0 2.5-1.1z"/><circle cx="12" cy="12" r="3"/></svg>`,
@@ -1624,10 +1711,10 @@ function applySearch(){ const q=(S.q||"").trim().toLowerCase(); const cards=[...
   cards.forEach(c=>{ const ok=!q||(c.dataset.k||"").includes(q)||(c.textContent||"").toLowerCase().includes(q); c.hidden=!ok; if(ok) shown++; });
   const m=document.querySelector(".qmiss"); if(m) m.hidden=!(q&&cards.length&&!shown); }
 /* ---- bottom bar ---- */
-function bottomNav(){ if(!S.user||isBuyer()) return ""; const v=S.view==="cust"?"cust":S.view==="settings"?"settings":S.view==="site"?"list":"list";
+function bottomNav(){ if(!S.user||isBuyer()) return ""; const v=S.view==="cust"?"cust":S.view==="docs"?"docs":S.view==="settings"?"settings":S.view==="site"?"list":"list";
   const dot=isAdmin()&&S.cuLoaded&&(()=>{ const c=cuCalc(); return c.isLow||c.miss||Object.values(S.cu).some(unrev); })();
   const it=(k,act,icon,l,extra="")=>`<button class="${v===k?"on":""}" data-act="${act}" ${v===k?'aria-current="page"':""}>${ico(icon)}<span>${l}</span>${extra}</button>`;
-  return `<nav class="bnav" aria-label="الأقسام">${it("list","navlist","sites","المواقع")}${isAdmin()?it("cust","cuopen","wallet","العهدة",dot?`<i class="tdot"></i>`:""):""}${it("rep","navrep","report","التقارير")}${it("settings","navset","gear","الإعدادات")}</nav>`; }
+  return `<nav class="bnav" aria-label="الأقسام">${it("list","navlist","sites","المواقع")}${isAdmin()?it("cust","cuopen","wallet","العهدة",dot?`<i class="tdot"></i>`:""):""}${isAdmin()?it("docs","docsopen","receipt","المستندات"):""}${it("rep","navrep","report","التقارير")}${it("settings","navset","gear","الإعدادات")}</nav>`; }
 /* ---- theme ---- */
 function themePref(){ try{ return localStorage.getItem("sites-theme")||"auto"; }catch(e){ return "auto"; } }
 function applyTheme(){ const p=themePref(); const r=document.documentElement; if(p==="auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme",p);
@@ -1865,7 +1952,10 @@ app.addEventListener("click", async e=>{
   else if(a==="imgup"){ const k=b.dataset.k; const files=await pickFiles("image/*",false); if(!files.length) return; b.classList.add("busy");
     try{ if(!assets) toast("رفع الصور غير متاح في هذا العرض. افتح الصفحة من حسابك في تطبيق Claude أو claude.ai"); else { const r=await assets.upload(await compress(files[0],900,"image/png")); if(S.settings[k]) dropAsset(S.settings[k]); S.settings[k]=r.id; settingsSave(); toast("تم الرفع"); } }catch(e){ toast("تعذر الرفع"); } render(); }
   else if(a==="logodel"){ dropAsset(S.settings.logoId); S.settings.logoId=null; settingsSave(); render(); }
-  else if(a==="taxinv"){ const p=s.payments.find(x=>x.id===id); if(!p) return; if(!n(p.amount)){ toast("اكتب مبلغ الدفعة أولاً"); return; } openInv(s,p); S.lastInv=null; render(); }
+  else if(a==="taxinv"){ const p=s.payments.find(x=>x.id===id); if(!p) return; if(!n(p.amount)){ toast("اكتب مبلغ الدفعة أولاً"); return; }
+    if(p.invoice&&!p.invoice.docId){ openInv(s,p); S.lastInv=null; render(); } // issued before «المستندات»: download it as it was
+    else docOpen("tax",s,p); }
+  else if(a==="payrv"){ const p=s.payments.find(x=>x.id===id); if(!p) return; if(!n(p.amount)){ toast("اكتب مبلغ الدفعة أولاً"); return; } docOpen("rv",s,p); }
   else if(a==="invclose"){ S.inv=null; render(); }
   else if(a==="invgo"){ if(S.busy) return; const p=s.payments.find(x=>x.id===S.inv.pid); const d=S.inv.d;
     if(!String(d.to||"").trim()){ toast("اكتب اسم العميل بالإنجليزية"); return; }
@@ -2502,7 +2592,9 @@ function vatQuarters(count){ const t=today(); let y=+t.slice(0,4), q=Math.floor(
     q--; if(q<0){ q=3; y--; } }
   return out; }
 function vatData(P){ const inR=d=>d>=P.from&&d<=P.to;
-  const sales=[]; Object.values(S.sites).forEach(s=>(s.payments||[]).forEach(p=>{ const v=p.invoice; if(!v) return; const d=/^\d{4}-\d{2}-\d{2}$/.test(v.date||"")?v.date:(p.date||""); if(!inR(d)) return;
+  const sales=[]; Object.values(S.docs||{}).forEach(x=>{ if(x.kind==="rv"||x.status!=="issued"||!inR(x.invoiceDate||"")) return; const c=docCalc(x); if(!c.vat) return;
+    sales.push({date:x.invoiceDate,no:x.no||"",to:x.to||"",site:(S.sites[x.siteId]||{}).name||x.project||"",net:c.sub,vat:c.vat,gross:c.total}); });
+  Object.values(S.sites).forEach(s=>(s.payments||[]).forEach(p=>{ const v=p.invoice; if(!v||v.docId) return; const d=/^\d{4}-\d{2}-\d{2}$/.test(v.date||"")?v.date:(p.date||""); if(!inR(d)) return;
     const sp=vatSplit(v.gross,n(v.rate)); sales.push({date:d,no:v.no||"",to:v.to||"",site:s.name||"",net:sp.net,vat:sp.vat,gross:sp.gross}); }));
   const pur=[], out=[], miss=[];
   Object.values(S.cu).filter(x=>isExp(x)&&inR(dateOf(x))).forEach(x=>{ const why=vatOut(x); const row={id:x.id,date:dateOf(x),supplier:cuName(x),invNo:x.invNo||"",trn:x.supTrn||"",gross:n(x.amount),why};
@@ -2769,7 +2861,7 @@ function backupPanel(){
 }
 async function makeBackup(){
   const strip=JSON.parse(JSON.stringify(S.sites)); Object.values(strip).forEach(x=>(x.floors||[]).forEach(fl=>Object.values(fl.faces||{}).forEach(f=>{ f.marks=[]; })));
-  const data={app:"aseel",version:1,at:new Date().toISOString(),by:cuMe||"",sites:strip,marks:S.mk,custody:S.cu,settings:S.settings};
+  const data={app:"aseel",version:1,at:new Date().toISOString(),by:cuMe||"",sites:strip,marks:S.mk,custody:S.cu,docs:S.docs,settings:S.settings};
   const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
   if(!downloads) throw new Error(tr("الحفظ غير متاح في هذا العرض"));
   await downloads.save({filename:`aseel-backup-${today()}.json`,data:blob}); S.lastPdf="backup";
@@ -2830,6 +2922,7 @@ app.addEventListener("click", async e=>{
     Object.values(d.sites||{}).forEach(x=>{ S.sites[x.id]=x; save(x); n++; });
     Object.values(d.marks||{}).forEach(m=>{ delete tomb[m.id]; putMark(m); });
     Object.values(d.custody||{}).forEach(x=>{ delete cuTomb[x.id]; S.cu[x.id]=x; cuPut(x,true); });
+    Object.values(d.docs||{}).forEach(x=>{ if(x&&x.id) docPut({...x}).catch(()=>{}); });
     if(d.settings){ const st={...S.settings,...d.settings}; delete st.users; S.settings=st; settingsSave(); }
     toast(tr("✓ تمت الاستعادة: ")+n); render(); }
   else if(a==="aumypin"){ S.pinView=true; render(); setTimeout(()=>{ const el=document.getElementById("au-new1"); el&&el.focus(); },50); }
@@ -3205,6 +3298,235 @@ app.addEventListener("click",async e=>{
   else if(a==="vndel"&&s){ const k="vn"+b.dataset.id; if(S.armed===k){ S.armed=null; s.voiceNotes=(s.voiceNotes||[]).filter(n=>n.id!==b.dataset.id); save(s); render(); }
     else { S.armed=k; setTimeout(()=>{ if(S.armed===k){ S.armed=null; render(); } },4000); render(); } }
 });
+/* ---------- المستندات: Receipt Voucher · Tax Invoice · Progress Invoice ----------
+   Kept in the «docs» table; numbers come from the database counter (rv | inv), so a number is never repeated.
+   Tax Invoice and Progress Invoice share the invoice counter. An issued document is never deleted, only cancelled. */
+S.docs={}; S.docTab="rv"; S.docEd=null; S.docQ=""; S.docsLoaded=false; S.docsOk=true;
+const DOCK={rv:"Receipt Voucher",tax:"Tax Invoice",prog:"Progress Invoice"};
+const r2=x=>Math.round(n(x)*100)/100;
+const docCounter=k=>k==="rv"?"rv":"inv";
+const docNoFmt=(k,seq,date)=>k==="rv"?String(seq).padStart(5,"0"):`${S.settings.invPrefix||"INV"}/${String(date||today()).slice(0,4)}/${String(seq).padStart(3,"0")}`;
+function docCalc(d){
+  if(d.kind==="rv"){ const a=r2(d.amount); return {rate:0,sub:a,vat:0,total:a,received:0,due:a}; }
+  const rate=n(d.vat), sub=r2((d.lines||[]).reduce((a,l)=>a+n(l.amount),0)), vat=r2(sub*rate/100), total=r2(sub+vat), received=d.deduct?r2(d.received):0;
+  return {rate,sub,vat,total,received,due:r2(total-received)}; }
+const docTotal=d=>{ const c=docCalc(d); return d.kind!=="rv"&&d.deduct?c.due:c.total; };
+const docParty=d=>String((d.kind==="rv"?d.receivedFrom:d.to)||"").trim();
+const docDate=d=>d.kind==="rv"?d.date:(d.invoiceDate||d.date);
+const dmyD=x=>{ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(x||""); return m?`${m[3]}/${m[2]}/${m[1]}`:(x||""); };
+const docList=k=>Object.values(S.docs).filter(d=>d.kind===k).sort((a,b)=>(n(b.seq)-n(a.seq))||((b.createdAt||0)-(a.createdAt||0)));
+const legalName=()=>S.settings.legalName||S.settings.companyEn||"Aseel Aluminium & Glass LLC";
+const payBeing=(s,p)=>{ const i=(s.payments||[]).indexOf(p); return `${ORD[i]||("No. "+(i+1))} Payment`; };
+
+function newDoc(kind,site,pay){
+  const d={id:uid(),kind,counter:docCounter(kind),isNew:true,status:"new",date:today(),siteId:site?site.id:"",payId:pay?pay.id:"",stamp:true,sign:false,createdAt:Date.now()};
+  const proj=site?(site.location||site.name||""):"", who=site?(site.client||site.owner||""):"";
+  if(kind==="rv"){ const last=docList("rv")[0]||{}, pm=pay?pmOf(pay):"";
+    Object.assign(d,{date:(pay&&pay.date)||today(),amount:pay?String(r2(pay.amount)):"",receivedFrom:who,
+      chequeNo:pm==="cheque"?`Cheque No. ${pay.chequeNo||""}`.trim():pm==="transfer"?"Bank Transfer":"Cash",
+      chequeDate:pm==="cheque"||pm==="transfer"?(pay.date||""):"",bank:pay?(pay.bank||""):"",
+      being:pay?[payBeing(site,pay),proj].filter(Boolean).join(" - "):"",collectedBy:last.collectedBy||"",mobNo:last.mobNo||""}); }
+  else { const sp=pay?vatSplit(pay.amount,5):null, dt=(pay&&pay.date)||today();
+    Object.assign(d,{date:dt,invoiceDate:dt,title:kind==="tax"?"TAX INVOICE":"PROGRESS INVOICE",toLabel:"Client",to:who,hasTrn:false,toTrn:"",project:proj,quotation:site?(site.quoteNo||""):"",
+      lines:[{desc:pay?payBeing(site,pay):"",amount:sp?String(sp.net):""}],vat:5,deduct:false,received:"",paidStamp:!!pay,paidDate:pay?dt:""}); }
+  return d; }
+
+/* ---- paper sheets (same look as the company's documents) ---- */
+function paidStampURL(iso){
+  const cv=document.createElement("canvas"); cv.width=600; cv.height=300; const g=cv.getContext("2d"); const red="#c8102e";
+  g.translate(300,150); g.rotate(-10*Math.PI/180); g.strokeStyle=red; g.fillStyle=red;
+  const rr=(x,y,w,h,r)=>{ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); };
+  g.lineWidth=12; rr(-260,-105,520,210,26); g.stroke(); g.lineWidth=4; rr(-242,-87,484,174,16); g.stroke();
+  g.textAlign="center"; g.textBaseline="middle"; g.font="700 112px Arimo, Arial, sans-serif"; g.fillText("PAID",0,-20);
+  g.font="700 34px Arimo, Arial, sans-serif"; g.fillText(iso?dmyD(iso):"",0,58);
+  return cv.toDataURL("image/png"); }
+function invSheet(d){
+  const c=docCalc(d), tax=d.kind==="tax", co=S.settings, T=esc;
+  const tot=(l,v,b)=>`<tr class="tot"><td colspan="2" class="lbl">${b?`<b>${l}</b>`:l}</td><td class="r amt">${m2(v)}</td></tr>`;
+  return `<div class="isheet"><div class="ih"><img src="./doc-head.png" alt=""></div>
+   <div class="ititle">${T(d.title||(tax?"TAX INVOICE":"PROGRESS INVOICE"))}</div>
+   <div class="ico"><div class="col"><b>${T(legalName())}</b>${co.poBox?`<span>P.O Box No. ${T(co.poBox)}</span>`:""}${co.address?`<span>${T(co.address)}</span>`:""}${tax&&co.trn?`<b class="trn">TRN: ${T(co.trn)}</b>`:""}</div><div class="cor"><b>Date: ${T(dmyD(d.invoiceDate))}</b></div></div>
+   <div class="ito"><span>To,</span><div class="who">${T(d.toLabel||"Client")} : ${T(d.to)}</div>${tax&&d.hasTrn&&d.toTrn?`<div class="who sm">TRN: ${T(d.toTrn)}</div>`:""}
+    <dl class="ikv"><dt>Invoice Number</dt><dd>: <b>${T(d.no||"—")}</b></dd><dt>Invoice Date</dt><dd>: <b>${T(dmyD(d.invoiceDate))}</b></dd><dt>Project</dt><dd>: ${T(d.project)}</dd><dt>RF. Quotation No</dt><dd>: ${T(d.quotation)}</dd></dl></div>
+   <table class="lt"><colgroup><col style="width:9%"><col><col style="width:29%"></colgroup><thead><tr><th>No.</th><th class="desc">Description</th><th>Total Amount in AED</th></tr></thead><tbody>
+    ${(d.lines||[]).map((l,i)=>`<tr><td class="c"><b>${i+1}</b></td><td><div class="dt">${T(l.desc)}</div></td><td class="r amt">${m2(l.amount)}</td></tr>`).join("")}
+    ${(d.lines||[]).length>1?tot("Sub total",c.sub):""}${tot(`VAT ${c.rate}%`,c.vat)}${tot("Total Amount + VAT",c.total,1)}
+    ${d.deduct?tot("Received amount",c.received)+tot("Required Amount + VAT",c.due,1):""}
+    <tr class="words"><td colspan="3">${T(amountWords(d.deduct?c.due:c.total))}</td></tr></tbody></table>
+   <div class="isign"><div class="sl"><span class="for">For</span><b>${T(legalName())}</b>${d.sign?`<img class="sig" src="./doc-sign.png" alt="">`:""}<span style="margin-top:${d.sign?0:26}px">AUTHORISED SIGNATORY</span></div>
+    <div class="sm">${d.stamp?`<img src="./doc-stamp.png" alt="">`:""}${d.paidStamp?`<img class="paid" src="${paidStampURL(d.paidDate)}" alt="PAID">`:""}</div><div class="sr">RECEIVED BY</div></div>
+   <div class="ifoot"><img src="./doc-foot.png" alt=""></div>${d.status==="void"?`<div class="dvoid">CANCELLED</div>`:""}</div>`; }
+function rvSheet(d){
+  const T=esc, row=(l,v)=>`<div class="vr"><div class="vl">${l}</div><div class="vv">${T(v)}</div></div>`;
+  const row2=(l,v,k2,v2)=>`<div class="vr two"><div class="vl">${l}</div><div class="vv">${T(v)}</div><div class="vv"><span class="k2">${k2}</span>${T(v2)}</div></div>`;
+  return `<div class="vsheet"><img class="vhead" src="./doc-vhead.png" alt="">
+   <div class="vtop"><div class="vk"><b>rv.no #</b><div class="vbox"><span class="rvno">${T(d.no||"")}</span></div></div><div class="vk"><b>Amount</b><div class="vbox"><span class="vx">${n(d.amount)?m2(d.amount):""}</span></div></div><div class="vk"><b>Date</b><div class="vbox"><span class="vx">${T(dmyD(d.date))}</span></div></div></div>
+   <div class="vrows">${row("received from m/s.",d.receivedFrom)}${row("the sum of dhs.",n(d.amount)?amountWords(n(d.amount)):"")}${row2("cash / cheque no.",d.chequeNo,"dated",dmyD(d.chequeDate))}${row("bank",d.bank)}${row("being",d.being)}${row2("cash collected by",d.collectedBy,"mob no",d.mobNo)}</div>
+   <div class="vsign"><div class="vs-l">Receiver's Signature<span class="dots"></span></div><div class="vs-m">${d.stamp?`<img src="./doc-stamp.png" alt="">`:""}</div><div class="vs-r">${d.sign?`<img class="sig" src="./doc-sign.png" alt="">`:""}Accountant's Signature<span class="dots"></span></div></div>
+   ${d.status==="void"?`<div class="dvoid">CANCELLED</div>`:""}</div>`; }
+const docSheet=d=>d.kind==="rv"?rvSheet(d):invSheet(d);
+function fitDocPrev(){ const w=document.getElementById("docprev"); const sh=w&&w.firstElementChild; if(!sh) return;
+  const sc=Math.min(1,w.clientWidth/sh.offsetWidth); sh.style.transform=`scale(${sc})`; w.style.height=Math.ceil(sh.offsetHeight*sc)+"px"; }
+window.addEventListener("resize",()=>fitDocPrev());
+
+/* ---- screens ---- */
+function docsView(){
+  if(S.docEd) return header(S.docEd.isNew?tr("مستند جديد"):`<bdi dir="ltr">${esc(S.docEd.no||"")}</bdi>`,DOCK[S.docEd.kind])+docEditor();
+  const k=S.docTab;
+  return header("المستندات")+`<div class="panel">
+   <div class="seg doctabs" role="group" aria-label="نوع المستند">${Object.entries(DOCK).map(([kk,l])=>`<button aria-pressed="${kk===k}" data-act="doctab" data-k="${kk}"><bdi dir="ltr">${l}</bdi> <span class="num">${docList(kk).length}</span></button>`).join("")}</div>
+   ${S.docsOk===false?`<div class="notice small"><b>المستندات غير مفعّلة بعد في قاعدة البيانات.</b> شغّل ملف docs-setup.sql مرة واحدة في Supabase (SQL Editor ← New query ← الصق ← Run).</div>`:""}
+   <button class="primary big" data-act="docnew">+ <bdi dir="ltr">${DOCK[k]}</bdi> جديد</button>
+   <input type="search" id="doc-q" placeholder="بحث بالرقم أو الاسم أو المشروع" value="${esc(S.docQ||"")}" style="margin-top:10px">
+   <div class="list" id="doclist">${docList(k).map(docRow).join("")||`<div class="empty">لا توجد مستندات بعد.</div>`}</div></div>
+   ${docCountersPanel()}`; }
+function docRow(d){ const s=S.sites[d.siteId];
+  const key=[d.no,docParty(d),d.project,d.being,s&&s.name].join(" ").toLowerCase();
+  return `<button class="entry docrow ${d.status==="void"?"void":""}" data-act="docopen" data-id="${esc(d.id)}" data-k="${esc(key)}">
+   <span class="docno" dir="ltr">${esc(d.no||"—")}</span>
+   <span class="docp"><b><bdi>${esc(docParty(d)||"—")}</bdi></b><span class="small muted">${fmtDate(docDate(d))}${s?` · ${esc(s.name)}`:""}</span></span>
+   <span class="docamt"><b class="num">${m2(docTotal(d))}</b>${d.status==="void"?`<span class="chip bad">ملغى</span>`:""}</span></button>`; }
+function docCountersPanel(){ const c=S.docCnt;
+  return `<details class="panel" ${S.docCntOpen?"open":""}><summary style="cursor:pointer;font-weight:600" data-act="doccnt">🔢 الترقيم</summary>
+   ${c?`<div class="grid2"><label>آخر رقم Receipt Voucher صدر<input id="dc-rv" type="number" inputmode="numeric" dir="ltr" value="${esc(c.rv??"")}"></label>
+    <label>آخر رقم فاتورة صدر (Tax و Progress)<input id="dc-inv" type="number" inputmode="numeric" dir="ltr" value="${esc(c.inv??"")}"></label></div>
+    <button data-act="doccntsave">حفظ الترقيم</button>
+    <p class="small muted" style="margin:0">الرقم التالي يُؤخذ من قاعدة البيانات، فلا يتكرر حتى لو أصدر شخصان مستنداً في نفس اللحظة. ولا يُقبل رقم أقل من رقم صدر فعلاً.</p>`
+    :`<div class="empty">جارٍ التحميل…</div>`}</details>`; }
+function docEditor(){
+  const d=S.docEd, k=d.kind, issued=!d.isNew, voided=d.status==="void", c=docCalc(d);
+  const f=(key,label,o={})=>`<label${o.full?' class="full"':""}>${label}<input data-dx="${key}" ${o.type?`type="${o.type}"`:""} ${o.num?'inputmode="decimal"':""} dir="ltr" value="${esc(d[key]??"")}" ${o.list?`list="${o.list}"`:""} placeholder="${esc(o.ph||"")}"></label>`;
+  const chk=(key,label)=>`<label class="dchk"><input type="checkbox" data-dx="${key}" ${d[key]?"checked":""}> ${label}</label>`;
+  const sites=Object.values(S.sites).filter(s=>!s.archived||s.id===d.siteId).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+  const siteSel=`<label class="full">الموقع (اختياري)<select data-dsite="1"><option value="">— بدون موقع —</option>${sites.map(s=>`<option value="${esc(s.id)}" ${s.id===d.siteId?"selected":""}>${esc(s.name||"")}</option>`).join("")}</select></label>`;
+  const all=Object.values(S.docs), uniq=a=>[...new Set(a.map(x=>String(x||"").trim()).filter(Boolean))].slice(0,40);
+  const dl=(id,a)=>`<datalist id="${id}">${uniq(a).map(v=>`<option value="${esc(v)}"></option>`).join("")}</datalist>`;
+  const names=[...Object.values(S.sites).flatMap(s=>[s.client,s.owner]),...all.map(docParty)];
+  let body;
+  if(k==="rv") body=`<div class="grid2">${siteSel}
+    ${f("receivedFrom","received from m/s. (اسم الدافع)",{full:1,list:"dl-from",ph:"Name of payer"})}
+    ${f("amount","Amount (درهم)",{type:"number",num:1})}${f("date","Date",{type:"date"})}
+    ${f("chequeNo","cash / cheque no.",{list:"dl-cheque"})}${f("chequeDate","dated",{type:"date"})}
+    ${f("bank","bank",{list:"dl-bank"})}${f("being","being (البيان)",{list:"dl-being"})}
+    ${f("collectedBy","cash collected by",{list:"dl-coll"})}${f("mobNo","mob no",{type:"tel"})}</div>
+    <div class="row">${chk("stamp","الختم")}${chk("sign","توقيع المحاسب")}</div>
+    ${dl("dl-from",names)}${dl("dl-cheque",["Cash","Cheque No. ","Bank Transfer",...all.map(x=>x.chequeNo)])}${dl("dl-bank",all.map(x=>x.bank))}
+    ${dl("dl-being",["Advance Payment","Progress Payment","Final Payment","Retention",...all.map(x=>x.being)])}${dl("dl-coll",all.map(x=>x.collectedBy))}`;
+  else { const s=S.sites[d.siteId];
+    body=`<div class="grid2">${siteSel}
+    <label>To<select data-dx="toLabel">${["Client","Contractor","Customer","Owner"].map(o=>`<option ${(d.toLabel||"Client")===o?"selected":""}>${o}</option>`).join("")}</select></label>
+    ${f("to","الاسم (بالإنجليزية)",{list:"dl-to"})}
+    ${f("project","Project",{list:"dl-proj"})}${f("quotation","RF. Quotation No")}
+    ${f("invoiceDate","Invoice Date",{type:"date"})}${f("vat",`<bdi dir="ltr">VAT %</bdi>`,{type:"number",num:1})}</div>
+    ${k==="tax"?`<div class="row">${chk("hasTrn","للعميل رقم ضريبي (TRN)")}</div>${d.hasTrn?`<div class="grid2">${f("toTrn","TRN العميل")}</div>`:""}`:`<p class="small muted" style="margin:0">Progress Invoice لا تُظهر أي رقم ضريبي.</p>`}
+    <h3>البنود</h3>
+    ${(d.lines||[]).map((l,i)=>`<div class="dline"><textarea data-dl="${i}" data-lf="desc" dir="ltr" rows="2" placeholder="e.g. Progress Payment 30% of 405,300">${esc(l.desc)}</textarea><input data-dl="${i}" data-lf="amount" type="number" inputmode="decimal" dir="ltr" value="${esc(l.amount)}" placeholder="0.00" aria-label="المبلغ قبل الضريبة"><button class="ghost" data-act="dlinedel" data-i="${i}" aria-label="حذف البند">✕</button></div>`).join("")}
+    <button data-act="dlineadd">+ بند</button>
+    ${k==="prog"&&s&&n(s.total)?`<div class="row" style="align-items:end"><label style="flex:1">نسبة الإنجاز من قيمة العقد (<span class="num">${m2(s.total)}</span>)<input id="dc-pct" type="number" inputmode="decimal" dir="ltr" placeholder="30"></label><button data-act="docpct">أضف البند</button></div>`:""}
+    <div class="row">${chk("deduct","خصم المبالغ المستلمة سابقاً")}</div>${d.deduct?`<div class="grid2">${f("received","المستلم سابقاً شامل الضريبة (درهم)",{type:"number",num:1})}</div>`:""}
+    <div class="row">${chk("stamp","الختم")}${chk("sign","التوقيع")}${chk("paidStamp","ختم PAID")}</div>${d.paidStamp?`<div class="grid2">${f("paidDate","تاريخ الدفع",{type:"date"})}</div>`:""}
+    <div class="ivsum" id="docsum"><div><span class="small muted">قبل الضريبة</span><b class="num">${m2(c.sub)}</b></div><div><span class="small muted">الضريبة <span class="num">${c.rate}%</span></span><b class="num">${m2(c.vat)}</b></div><div class="hl"><span class="small">${d.deduct?"المطلوب":"الإجمالي"}</span><b class="num">${m2(docTotal(d))}</b></div></div>
+    ${dl("dl-to",names)}${dl("dl-proj",[...Object.values(S.sites).map(x=>x.location||x.name),...all.map(x=>x.project)])}`; }
+  return `<div class="panel">
+   <div class="row" style="justify-content:space-between"><button class="ghost" data-act="docback">${lang==="en"?"←":"→"} المستندات</button>${issued?`<span class="chip ${voided?"bad":"done"}">${voided?"ملغى":"صادر"}</span>`:""}</div>
+   ${voided?`<div class="notice small docvoidbar">هذا المستند ملغى. رقمه محفوظ ولا يُستخدم مرة أخرى.</div>`:""}
+   ${body}
+   <h3>المعاينة</h3><div class="docprev" id="docprev">${docSheet(d)}</div>
+   <div class="row" style="margin-top:10px">${!issued?`<button class="primary big ${S.busy==="doc"?"busy":""}" data-act="docissue">${S.busy==="doc"?"جارٍ الإصدار…":"✓ إصدار برقم جديد وتنزيل PDF"}</button>`
+     :`<button class="primary big" data-act="docsave">💾 حفظ التعديلات</button><button class="big ${S.busy==="docpdf"?"busy":""}" data-act="docpdf">${S.busy==="docpdf"?"جارٍ التجهيز…":"⬇️ تنزيل PDF"}</button>`}</div>
+   ${S.lastDoc===d.id?`<div class="notice small"><b>${window.__ios?"✓ الملف جاهز.":"✓ تم حفظ الملف في التنزيلات."}</b> أرسله للعميل بزر «مشاركة»، أو من الواتساب: 📎 ثم «مستند».</div>${window.__lastFile?`<div class="row">${navigator.canShare?`<button class="primary big" data-act="sharefile">📤 مشاركة (واتساب…)</button>`:""}<button class="big" data-act="dlagain">${window.__ios?"📥 حفظ في الملفات / فتح":"⬇️ تحميل مرة أخرى"}</button></div>`:""}`:""}
+   ${issued&&!voided?`<button class="ghost danger ${S.armed==="docvoid"?"armed":""}" data-act="docvoid">${S.armed==="docvoid"?"اضغط مرة أخرى لتأكيد الإلغاء":"🚫 إلغاء المستند (يبقى رقمه محفوظاً)"}</button>`:""}
+   ${!issued?`<p class="small muted" style="margin:0">لا يأخذ المستند رقماً حتى تضغط «إصدار». بعد الإصدار لا يُحذف، ويمكن إلغاؤه فقط.</p>`:""}</div>`; }
+
+/* ---- saving ---- */
+const docClean=d=>{ const x=JSON.parse(JSON.stringify(d)); delete x.isNew; return x; };
+async function docPut(d){ d.updatedAt=Date.now(); S.docs[d.id]=docClean(d); if(!db) throw new Error(tr("قاعدة البيانات غير متصلة")); await db.doc("docs/"+d.id).set(docClean(d)); }
+function docMerge(docs){ const next={}, now=Date.now();
+  docs.forEach(x=>{ next[x.id]={...JSON.parse(JSON.stringify(x.data()||{})),id:x.id}; });
+  Object.values(S.docs).forEach(x=>{ const srv=next[x.id]; if((!srv&&now-(x.updatedAt||0)<120000)||(srv&&(x.updatedAt||0)>(srv.updatedAt||0))) next[x.id]=x; });
+  S.docs=next; }
+function docLinkPay(d,on){ const s=S.sites[d.siteId]; const p=s&&(s.payments||[]).find(x=>x.id===d.payId); if(!p) return;
+  const key=d.kind==="rv"?"rv":"invoice";
+  if(on){ const c=docCalc(d); p[key]=d.kind==="rv"?{no:d.no,docId:d.id}:{no:d.no,docId:d.id,date:d.invoiceDate,to:d.to,gross:c.total,rate:c.rate}; }
+  else if(p[key]&&p[key].docId===d.id) delete p[key]; else return;
+  save(s); }
+const docErr=e=>{ const m=String((e&&(e.message||e.code))||e||""); return /PGRST20[0-9]|42P01|42883|Could not find|does not exist|schema cache/i.test(m)?tr("المستندات غير مفعّلة بعد في قاعدة البيانات: شغّل ملف docs-setup.sql في Supabase"):m; };
+async function docPdf(d){
+  if(!window.html2canvas||!window.jspdf) throw new Error(tr("مكتبة التقرير لم تُحمّل"));
+  let host=document.getElementById("dochost"); if(!host){ host=document.createElement("div"); host.id="dochost"; host.setAttribute("aria-hidden","true"); document.body.appendChild(host); }
+  host.innerHTML=docSheet(d);
+  await Promise.all([...host.querySelectorAll("img")].map(im=>im.complete?0:new Promise(r=>{ im.onload=im.onerror=r; })));
+  try{ await Promise.all(['400 14px Caladea','700 14px Caladea','700 14px Arimo','500 19px Poppins','700 21px Poppins','500 24px "Barlow Condensed"'].map(f=>document.fonts.load(f))); await document.fonts.ready; }catch(e){}
+  const land=d.kind==="rv"; const cv=await html2canvas(host.firstElementChild,{scale:2,backgroundColor:"#ffffff",logging:false});
+  const { jsPDF } = window.jspdf; const pdf=new jsPDF({unit:"mm",format:"a4",orientation:land?"landscape":"portrait"}); const W=land?297:210, H=land?210:297;
+  pdf.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",0,0,W,Math.min(H,cv.height*W/cv.width)); host.innerHTML="";
+  const fname=`${d.kind==="rv"?"Receipt Voucher RV":DOCK[d.kind]} ${d.no} - ${docParty(d)||"document"}${d.status==="void"?" (CANCELLED)":""}.pdf`.replace(/[\\/:*?"<>|]/g,"-");
+  if(!downloads) throw new Error(tr("الحفظ غير متاح في هذا العرض"));
+  try{ await downloads.save({filename:fname,data:pdf.output("blob")}); S.lastDoc=d.id; }
+  catch(err){ if(err&&err.code==="declined") toast("لم يُحفظ الملف"); else throw new Error(err&&err.message||"تعذر الحفظ"); } }
+async function docIssue(){
+  const d=S.docEd; if(!d||S.busy) return;
+  if(!docParty(d)){ toast(d.kind==="rv"?"اكتب اسم الدافع (received from)":"اكتب اسم العميل بالإنجليزية"); return; }
+  if(!(docCalc(d).total>0)){ toast(d.kind==="rv"?"اكتب المبلغ":"اكتب مبلغ البند"); return; }
+  if(!window.__docNo||!db){ toast("المستندات تحتاج الاتصال بقاعدة البيانات"); return; }
+  S.busy="doc"; render();
+  try{ const seq=await window.__docNo.next(d.counter);
+    const x={...docClean(d),seq,no:docNoFmt(d.kind,seq,docDate(d)),status:"issued",issuedAt:Date.now(),by:cuMe||""};
+    await docPut(x); S.docEd=JSON.parse(JSON.stringify(x)); S.docDirty=false; docLinkPay(x,true); toast(tr("✓ صدر برقم ")+x.no);
+    S.busy=false; render();
+    try{ await docPdf(x); }catch(e){ console.error(e); toast(tr("صدر المستند، لكن تعذر تجهيز PDF: ")+(e&&e.message||"")); }
+  }catch(err){ console.error(err); toast(docErr(err)); }
+  S.busy=false; render(); }
+async function docSaveEd(quiet){ const d=S.docEd; if(!d||d.isNew) return true;
+  if(!docParty(d)){ toast(d.kind==="rv"?"اكتب اسم الدافع (received from)":"اكتب اسم العميل بالإنجليزية"); return false; }
+  try{ await docPut(d); S.docDirty=false; docLinkPay(d,d.status!=="void"); if(!quiet) toast("✓ تم الحفظ"); return true; }catch(err){ toast(docErr(err)); return false; } }
+function docOpen(kind,site,pay){ // from a payment row: open its linked document, or start a new one filled from the payment
+  const link=pay&&(kind==="rv"?pay.rv:pay.invoice); const ex=link&&link.docId&&S.docs[link.docId];
+  S.docEd=ex?JSON.parse(JSON.stringify(ex)):newDoc(kind,site,pay); S.docTab=kind==="rv"?"rv":(ex?ex.kind:"tax"); S.docFrom=site?site.id:null; S.docDirty=false; S.lastDoc=null;
+  S.view="docs"; render(); window.scrollTo(0,0); }
+async function docLoadCounters(){ try{ S.docCnt=await window.__docNo.counters(); }catch(err){ S.docCnt=null; toast(docErr(err)); } render(); }
+
+/* ---- events ---- */
+function docRefresh(){ const d=S.docEd; if(!d) return; const w=document.getElementById("docprev"); if(w){ w.innerHTML=docSheet(d); fitDocPrev(); }
+  const sm=document.getElementById("docsum"); if(sm&&d.kind!=="rv"){ const c=docCalc(d); const b=sm.querySelectorAll("b"); b[0].textContent=m2(c.sub); b[1].textContent=m2(c.vat); b[2].textContent=m2(docTotal(d)); } }
+app.addEventListener("input",e=>{ const t=e.target;
+  if(t.id==="doc-q"){ S.docQ=t.value; const q=t.value.trim().toLowerCase(); document.querySelectorAll("#doclist .docrow").forEach(r=>{ r.hidden=!!q&&!(r.dataset.k||"").includes(q); }); return; }
+  const d=S.docEd; if(!d) return;
+  if(t.dataset.dx&&t.type!=="checkbox"){ d[t.dataset.dx]=t.value; if(t.dataset.dx==="invoiceDate") d.date=t.value; S.docDirty=true; docRefresh(); }
+  else if(t.dataset.dl!==undefined){ const l=(d.lines||[])[+t.dataset.dl]; if(l){ l[t.dataset.lf]=t.value; S.docDirty=true; docRefresh(); } } });
+app.addEventListener("change",e=>{ const t=e.target, d=S.docEd; if(!d) return;
+  if(t.dataset.dx&&t.type==="checkbox"){ d[t.dataset.dx]=t.checked; if(t.dataset.dx==="paidStamp"&&t.checked&&!d.paidDate) d.paidDate=d.invoiceDate||today(); S.docDirty=true; render(); }
+  else if(t.dataset.dx&&t.tagName==="SELECT"){ d[t.dataset.dx]=t.value; S.docDirty=true; docRefresh(); }
+  else if(t.dataset.dsite){ const old=S.sites[d.siteId], s=S.sites[t.value]; const was=v=>!String(v||"").trim()||(old&&[old.client,old.owner,old.location,old.name,old.quoteNo].includes(v));
+    d.siteId=s?s.id:""; d.payId=""; if(s){ const who=s.client||s.owner||"", proj=s.location||s.name||"";
+      if(d.kind==="rv"){ if(was(d.receivedFrom)) d.receivedFrom=who; } else { if(was(d.to)) d.to=who; if(was(d.project)) d.project=proj; if(was(d.quotation)) d.quotation=s.quoteNo||""; } }
+    S.docDirty=true; render(); } });
+app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act; if(!/^d(oc|line)/.test(a)) return;
+  if(a==="docsopen"){ S.view="docs"; S.docEd=null; S.pick=null; render(); window.scrollTo(0,0); }
+  else if(a==="doctab"){ S.docTab=b.dataset.k; render(); }
+  else if(a==="docnew"){ S.docEd=newDoc(S.docTab); S.docFrom=null; S.docDirty=false; S.lastDoc=null; render(); window.scrollTo(0,0); }
+  else if(a==="docopen"){ const x=S.docs[b.dataset.id]; if(!x) return; S.docEd=JSON.parse(JSON.stringify(x)); S.docFrom=null; S.docDirty=false; S.lastDoc=null; render(); window.scrollTo(0,0); }
+  else if(a==="docback"){ const d=S.docEd;
+    if(d&&d.isNew&&(docParty(d)||docCalc(d).total>0)&&S.armed!=="docback"){ S.armed="docback"; toast("لم يُصدر المستند بعد. اضغط مرة أخرى للخروج بدون إصدار"); setTimeout(()=>{ if(S.armed==="docback") S.armed=null; },4000); return; }
+    S.armed=null; if(d&&!d.isNew&&S.docDirty&&!(await docSaveEd(true))) return;
+    S.docEd=null; if(S.docFrom&&S.sites[S.docFrom]){ S.view="site"; S.cur=S.docFrom; } S.docFrom=null; render(); window.scrollTo(0,0); }
+  else if(a==="dlineadd"){ S.docEd.lines=[...(S.docEd.lines||[]),{desc:"",amount:""}]; S.docDirty=true; render(); }
+  else if(a==="dlinedel"){ const L=S.docEd.lines||[]; if(L.length<=1){ L[0]={desc:"",amount:""}; } else L.splice(+b.dataset.i,1); S.docDirty=true; render(); }
+  else if(a==="docpct"){ const d=S.docEd, s=S.sites[d.siteId], pct=n((document.getElementById("dc-pct")||{}).value); if(!s||!(pct>0)){ toast("اكتب النسبة"); return; }
+    const row={desc:`Progress Payment ${pct}% of ${m2(s.total)}`,amount:String(r2(n(s.total)*pct/100))}; const L=d.lines||(d.lines=[]);
+    if(L.length===1&&!L[0].desc&&!n(L[0].amount)) L[0]=row; else L.push(row); S.docDirty=true; render(); }
+  else if(a==="docissue") docIssue();
+  else if(a==="docsave"){ if(await docSaveEd()) render(); }
+  else if(a==="docpdf"){ if(S.busy) return; if(S.docDirty&&!(await docSaveEd(true))) return; S.busy="docpdf"; render();
+    try{ await docPdf(S.docEd); }catch(err){ console.error(err); toast(tr("تعذر إنشاء الملف: ")+(err&&err.message||"")); } S.busy=false; render(); }
+  else if(a==="docvoid"){ if(S.armed!=="docvoid"){ S.armed="docvoid"; render(); setTimeout(()=>{ if(S.armed==="docvoid"){ S.armed=null; render(); } },5000); return; }
+    S.armed=null; const d=S.docEd; d.status="void"; d.voidAt=Date.now(); d.voidBy=cuMe||"";
+    try{ await docPut(d); S.docDirty=false; docLinkPay(d,false); toast(tr("تم إلغاء المستند ")+d.no); }catch(err){ d.status="issued"; toast(docErr(err)); } render(); }
+  else if(a==="doccnt"){ e.preventDefault(); S.docCntOpen=!S.docCntOpen; render(); if(S.docCntOpen) docLoadCounters(); }
+  else if(a==="doccntsave"){ const v={rv:(document.getElementById("dc-rv")||{}).value,inv:(document.getElementById("dc-inv")||{}).value};
+    try{ for(const c of ["rv","inv"]){ const x=parseInt(v[c],10); if(!isFinite(x)||x<0){ toast("اكتب رقماً صحيحاً"); return; } if(S.docCnt&&x!==S.docCnt[c]) await window.__docNo.set(c,x); }
+      toast("✓ تم حفظ الترقيم"); docLoadCounters(); }
+    catch(err){ const m=String(err&&err.message||""); toast(/below issued/.test(m)?tr("لا يمكن: صدر مستند برقم أكبر من هذا"):docErr(err)); } } });
 window.addEventListener("pagehide",()=>flushAll());
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") Object.keys(dirty).forEach(id=>{ if(dirty[id]){ clearTimeout(timers[id]); flush(id); } }); });
 document.getElementById("savePill").addEventListener("click",()=>{ if(saveState.err) retryAll(); });

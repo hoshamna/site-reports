@@ -1,11 +1,11 @@
 // A client's bank-transfer advice sent as a PDF must be read like a photo (amount, date, payer).
-// Uses the real pdf.js 3.11.174 the app loads: from PDFJS_DIR when set (offline), otherwise from cdnjs.
+// Uses the real pdf.js 3.11.174 the app loads (see libRoutes).
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright");
-const { openApp } = require("../support/app");
+const { openApp, libRoutes } = require("../support/app");
 
 async function makeAdvicePdf(file) {
   const b = await chromium.launch(); const p = await b.newPage();
@@ -16,14 +16,8 @@ async function makeAdvicePdf(file) {
 test("client payment: a PDF transfer advice is converted and read", async (t) => {
   const pdf = path.join(require("os").tmpdir(), "advice-test.pdf");
   await makeAdvicePdf(pdf);
-  const dir = process.env.PDFJS_DIR;
   const app = await openApp({
-    routes: async (ctx) => {
-      for (const [name, local] of [["pdf.min.js", "pdf.js"], ["pdf.worker.min.js", "pdf.worker.js"]]) {
-        await ctx.route(new RegExp("cdnjs\\.cloudflare\\.com/ajax/libs/pdf\\.js/3\\.11\\.174/" + name.replace(/\./g, "\\.") + "$"), (r) =>
-          dir ? r.fulfill({ status: 200, contentType: "text/javascript", body: fs.readFileSync(path.join(dir, local)) }) : r.continue());
-      }
-    },
+    routes: libRoutes,
     init: () => {
       const of = window.fetch;
       window.fetch = async (url, init) => {

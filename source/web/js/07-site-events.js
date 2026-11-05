@@ -184,7 +184,10 @@ app.addEventListener("click", async e=>{
   else if(a==="imgup"){ const k=b.dataset.k; const files=await pickFiles("image/*",false); if(!files.length) return; b.classList.add("busy");
     try{ if(!assets) toast("رفع الصور غير متاح في هذا العرض. افتح الصفحة من حسابك في تطبيق Claude أو claude.ai"); else { const r=await assets.upload(await compress(files[0],900,"image/png")); if(S.settings[k]) dropAsset(S.settings[k]); S.settings[k]=r.id; settingsSave(); toast("تم الرفع"); } }catch(e){ toast("تعذر الرفع"); } render(); }
   else if(a==="logodel"){ dropAsset(S.settings.logoId); S.settings.logoId=null; settingsSave(); render(); }
-  else if(a==="taxinv"){ const p=s.payments.find(x=>x.id===id); if(!p) return; if(!n(p.amount)){ toast("اكتب مبلغ الدفعة أولاً"); return; } openInv(s,p); S.lastInv=null; render(); }
+  else if(a==="taxinv"){ const p=s.payments.find(x=>x.id===id); if(!p) return; if(!n(p.amount)){ toast("اكتب مبلغ الدفعة أولاً"); return; }
+    if(p.invoice&&!p.invoice.docId){ openInv(s,p); S.lastInv=null; render(); } // issued before «المستندات»: download it as it was
+    else docOpen("tax",s,p); }
+  else if(a==="payrv"){ const p=s.payments.find(x=>x.id===id); if(!p) return; if(!n(p.amount)){ toast("اكتب مبلغ الدفعة أولاً"); return; } docOpen("rv",s,p); }
   else if(a==="invclose"){ S.inv=null; render(); }
   else if(a==="invgo"){ if(S.busy) return; const p=s.payments.find(x=>x.id===S.inv.pid); const d=S.inv.d;
     if(!String(d.to||"").trim()){ toast("اكتب اسم العميل بالإنجليزية"); return; }

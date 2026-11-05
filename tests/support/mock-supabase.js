@@ -5,6 +5,7 @@
   const LS=k=>{ try{ return JSON.parse(localStorage.getItem("mock-"+k)||"null"); }catch(e){ return null; } };
   const SV=(k,v)=>localStorage.setItem("mock-"+k,JSON.stringify(v));
   let DB=LS("db");
+  const seedCounters=()=>{ if(DB&&!DB.doc_counters) DB.doc_counters={rv:{counter:"rv",last:1022},inv:{counter:"inv",last:+((DB.settings.company.data||{}).invSeq||0)}}; };
   if(!DB){ DB={profiles:{},legacy_pins:{
       u1:{id:"u1",name:"هشام",role:"admin",h:"__H1__",data:{notifyLow:true},fails:0},
       u2:{id:"u2",name:"أحمد",role:"buyer",h:"__H2__",data:{mustChange:true},fails:0}},
@@ -13,7 +14,7 @@
     site_fin:{s1:{id:"s1",data:{total:85000,payments:[{id:"p1",amount:10000,date:"2026-10-01"}],purchases:[],labor:[],otherCosts:[]}}},
     marks:{}, custody:{c1:{id:"c1",data:{id:"c1",kind:"dep",amount:5000,date:"2026-11-01",by:"هشام"},created_by:null}},
     settings:{company:{id:"company",data:{company:"أصيل للألمنيوم والزجاج ذ م م",cuLow:1000}}}, media:{img1:1} }; }
-  const save=()=>SV("db",DB);
+  const save=()=>SV("db",DB); seedCounters();
   window.__mockDB=()=>DB; window.__log=[];
   let session=LS("session");
   const me=()=>session&&Object.values(DB.profiles).find(p=>p.auth_id===session.user.id);
@@ -22,12 +23,14 @@
   const kind=d=>(d&&d.kind)||"exp";
   const canRead=(t,r)=>{ const R=role(); if(!R) return false;
     if(t==="profiles"||t==="settings"||t==="sites") return true;
-    if(t==="site_fin"||t==="backups") return R==="admin"; if(t==="marks") return R!=="buyer";
+    if(t==="site_fin"||t==="backups"||t==="docs") return R==="admin"; if(t==="marks") return R!=="buyer";
+    if(t==="doc_counters") return R==="admin";
     if(t==="custody") return R==="admin"||r.created_by===session.user.id||[r.data.by,r.data.to,r.data.holder].includes(name());
     return false; };
   const canWrite=(t,r,op)=>{ const R=role(); if(!R) return false;
     if(t==="sites") return op==="delete"?R==="admin":R!=="buyer";
     if(t==="site_fin"||t==="settings") return R==="admin"; if(t==="marks") return R!=="buyer";
+    if(t==="docs") return R==="admin"&&op!=="delete";
     if(t==="custody") return R==="admin"||((r.created_by===session.user.id)&&kind(r.data)==="exp");
     return false; };
   const listeners=new Set();
@@ -40,8 +43,9 @@
     const run=async()=>{ await new Promise(r=>setTimeout(r,table==="profiles"?(window.__mockSlowProfiles||5):5)); const T=DB[table]||(DB[table]={});
       if(st.op==="select"){ if(!session) return {data:null,error:{code:"42501",message:"permission denied"}};
         let rows=Object.values(T).filter(r=>canRead(table,r)).filter(r=>st.filters.every(([k,v])=>String(r[k])===String(v)));
-        if(table==="profiles"||table==="backups") rows=rows.map(r=>({...r}));
-        return st.single?{data:rows[0]||null,error:null}:{data:rows.map(r=>(table==="profiles"||table==="backups")?r:{id:r.id,data:JSON.parse(JSON.stringify(r.data))}),error:null}; }
+        if(table==="doc_counters") seedCounters();
+        if(table==="profiles"||table==="backups"||table==="doc_counters") rows=rows.map(r=>({...r}));
+        return st.single?{data:rows[0]||null,error:null}:{data:rows.map(r=>(table==="profiles"||table==="backups"||table==="doc_counters")?r:{id:r.id,data:JSON.parse(JSON.stringify(r.data))}),error:null}; }
       if(st.op==="upsert"){ const v=st.val; const ex=T[v.id]; const row=ex?{...ex,data:v.data}:{id:v.id,data:v.data,created_by:session&&session.user.id};
         if(!canWrite(table,row,"upsert")||(ex&&!canWrite(table,ex,"upsert"))){ window.__log.push("DENIED upsert "+table+" "+v.id); return {data:null,error:{code:"42501",message:"new row violates row-level security policy for table \""+table+"\""}}; }
         T[v.id]=row; save(); notify(table,ex?"UPDATE":"INSERT",row); window.__log.push("upsert "+table+" "+v.id); return {data:null,error:null}; }
@@ -58,7 +62,13 @@
         session={access_token:"tok-"+u.id,user:{id:u.id,email}}; SV("session",session); fireAuth("SIGNED_IN"); return {data:{session},error:null}; },
       signOut:async()=>{ session=null; SV("session",null); fireAuth("SIGNED_OUT"); return {error:null}; } },
     from:q,
-    rpc:async n=>{ if(n!=="login_list") return {error:{message:"no rpc"}}; return {data:[...Object.values(DB.profiles).map(p=>({id:p.id,name:p.name,role:p.role,legacy:false})),...Object.values(DB.legacy_pins).map(p=>({id:p.id,name:p.name,role:p.role,legacy:true}))],error:null}; },
+    rpc:async(n,args)=>{
+      if(n==="next_doc_no"||n==="set_doc_counter"){ if(role()!=="admin") return {data:null,error:{message:"not allowed"}}; if(window.__noDocsSql) return {data:null,error:{message:"Could not find the function public."+n,code:"PGRST202"}};
+        seedCounters(); const C=DB.doc_counters; const k=args.p_counter;
+        const used=Math.max(0,...Object.values(DB.docs||{}).filter(d=>d.data.counter===k).map(d=>+d.data.seq||0));
+        if(n==="set_doc_counter"){ if(args.p_last<used) return {data:null,error:{message:"below issued "+used}}; C[k].last=args.p_last; save(); return {data:args.p_last,error:null}; }
+        const nx=Math.max(C[k].last,used)+1; C[k].last=nx; save(); window.__log.push("docno "+k+" "+nx); return {data:nx,error:null}; }
+      if(n!=="login_list") return {error:{message:"no rpc"}}; return {data:[...Object.values(DB.profiles).map(p=>({id:p.id,name:p.name,role:p.role,legacy:false})),...Object.values(DB.legacy_pins).map(p=>({id:p.id,name:p.name,role:p.role,legacy:true}))],error:null}; },
     channel:n=>{ const c={n,subs:[],on(ev,f,cb){ c.subs.push({table:f.table,cb}); return c; },subscribe(){ chans.push(c); return c; }}; return c; },
     removeChannel:c=>{ const i=chans.indexOf(c); if(i>=0) chans.splice(i,1); },
     storage:{from:()=>({

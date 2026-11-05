@@ -98,7 +98,7 @@ function backupPanel(){
 }
 async function makeBackup(){
   const strip=JSON.parse(JSON.stringify(S.sites)); Object.values(strip).forEach(x=>(x.floors||[]).forEach(fl=>Object.values(fl.faces||{}).forEach(f=>{ f.marks=[]; })));
-  const data={app:"aseel",version:1,at:new Date().toISOString(),by:cuMe||"",sites:strip,marks:S.mk,custody:S.cu,settings:S.settings};
+  const data={app:"aseel",version:1,at:new Date().toISOString(),by:cuMe||"",sites:strip,marks:S.mk,custody:S.cu,docs:S.docs,settings:S.settings};
   const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
   if(!downloads) throw new Error(tr("الحفظ غير متاح في هذا العرض"));
   await downloads.save({filename:`aseel-backup-${today()}.json`,data:blob}); S.lastPdf="backup";
@@ -159,6 +159,7 @@ app.addEventListener("click", async e=>{
     Object.values(d.sites||{}).forEach(x=>{ S.sites[x.id]=x; save(x); n++; });
     Object.values(d.marks||{}).forEach(m=>{ delete tomb[m.id]; putMark(m); });
     Object.values(d.custody||{}).forEach(x=>{ delete cuTomb[x.id]; S.cu[x.id]=x; cuPut(x,true); });
+    Object.values(d.docs||{}).forEach(x=>{ if(x&&x.id) docPut({...x}).catch(()=>{}); });
     if(d.settings){ const st={...S.settings,...d.settings}; delete st.users; S.settings=st; settingsSave(); }
     toast(tr("✓ تمت الاستعادة: ")+n); render(); }
   else if(a==="aumypin"){ S.pinView=true; render(); setTimeout(()=>{ const el=document.getElementById("au-new1"); el&&el.focus(); },50); }

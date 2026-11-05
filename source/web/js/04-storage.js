@@ -196,6 +196,7 @@ async function boot(){
       if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render();
     }, ()=>toast("انقطع الاتصال بقاعدة البيانات"));
     db.collection("custody").onSnapshot(q=>{ cuMerge(q.docs); S.cuLoaded=true; cuRecover(); cuCheckLow(); setTimeout(cuRecover,50000); if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, ()=>{});
+    db.collection("docs").onSnapshot(q=>{ docMerge(q.docs); S.docsLoaded=true; S.docsOk=true; if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, err=>{ if(isAdmin()&&/PGRST20[0-9]|42P01|Could not find|does not exist|schema cache/i.test(String(err&&(err.message||err.code)||""))){ S.docsOk=false; if(S.view==="docs") render(); } });
     db.doc("settings/company").onSnapshot(d=>{ if(d.exists){ S.settings={...S.settings,...JSON.parse(JSON.stringify(d.data()||{}))}; } if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); },()=>{});
     if(AU()) AU().onChange(onAuth); else { S.setLoaded=true; render(); }
   } else {

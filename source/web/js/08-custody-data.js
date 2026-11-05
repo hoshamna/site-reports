@@ -50,10 +50,18 @@ function cuSync(x){
   save(s);
 }
 const cuOrig={};
+/* new-invoice alert (Nov 2026): one push to the general manager (the main custody holder) for every invoice anyone enters,
+   once it has its amount; never for old invoices. */
+function invAlertIds(){ return [mainHolderId()].filter(Boolean); }
+function invAlert(x){ try{ if(!isExp(x)||x.reading||x.notified||!(n(x.amount)>0)) return; if(!x.createdAt||Date.now()-x.createdAt>864e5) return;
+  x.notified=true; if(!window.__push||!window.__push.notify) return;
+  const ids=invAlertIds(); if(!ids.length) return;
+  const body=[x.supplier||"",money(x.amount)+" درهم",x.target?cuTargetName(x):"",x.pay==="credit"?"آجل":""].filter(Boolean).join(" · ");
+  Promise.resolve(window.__push.notify(ids,"🧾 فاتورة جديدة"+(x.by?" — "+x.by:""),body,"inv-"+x.id)).catch(()=>{}); }catch(e){} }
 function cuPut(x, now){
   if(S.canWrite===false){ toast("صلاحيتك مشاهدة فقط، فلا يُحفظ التعديل"); return; }
   delete cuOrig[x.id];
-  x.updatedAt=Date.now(); S.cu[x.id]=x; cuSync(x);
+  x.updatedAt=Date.now(); S.cu[x.id]=x; invAlert(x); cuSync(x);
   const go=()=>{ const cur=S.cu[x.id]; if(!cur) return; cuPend[x.id]=(cuPend[x.id]||0)+1; const body=JSON.parse(JSON.stringify(cur)); delete body.reading;
     if(S.mode==="db") track(db.doc("custody/"+x.id).set(body)).then(()=>{ delete cuRetry[x.id]; }).catch(e=>{ cuRetry[x.id]=1; const m=String(e&&e.message||e&&e.code||""); toast(/custody|schema cache|does not exist|relation/i.test(m)?"جدول العهدة غير موجود في قاعدة البيانات — نفّذ أوامر SQL الخاصة بالعهدة":"تعذر حفظ العهدة: "+m); }).finally(()=>{ cuPend[x.id]--; });
     else { cuLocal(); cuPend[x.id]--; } };

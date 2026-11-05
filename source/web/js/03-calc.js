@@ -26,7 +26,7 @@ const today = () => new Date().toISOString().slice(0,10);
 const blobUrl = id => id==="__logo"?"./logo.png":(window.__pub?window.__pub(id):"/_blob/"+id);
 const mediaFetch = async id => { if(window.__mediaBlob&&id!=="__logo") return new Response(await window.__mediaBlob(id)); return fetch(blobUrl(id)); };
 window.addEventListener("aseel-media",()=>{ if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); });
-function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=tr(msg); document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }
+function toast(msg){ const t=document.createElement("div"); const m0=String(msg||""); t.className="toast"+(/^\s*(✓|✅|💾|🔔)/.test(m0)?" ok":/^\s*(⛔|❌)|لم يُحفظ|تعذّر|فشل/.test(m0)?" err":""); t.textContent=tr(msg); document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }
 
 function newSite(){
   return { id:uid(), name:tr("مشروع جديد"), client:"", location:"", engineer:"", engPhone:"", consultant:"", startDate:today(), status:"جاري", total:0, notes:"", coverId:null,

@@ -5,7 +5,8 @@ function dateShow(i){ if(i.parentNode&&i.parentNode.classList&&i.parentNode.clas
   const w=document.createElement("span"); w.className="dwrap"; i.parentNode.insertBefore(w,i); w.appendChild(i); const d=document.createElement("span"); d.className="dshow"; d.textContent=fmtDate(i.value); w.appendChild(d); }
 document.addEventListener("input",e=>{ const t=e.target; if(t&&t.type==="date"&&t.nextSibling&&t.nextSibling.className==="dshow") t.nextSibling.textContent=fmtDate(t.value); },true);
 function render(){
-  document.documentElement.dir = lang==="en"?"ltr":"rtl"; document.documentElement.lang = lang;
+  document.documentElement.dir = lang==="en"?"ltr":"rtl"; document.documentElement.lang = lang; applyTheme();
+  if(!(S.mode==="loading"||!S.setLoaded)){ const sp=document.getElementById("splash"); if(sp&&!sp.classList.contains("gone")){ sp.classList.add("gone"); setTimeout(()=>sp.remove(),450); } }
   if(S.mode==="loading"||!S.setLoaded){ app.innerHTML=`<div class="empty">جارٍ التحميل…</div>`; translate(app); return; }
   if(!S.user){ app.innerHTML=loginView(); translate(app); return; }
   if(S.user.mustChange||S.pinView){ const keep=["au-new1","au-new2"].map(k=>(document.getElementById(k)||{}).value||""); app.innerHTML=pinChangeView(); translate(app); ["au-new1","au-new2"].forEach((k,i)=>{ const el=document.getElementById(k); if(el&&keep[i]) el.value=keep[i]; }); return; }
@@ -13,7 +14,10 @@ function render(){
   if(isBuyer()){ S.view="buyer"; app.innerHTML = buyerView(); }
   else if(S.view==="site" && site()){ attachMarks(site()); app.innerHTML = siteView(site()); }
   else if(S.view==="cust" && isAdmin()){ app.innerHTML = cuView(); }
+  else if(S.view==="settings"){ app.innerHTML = settingsView(); }
   else { S.view="list"; app.innerHTML = listView(); }
+  if(S.view!=="site") app.insertAdjacentHTML("beforeend", bottomNav());
+  document.body.classList.toggle("with-nav", !!S.user&&!isBuyer()&&S.view!=="site");
   if(S.cuPick) app.insertAdjacentHTML("beforeend", cuPickHtml());
   if(S.logoutAsk) app.insertAdjacentHTML("beforeend", logoutSheet());
   if(S.voice&&S.view==="site") app.insertAdjacentHTML("beforeend", voiceSheet());
@@ -25,55 +29,33 @@ function render(){
   translate(app);
   app.querySelectorAll('input:not([type]),input[type="text"],textarea').forEach(i=>{ if(!i.hasAttribute("dir")) i.dir="auto"; });
   app.querySelectorAll('input[type="date"]').forEach(dateShow);
+  if(S.view==="list"&&S.q) applySearch();
   if(S.needSave){ const ns=S.needSave; S.needSave=null; save(ns); }
   const pw2=document.getElementById("planWrap"); if(pw2&&sc){ pw2.scrollLeft=sc[0]; pw2.scrollTop=sc[1]; window.scrollTo(0,wy); }
 }
-function header(sub){
-  return `<div class="top"><div class="brand"><span class="eyebrow u">${esc(coName())}</span><h1>${sub}</h1></div>
-  <div class="row">${userChip()}<button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"English"}</bdi></button>
-  ${S.view==="list" ? (isAdmin()?`<button class="primary" data-act="new">+ موقع جديد</button>`:"") : `<button data-act="back">${lang==="en"?"←":"→"} كل المواقع</button>`}</div></div>`;
+function header(sub,info){
+  const site_=S.view==="site";
+  return `<div class="top${site_?" top-site":""}"><div class="brand">${site_?`<button class="backbtn" data-act="back" aria-label="كل المواقع">${lang==="en"?"←":"→"}</button>`:""}<span class="eyebrow ${info?"":"u"}">${info||esc(coName())}</span><h1>${sub}</h1></div>
+  <div class="row">${site_?`<button class="repbtn2" data-act="repopen">📄 <span>التقارير</span></button>`:`${userChip()}<button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"EN"}</bdi></button>`}</div></div>`;
 }
 function listView(){
-  const list = Object.values(S.sites).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  let body;
-  if(S.mode==="loading") body=`<div class="empty">جارٍ تحميل المواقع…</div>`;
-  else if(!list.length) body=`<div class="empty">لا توجد مواقع بعد. اضغط «موقع جديد» وأدخل اسم الموقع وقيمة المشروع وعدد الشبابيك والأبواب.</div>`;
-  else body=`<div class="cards">${list.map(s=>{ const c=calc(s); return `<button class="card" data-act="open" data-id="${s.id}">
-    <div class="cover">${s.coverId?`<img src="${blobUrl(s.coverId)}" alt="">`:"بدون صورة"}</div>
-    <div class="body"><div class="row" style="justify-content:space-between"><h3>${U(s.name)}</h3>
-    <span class="chip ${s.status==="منتهي"?"done":""}">${esc(s.status)}</span></div>
-    ${!isEng()&&dueAlerts(s).length?`<span class="chip bad">💰 دفعة مستحقة <span class="num">${money(dueAlerts(s).reduce((a,m)=>a+m.left,0))}</span></span>`:""}
-    ${s.example?`<span class="chip ex">بيانات مثال — يمكن حذفها</span>`:""}
-    <span class="small muted">${U([s.location,s.consultant].filter(Boolean).join(" · "))}</span>
-    <div class="bar"><i style="width:${c.pct}%"></i></div>
-    <div class="row small" style="justify-content:space-between"><span>الإنجاز <span class="num">${c.pct}%</span></span>${isEng()?"":`<span>المتبقي <span class="num">${money(c.remaining)}</span> درهم</span>`}</div>
-    </div></button>`; }).join("")}</div>`;
-  const note = installHint() ? `<div class="notice small">${installHint().replace(/^<br>/,"")}</div>` : "";
-  return header("تقارير المواقع") + note + (isAdmin()?cuHome():"") + (list.length?`<div class="row" style="justify-content:space-between;align-items:baseline"><h2>ماذا تريد أن تفعل؟</h2><span class="small muted">اضغط الزر ثم اختر الموقع</span></div>${qgridHtml()}<h2 style="margin-top:6px">المواقع</h2>`:"") + body + (S.pick?pickSheetHtml():"") + pushPanel() + backupPanel() + usersPanel() + (!isAdmin()?"":`
-  <details class="panel" ${S.settings.logoId?"":"open"}><summary style="cursor:pointer;font-weight:600">🏢 ترويسة الشركة في التقارير (الشعار والبيانات)</summary>
-   <div class="grid2"><label>اسم الشركة (عربي)<input id="co-ar" data-set="company" value="${esc(S.settings.company)}"></label>
-   <label>اسم الشركة (إنجليزي)<input id="co-en" data-set="companyEn" value="${esc(S.settings.companyEn)}" dir="ltr"></label>
-   <label>العنوان<input id="co-addr" data-set="address" value="${esc(S.settings.address||"")}" placeholder="الشارقة، الإمارات العربية المتحدة"></label>
-   <label>الهاتف<input id="co-tel" data-set="phone" value="${esc(S.settings.phone||"")}" dir="ltr" inputmode="tel"></label>
-   <label>البريد الإلكتروني<input id="co-mail" data-set="email" value="${esc(S.settings.email||"")}" dir="ltr" inputmode="email"></label>
-   <label>الرقم الضريبي (TRN)<input id="co-trn" data-set="trn" value="${esc(S.settings.trn||"")}" dir="ltr"></label>
-   <label>الاسم القانوني في الفاتورة<input id="co-legal" data-set="legalName" value="${esc(S.settings.legalName||"")}" dir="ltr" placeholder="ASEEL ALUMINIUM & GLASS WORKS LLC"></label>
-   <label>صندوق البريد (P.O Box)<input id="co-po" data-set="poBox" value="${esc(S.settings.poBox||"")}" dir="ltr"></label>
-   <label>بادئة رقم الفاتورة<input id="co-ipx" data-set="invPrefix" value="${esc(S.settings.invPrefix||"INV")}" dir="ltr"></label>
-   <label>آخر رقم فاتورة صدر<input id="co-iseq" data-set="invSeq" type="number" inputmode="numeric" value="${esc(S.settings.invSeq||0)}"></label>
-   <label>ص.ب / الموقع الإلكتروني<input id="co-web" data-set="web" value="${esc(S.settings.web||"")}" dir="ltr"></label></div>
-   <div class="row">${S.settings.logoId?`<img src="${blobUrl(S.settings.logoId)}" alt="شعار الشركة" style="height:64px;max-width:200px;object-fit:contain;background:#fff;border-radius:6px;padding:4px;border:1px solid var(--line)">`:`<span class="small muted">لم يُرفع شعار بعد.</span>`}
-    <button class="primary" data-act="logoup">${S.settings.logoId?"تغيير الشعار":"رفع شعار الشركة"}</button>${S.settings.logoId?`<button class="ghost danger" data-act="logodel">حذف الشعار</button>`:""}</div>
-   <div class="row">${S.settings.stampId?`<img src="${blobUrl(S.settings.stampId)}" alt="الختم" style="height:56px;background:#fff;border-radius:6px;padding:2px">`:""}<button data-act="imgup" data-k="stampId">${S.settings.stampId?"تغيير ختم الشركة":"رفع ختم الشركة (للفاتورة)"}</button>
-    ${S.settings.sigId?`<img src="${blobUrl(S.settings.sigId)}" alt="التوقيع" style="height:56px;background:#fff;border-radius:6px;padding:2px">`:""}<button data-act="imgup" data-k="sigId">${S.settings.sigId?"تغيير التوقيع":"رفع التوقيع (للفاتورة)"}</button></div>
-   <p class="small muted" style="margin:0">تظهر هذه البيانات في ترويسة كل التقارير وتذييلها، وفي الفاتورة الضريبية.</p></details>`);
+  const list = Object.values(S.sites);
+  const act=list.filter(s=>s.status!=="منتهي"); const open=list.reduce((a,s)=>a+(s.issues||[]).filter(x=>x.status!=="done").length,0);
+  const stats=list.length?`<div class="hstats"><div class="stat"><span class="small muted">مواقع جارية</span><b class="num">${act.length}</b></div>
+   <div class="stat ${open?"badst":""}" ${open?'data-act="sfilt" data-k="issue" role="button"':""}><span class="small muted">مشكلات مفتوحة</span><b class="num">${open}</b></div></div>`:"";
+  return header("تقارير المواقع") + stats + homeAlerts() + (isAdmin()?salaryBanner():"") + (list.length?`<h2 class="hsec">إضافة سريعة</h2>${quickStrip()}<h2 class="hsec">المواقع</h2>`:"") + homeList(list)
+   + (isAdmin()&&list.length?`<button class="fab" data-act="new">${ico("plus")}<span>موقع جديد</span></button>`:"") + (S.pick?pickSheetHtml():"");
 }
 function siteView(s){
   const TB=isEng()?TABS.filter(t=>["summary","plan","items","photos","issues"].includes(t[0])):TABS; if(!TB.some(t=>t[0]===S.tab)) S.tab="summary";
-  const tab = TB.map(([k,l,ic])=>`<button role="tab" aria-selected="${S.tab===k}" data-act="tab" data-tab="${k}"><span class="tic">${ic}</span>${l}${(k==="issues"&&(s.issues||[]).some(x=>x.status!=="done"))||(k==="money"&&dueAlerts(s).length)?` <i class="tdot"></i>`:""}</button>`).join("");
+  const openN=(s.issues||[]).filter(x=>x.status!=="done").length;
+  const tab = TB.map(([k,l,ic])=>`<button role="tab" aria-selected="${S.tab===k}" data-act="tab" data-tab="${k}"><span class="tic">${ic}</span>${l}${k==="issues"&&openN?` <span class="tcount num">${openN}</span>`:(k==="money"&&dueAlerts(s).length)?` <i class="tdot"></i>`:""}</button>`).join("");
+  const info=[s.engineer,s.consultant?tr("الاستشاري: ")+s.consultant:""].filter(Boolean).map(x=>`<bdi class="u">${esc(dEN(x))}</bdi>`).join(" · ");
+  const st=siteState(s); const jt=jobType(s);
+  const hero=S.tab==="summary"?`<div class="hero ${s.coverId?"":"nophoto"} jt-${jt}">${s.coverId?`<img src="${blobUrl(s.coverId)}" alt="صورة الموقع">`:ico(jt,"heroic")}
+   <div class="herotxt"><span class="chip c-${st}">${STLBL[st]}</span><span>${s.location?U(s.location):JOBLBL[jt]}</span></div></div>`:"";
   const body = {summary:tSummary, plan:tPlan, items:tItems, money:tMoney, purchases:tPurchases, profit:tProfit, photos:tPhotos, issues:tIssues}[S.tab](s);
-  return header(U(s.name)) + `
-  <div class="row"><button class="primary big" data-act="repopen">📄 التقارير</button></div>
+  return header(U(s.name),info) + hero + `
   ${/Android/.test(navigator.userAgent)&&/; wv\)/.test(navigator.userAgent)&&["plan","photos","purchases","money","issues","summary"].includes(S.tab)?`<div class="notice small"><b>رفع الصور والتصوير لا يعمل داخل تطبيق Claude على أندرويد.</b> افتح الصفحة من متصفح Chrome: ادخل claude.ai وسجّل الدخول بنفس الحساب، ثم افتح «تقارير مواقع أصيل» من قائمة الـ Artifacts. كل بياناتك موجودة هناك.</div>`:""}
   ${isEng()?"":alertBanner(s)}
   <div class="tabs" role="tablist">${tab}</div>${body}${S.repSheet?repSheetHtml(s):""}${S.inv?invSheetHtml(s):""}${S.view2?viewerHtml(s):""}${S.payPick?`<div class="sheet" role="dialog" aria-label="دفعة مستلمة"><div class="row" style="justify-content:space-between"><h3>💵 دفعة مستلمة — كيف استلمتها؟</h3><button class="ghost" data-act="paypickclose" aria-label="إغلاق">✕</button></div>${payMethodBtns()}</div>`:""}`;
@@ -82,12 +64,15 @@ function f(path, label, val, type="text", extra=""){
   return `<label>${label}<input id="f-${path}" data-f="${path}" type="${type}" value="${esc(val)}" ${type==="number"?'inputmode="decimal" min="0"':""} ${extra}></label>`;
 }
 function tSummary(s){
-  const c=calc(s); const open=(s.issues||[]).filter(x=>x.status!=="done").length;
-  return `<div class="panel">
-   <div class="ring-row"><div class="ring" style="--p:${c.pct}"><b class="num">${c.pct}%</b><span>الإنجاز</span></div>
-    <div class="mini">${isEng()?"":`<div><span class="muted small">قيمة المشروع</span><b class="num">${money(c.total)}</b></div><div><span class="muted small">المستلم</span><b class="num">${money(c.received)}</b></div>
-    <div class="hl"><span class="small">المتبقي</span><b class="num">${money(c.remaining)}</b></div>`}${open?`<div class="warn" data-act="tab" data-tab="issues" role="button"><span class="small">مشاكل مفتوحة</span><b class="num">${open}</b></div>`:""}</div></div></div>
-  ${qgridHtml()}
+  const c=calc(s); const open=(s.issues||[]).filter(x=>x.status!=="done");
+  const stg=STAGES.map(([k,l])=>{ const q=(s.items||[]).reduce((a,it)=>a+n(it.qty),0), d=(s.items||[]).reduce((a,it)=>a+Math.min(n(it[k]),n(it.qty)),0);
+    return `<div class="stg"><span class="small muted">${l.replace(/^(تثبيت|تركيب) /,"")}</span><b class="num">${d}/${q}</b><span class="bar"><i style="width:${q?Math.round(d/q*100):0}%"></i></span></div>`; }).join("");
+  return `<div class="panel progcard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>الإنجاز</h2><b class="num bigpct">${c.pct}%</b></div>
+   <div class="bar big"><i style="width:${c.pct}%"></i></div><div class="stgs">${stg}</div></div>
+  ${isEng()?"":`<div class="panel fincard"><div class="frow"><span class="muted">قيمة المشروع</span><b class="num">${money(c.total)}</b></div><div class="frow"><span class="muted">المستلم</span><b class="num">${money(c.received)}</b></div>
+   <div class="frow tot"><span>المتبقي</span><b class="num">${money(c.remaining)} <small>درهم</small></b></div></div>`}
+  ${open.length?`<button class="hbanner bad" data-act="tab" data-tab="issues">${ico("alert")}<span><b><span class="num">${open.length}</span> ${open.length===1?"مشكلة مفتوحة":"مشكلات مفتوحة"}</b>${open.slice(0,2).filter(x=>x.text).map(x=>`<span class="small"> · <bdi class="u">${esc(String(x.text).slice(0,40))}</bdi></span>`).join("")}</span></button>`:""}
+  <div class="panel qpanel"><h3 class="muted">إضافة سريعة</h3>${qgridHtml()}</div>
   ${voiceNotesPanel(s)}
   <details class="panel" ${(!s.name||s.name===tr("مشروع جديد")||S.newSite===s.id)?"open":""}><summary style="cursor:pointer;font-weight:600">✏️ بيانات المشروع</summary>
    <div class="grid2">${f("name","اسم المشروع",s.name)}${f("location","الموقع",s.location)}
@@ -103,7 +88,7 @@ function tSummary(s){
 function activeSites(){ return Object.values(S.sites).filter(x=>x.status!=="منتهي").sort((a,b)=>(a.id===S.lastSite?-1:b.id===S.lastSite?1:0)||(b.updatedAt||0)-(a.updatedAt||0)); }
 function goSite(id){ S.cur=id; S.view="site"; S.tab="summary"; S.lastPdf=null; S.lastSite=id; try{ localStorage.setItem("sites-last",id); }catch(e){} }
 const QACTS=[["qvoice","🎤","ملاحظة صوتية","تُكتب وتُلخَّص وحدها"],["qphoto","📷","تصوير الموقع","صورة للأعمال"],["qplan","🗺️","تحديث الإنجاز","فريم · زجاج · سيليكون"],["cuscanc","🧾","تصوير فاتورة","ثم اختر الموقع"],["qchq","💵","دفعة مستلمة","شيك · تحويل · نقداً"],["qiss","⚠️","مشكلة فنية","مع صورة"],["repopen","📄","التقارير","PDF وواتساب"]];
-function qgridHtml(){ return `<div class="qgrid">${QACTS.filter(q=>!isEng()||q[0]!=="qchq").map(([a,ic,t,d])=>`<button class="qbtn" data-act="${a}"><span class="qic">${ic}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("")}</div>`; }
+function qgridHtml(){ return `<div class="qgrid">${QACTS.filter(q=>(!isEng()||q[0]!=="qchq")&&!(S.view==="site"&&q[0]==="repopen")).map(([a,ic,t,d])=>`<button class="qbtn" data-act="${a}"><span class="qic">${ic}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("")}</div>`; }
 function pickSheetHtml(){ const q=QACTS.find(x=>x[0]===S.pick)||QACTS[0];
   return `<div class="sheet" role="dialog" aria-label="اختر الموقع"><div class="row" style="justify-content:space-between"><h3>${q[1]} ${q[2]} — اختر الموقع</h3><button class="ghost" data-act="pickclose" aria-label="إغلاق">✕</button></div>
    <div class="replist">${activeSites().map(x=>{ const c=calc(x); return `<button class="repbtn" data-act="pickgo" data-q="${S.pick}" data-id="${x.id}"><span class="qic">${x.id===S.lastSite?"⭐":"🏗️"}</span><span><b>${U(x.name)}</b><br><span class="small muted">${U(x.location||"")} · الإنجاز <span class="num">${c.pct}%</span></span></span></button>`; }).join("")}</div></div>`; }

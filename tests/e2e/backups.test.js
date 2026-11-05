@@ -9,7 +9,7 @@ test("automatic backups can be listed and restored", async (t) => {
     2: { id: 2, at: "2026-11-02T00:00:00Z", kind: "auto", size: 480, data: { app: "aseel", sites: {} } } }; }, 0); } });
   t.after(() => app.close());
   await app.login("هشام", "1234");
-  await app.eval(() => { __T.S.bkOpen = true; __T.render(); });
+  await app.eval(() => { __T.S.view = "settings"; __T.S.bkOpen = true; __T.render(); });
   await app.page.waitForSelector('[data-act="bkautodl"]');
   assert.equal(await app.page.locator('[data-act="bkautodl"]').count(), 2);
   await app.page.click('[data-act="bkautorestore"][data-id="1"]');

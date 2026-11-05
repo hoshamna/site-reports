@@ -29,7 +29,7 @@ test("sign-in, PIN rules and user management", async (t) => {
   });
 
   await t.test("a full-access user can add a user, who must change the PIN", async () => {
-    await app.eval(() => { __T.S.usersOpen = true; __T.render(); });
+    await app.eval(() => { __T.S.view = "settings"; __T.S.usersOpen = true; __T.render(); });
     await app.page.fill("#au-add-name", "محمد"); await app.page.selectOption("#au-add-role", "eng"); await app.page.fill("#au-add-pin", "1111");
     await app.page.click('[data-act="auadd"]'); await app.page.waitForTimeout(500);
     const u = (await app.eval(() => __T.users())).find((x) => x.name === "محمد");
@@ -67,7 +67,7 @@ test("the salaries reminder is its own choice per user", async (t) => {
   const app = await openApp();
   t.after(() => app.close());
   await app.login("هشام", "1234");
-  await app.eval(() => { __T.S.usersOpen = true; __T.render(); });
+  await app.eval(() => { __T.S.view = "settings"; __T.S.usersOpen = true; __T.render(); });
   await app.page.check('[data-ausalary="u1"]');
   await app.page.waitForTimeout(500);
   const d = (await app.db()).profiles.u1.data;

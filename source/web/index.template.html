@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>تقارير مواقع أصيل</title>
-<meta name="theme-color" content="#11823a">
+<meta name="theme-color" content="#0d5a2b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -30,6 +30,8 @@ img{max-width:100%} [hidden]{display:none!important}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 {{DATA_LAYER}}</script>
+<div id="splash" aria-hidden="true"><img src="./mark.png" alt=""><b>أصيل للألمنيوم والزجاج</b><span>تقارير المواقع</span><i></i></div>
+<script>try{ if(localStorage.getItem("sites-lang")==="en"){ var sp=document.getElementById("splash"); sp.querySelector("b").textContent="Aseel Aluminium & Glass"; sp.querySelector("span").textContent="Site reports"; } var th=localStorage.getItem("sites-theme"); if(th==="light"||th==="dark") document.documentElement.setAttribute("data-theme",th); }catch(e){}</script>
 <div class="wrap" id="app"></div>
 <button id="savePill" class="savepill" hidden type="button"></button>
 <div id="report" aria-hidden="true"></div>

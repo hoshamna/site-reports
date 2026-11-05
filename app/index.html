@@ -1627,7 +1627,7 @@ function settingsView(){ const p=themePref(); const r=ROLES[role()]||["",""];
    <div class="setline"><span>اللغة</span><div class="seg">${[["ar","عربي"],["en","English"]].map(([k,l])=>`<button aria-pressed="${lang===k}" ${lang===k?"":'data-act="lang"'}><bdi class="u">${l}</bdi></button>`).join("")}</div></div>
    <div class="setline"><span>الوضع</span><div class="seg">${[["auto","تلقائي"],["light","فاتح"],["dark","داكن"]].map(([k,l])=>`<button aria-pressed="${p===k}" data-act="theme" data-k="${k}">${l}</button>`).join("")}</div></div>
    <p class="small muted" style="margin:0">«تلقائي» يتبع إعداد الهاتف: داكن في الليل إذا كان الهاتف داكناً.</p></div>
-  ${hint?`<div class="notice small">${hint.replace(/^<br>/,"")}</div>`:""}
+  ${hint?`<div class="notice small"><span>${hint.replace(/^<br>/,"")}</span></div>`:""}
   ${pushPanel()}${backupPanel()}${usersPanel()}${companyPanel()}
   <p class="small muted center">${esc(coName())}</p>`; }
 /* ---- events for the parts above ---- */

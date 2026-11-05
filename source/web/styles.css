@@ -519,6 +519,5 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 #report .info{background:#f4f9f5;border:1px solid #d6e9dc;border-inline-start:5px solid #11823a;border-radius:10px;padding:12px 16px;gap:8px 14px}
 #report h2{display:flex;align-items:center;gap:8px}
 #report h2::before{content:"";width:6px;height:18px;border-radius:3px;background:#f2b705;flex:0 0 auto}
-/* report footer carries the contact details (no TRN; that is on the tax invoice only) */
-#report .lhfoot,.lhfoot{border-top:3px solid transparent;border-image:linear-gradient(90deg,#11823a 0 34%,#f2b705 34% 67%,#7a4a24 67% 100%) 1;padding:8px 24px 6px;gap:4px 16px;font-size:11px;color:#4b5b62}
-.lhfoot b{color:#5a3216}
+/* report footer: the same green contact band as the tax invoice (no TRN) */
+#report .lhfoot,.lhfoot{width:794px;box-sizing:border-box;direction:ltr;display:flex;justify-content:center;flex-wrap:wrap;gap:2px 14px;background:#2fbf3a;color:#fff;font-family:Arimo,Arial,sans-serif;font-size:12.5px;padding:12px 24px;text-align:center;border:none}

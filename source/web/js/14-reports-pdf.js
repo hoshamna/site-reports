@@ -186,12 +186,12 @@ async function makePdf(s, kind){
     pdf.addImage(cv.toDataURL("image/jpeg",0.86),"JPEG",(W-w)/2,y,w,h); y+=h;
   }
   const pages=pdf.getNumberOfPages();
-  let foot=null; try{ const fe=document.createElement("div"); fe.className="lhfoot"; fe.innerHTML=`<span class="u"><b>${lang==="en"?esc(co.companyEn||co.company):esc(co.company)}</b></span>${co.address?`<span class="u">📍 ${esc(co.address)}</span>`:""}${co.phone?`<span dir="ltr">☎ ${esc(co.phone)}</span>`:""}${co.email?`<span dir="ltr">✉ ${esc(co.email)}</span>`:""}${co.web?`<span dir="ltr">${esc(co.web)}</span>`:""}`;
+  let foot=null; try{ const fe=document.createElement("div"); fe.className="lhfoot"; fe.innerHTML=[co.poBox?`P.O Box ${esc(co.poBox)}`:"",co.address?esc(co.address):"",co.phone?`☎ ${esc(co.phone)}`:"",co.email?`✉ ${esc(co.email)}`:"",co.web?`🌐 ${esc(co.web)}`:""].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
     rep.appendChild(fe); translate(fe); const fc=await html2canvas(fe,{scale:2,backgroundColor:"#ffffff",logging:false}); foot={d:fc.toDataURL("image/png"),r:fc.height/fc.width}; fe.remove(); }catch(e){}
   for(let p=1;p<=pages;p++){ pdf.setPage(p);
-    if(foot){ const fw=W-24, fh=fw*foot.r; pdf.addImage(foot.d,"PNG",12,H-fh-6.5,fw,fh); }
-    pdf.setDrawColor(17,130,58); pdf.setLineWidth(0.4); pdf.line(12,H-7.5-(foot?(W-24)*foot.r:0),W-12,H-7.5-(foot?(W-24)*foot.r:0));
-    pdf.setFontSize(8); pdf.setTextColor(120); pdf.text(`${p} / ${pages}`,W/2,H-3,{align:"center"}); }
+    /* green contact band across the foot of every page, like the tax invoice */
+    const fh=foot?W*foot.r:0; if(foot) pdf.addImage(foot.d,"PNG",0,H-fh,W,fh);
+    pdf.setFontSize(8); pdf.setTextColor(120); pdf.text(`${p} / ${pages}`,W/2,H-fh-2,{align:"center"}); }
   rep.innerHTML="";
   const fname=`${tr(kind==="fin"?"التقرير المالي":kind==="pur"?"التقرير الداخلي":"تقرير الأعمال")} ${s.name} ${today()}.pdf`.replace(/[\\/:*?"<>|]/g,"-");
   const blob=pdf.output("blob");

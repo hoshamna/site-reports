@@ -145,16 +145,17 @@ function cuCalc(){
   const low=n(S.settings.cuLow??1000); const mainBal=holderBal("main");
   return {dep, cash, credit, spCash, spAll, bal:dep-cash-spCash, mainBal, owed:credit-spAll, miss:all.filter(x=>isExp(x)&&(!cuLast()||(x.createdAt||0)>cuLast().createdAt)&&needsReview(x)).length, low, isLow:low>0&&mainBal<low};
 }
-const holderOf=x=>x.holder||"main";
+// one custody only (5 Nov 2026): every cash invoice, whoever uploads it, comes off the main custody
+const holderOf=x=>"main";
 const mainHolderId=()=>S.settings.cuMainHolder||((users().find(u=>u.role==="admin")||{}).id)||"";
 const mainHolder=()=>{ const id=mainHolderId(); const u=id&&users().find(x=>x.id===id); return u?u.name:""; };
-function holders(){ const mh=mainHolder(); const set=new Set(); Object.values(S.cu).forEach(x=>{ if(x.kind==="xfer"&&x.to) set.add(x.to); if(isExp(x)&&x.holder&&x.holder!=="main") set.add(x.holder); }); users().filter(u=>u.role==="buyer").forEach(u=>set.add(u.name)); if(mh&&!Object.values(S.cu).some(x=>(x.kind==="xfer"&&x.to===mh)||(isExp(x)&&x.holder===mh))) set.delete(mh); return [...set]; }
-function subDefault(name){ return !!name&&name!==mainHolder()&&users().some(u=>u.name===name&&u.role==="buyer"); }
+function holders(){ return []; }
+function subDefault(name){ return false; }
 function delta(x,h){ const a=n(x.amount);
   if(x.kind==="dep") return (h==="all"||h==="main")?a:0;
   if(isExp(x)) return (x.pay==="credit"||x.pay==="gm")?0:((h==="all"||holderOf(x)===h)?-a:0);
   if(x.kind==="spay") return x.method==="cash"&&(h==="all"||h==="main")?-a:0;
-  if(x.kind==="xfer"){ if(h==="all"||!x.to) return 0; const out=x.dir!=="back"; if(h==="main") return out?-a:a; if(h===x.to) return out?a:-a; }
+  // old person-custody transfers no longer move money (they are deleted from the custody screen)
   return 0; }
 const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=>a+delta(x,h),0);
 const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");

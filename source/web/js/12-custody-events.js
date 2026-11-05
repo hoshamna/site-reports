@@ -59,6 +59,7 @@ app.addEventListener("click", async e=>{
   else if(a==="cufile"&&x){ const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return; b.classList.add("busy"); b.textContent=tr("جارٍ الرفع…");
     try{ const u=await cuUpload(files[0]); if(u){ dropAsset(x.fileId); x.fileId=u.r.id; x.fileType=u.r.type; cuPut(x,true); if(u.r.type==="image"&&!n(x.amount)) await cuReadDep(id,u.f); } }catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الملف"); } render(); }
   else if(a==="cudel"&&x){ const key="cu"+id; if(S.armed===key){ S.armed=null; const ids=[id,...(x.kind==="xfer"?Object.values(S.cu).filter(y=>y.xferId===id).map(y=>y.id):[])]; const snap=cuSnap(ids); cuDel(id); undoToast("🗑️ تم الحذف", snap); render(); } else { S.armed=key; setTimeout(()=>{ if(S.armed===key){ S.armed=null; render(); } },4000); render(); } }
+  else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer").map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
   else if(a==="cusup"){ S.cuSup=b.dataset.k; render(); window.scrollTo(0,0); }
   else if(a==="cusupx"){ S.cuSup=null; render(); }
   else if(a==="cuspay"){ if(!needMe()) return; const s=cuSuppliers().find(v=>v.key===b.dataset.k); if(!s) return;

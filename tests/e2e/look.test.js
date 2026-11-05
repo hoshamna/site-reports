@@ -51,3 +51,22 @@ test("bottom bar, settings, theme, filters and search", async (t) => {
   assert.deepEqual(await arabicLeft(page), [], "site in English has no Arabic");
   assert.deepEqual(app.errors, []);
 });
+
+test("old person-custody transfers: shown once with a delete button, then gone", async (t) => {
+  const app = await openApp({ init: () => { setTimeout(() => { const D = window.__mockDB();
+    D.custody.x1 = { id: "x1", created_by: null, data: { id: "x1", kind: "xfer", dir: "out", to: "أحمد", amount: 100, date: "2026-11-02", by: "هشام" } };
+    D.custody.e1 = { id: "e1", created_by: null, data: { id: "e1", kind: "exp", holder: "أحمد", by: "أحمد", target: "gen", amount: 40, pay: "cash", date: "2026-11-03", supplier: "ADNOC" } }; }, 0); } });
+  t.after(() => app.close());
+  const { page } = app;
+  await app.login("هشام", "1234");
+  await page.click('[data-act="cuopen"]'); await page.waitForTimeout(300);
+  assert.equal(await app.eval(() => __T.holderBal("main")), 4960, // the test data starts with a 5000 deposit
+    "the invoice comes off the main custody; the transfer does not count");
+  assert.ok(!(await app.text()).includes("العُهد"), "no per-person custody panel");
+  assert.equal(await page.locator('[data-act="cuxfer"]').count(), 0, "no transfer-to-a-person button");
+  await page.click('[data-act="cuxferdel"]'); await page.click('[data-act="cuxferdel"]'); await page.waitForTimeout(600);
+  assert.equal(await app.eval(() => Object.values(__T.S.cu).filter((x) => x.kind === "xfer").length), 0);
+  assert.ok(!(await app.db()).custody.x1, "deleted on the server too");
+  assert.equal(await page.locator('[data-act="cuxferdel"]').count(), 0, "the notice goes away");
+  assert.deepEqual(app.errors, []);
+});

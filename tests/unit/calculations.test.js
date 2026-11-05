@@ -33,14 +33,14 @@ test("calculations", async (t) => {
     assert.equal(await app.eval(() => __T.supMatch("Emirates Glass", "Gulf Glass")), false);
   });
 
-  await t.test("custody balance: deposits minus cash spending; credit and direct transfers excluded", async () => {
+  await t.test("custody balance: deposits minus cash spending (whoever paid); credit, direct transfers and old person transfers excluded", async () => {
     await app.login("هشام", "1234");
     const r = await app.eval(() => {
       __T.S.cu = { d: { id: "d", kind: "dep", amount: 5000 }, e1: { id: "e1", kind: "exp", pay: "cash", amount: 300 }, e2: { id: "e2", kind: "exp", pay: "credit", amount: 900 },
         e3: { id: "e3", kind: "exp", pay: "gm", amount: 700 }, x: { id: "x", kind: "xfer", dir: "out", to: "أحمد", amount: 1000 }, e4: { id: "e4", kind: "exp", pay: "cash", holder: "أحمد", amount: 250 } };
       return { main: __T.holderBal("main"), ahmed: __T.holderBal("أحمد") };
     });
-    assert.deepEqual(r, { main: 3700, ahmed: 750 });
+    assert.deepEqual(r, { main: 4450, ahmed: 0 });
   });
   assert.deepEqual(app.errors, []);
 });
@@ -66,20 +66,16 @@ test("reading failures explain themselves", async (t) => {
   assert.match(await why({ code: "unavailable", message: "something odd" }), /something odd/);
 });
 
-test("a person's invoices come off his custody; a transfer is asked only for what it does not cover", async (t) => {
+test("one custody only: every cash invoice comes off the main custody, with no transfer question", async (t) => {
   const app = await openApp();
   t.after(() => app.close());
   await app.login("هشام", "1234");
   const r = await app.eval(() => {
     __T.S.cu = { d: { id: "d", kind: "dep", amount: 5000 }, x: { id: "x", kind: "xfer", dir: "out", to: "A", amount: 100 },
-      i1: { id: "i1", kind: "exp", pay: "cash", holder: "A", amount: 30 } };
-    const step1 = { bal: __T.holderBal("A"), ask: __T.needsXfer(__T.S.cu.i1) };
-    __T.S.cu.i2 = { id: "i2", kind: "exp", pay: "cash", holder: "A", amount: 90 };       // 30 + 90 = 120 > 100
-    const step2 = { bal: __T.holderBal("A"), short: __T.holderShort("A"), ask: __T.needsXfer(__T.S.cu.i2) };
-    return { step1, step2 };
+      i1: { id: "i1", kind: "exp", pay: "cash", holder: "A", by: "A", amount: 30 }, i2: { id: "i2", kind: "exp", pay: "cash", by: "A", amount: 90 } };
+    return { main: __T.holderBal("main"), ask: __T.needsXfer(__T.S.cu.i1) || __T.needsXfer(__T.S.cu.i2) };
   });
-  assert.deepEqual(r.step1, { bal: 70, ask: false }, "covered by his 100: deducted, no question");
-  assert.deepEqual(r.step2, { bal: -20, short: 20, ask: true }, "not covered: asks to transfer only the missing 20");
+  assert.deepEqual(r, { main: 4880, ask: false }, "5000 − 30 − 90; the old 100 transfer does not count");
 });
 
 test("vehicle spending: fuel, maintenance and other per car, for a period", async (t) => {

@@ -33,12 +33,12 @@ test("a buyer opening the app does not send the low-balance alert", async (t) =>
 });
 
 test("a full-access user still gets it when the main balance is really low", async (t) => {
-  // main = 5000 deposit − 900 transfer − 100 invoice = 4000, below a 4500 minimum
-  const app = await openApp({ init, initArg: 4500 });
+  // main = 5000 deposit − 100 invoice = 4900 (old transfers no longer count), below a 4950 minimum
+  const app = await openApp({ init, initArg: 4950 });
   t.after(() => app.close());
   await app.login("هشام", "1234");
   await app.page.waitForTimeout(6000);
   const sent = await app.eval(() => (window.__notified || []).map((a) => a[2]));
   assert.equal(sent.length, 1);
-  assert.match(sent[0], /4,000/);
+  assert.match(sent[0], /4,900/);
 });

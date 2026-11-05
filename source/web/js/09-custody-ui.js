@@ -102,7 +102,7 @@ function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
   if(S.cuH&&S.cuH!=="main"&&!HS.includes(S.cuH)) S.cuH=null;
-  const F=[["all","الكل",x=>x.kind!=="spay"],["miss","للمراجعة",x=>needsReview(x)],["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
+  const F=[["all","الكل",x=>x.kind!=="spay"&&x.kind!=="xfer"],["miss","للمراجعة",x=>needsReview(x)],["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();
@@ -123,13 +123,17 @@ function cuView(){
     <button class="qbtn" data-act="cudep"><span class="qic">📥</span><b>إشعار توريد</b><span class="small muted">صورة إشعار التحويل فقط</span></button>
     <button class="qbtn ${S.busy==="cust"?"busy":""}" data-act="cupdf"><span class="qic">📄</span><b>${S.busy==="cust"?"جارٍ التجهيز…":"كشف العهدة"}</b><span class="small muted">PDF للمدير العام</span></button></div>
   ${pdfNotice("cust")}
+  ${(()=>{ const xs=Object.values(S.cu).filter(x=>x.kind==="xfer"); if(!xs.length) return ""; const tot=xs.reduce((a,x)=>a+n(x.amount),0);
+    return `<div class="panel notice small dupbox"><b>${tr("تحويلات عُهد قديمة")}: <span class="num">${xs.length}</span> · <span class="num">${money(tot)}</span> ${tr("درهم")}</b>
+     <span>${tr("لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.")}</span>
+     <div class="row"><button class="danger ${S.armed==="cuxferdel"?"armed":""}" data-act="cuxferdel">${S.armed==="cuxferdel"?tr("اضغط مرة أخرى لتأكيد الحذف"):"🗑️ "+tr("حذف التحويلات القديمة")}</button></div></div>`; })()}
   ${carPanel()}
   ${HS.length?`<div class="panel"><h2>العُهد</h2><div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
       return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):tr("الرصيد")}</span></button>
       ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له المستحق <span class="num">${money(holderShort(h))}</span></button>`:""}</div>`; }).join("")}</div>
     ${S.cuCar?`<p class="small" style="margin:0">${tr("عرض فواتير")}: <b>🚗 ${esc(S.cuCar)}</b> <button class="ghost xs" data-act="cucarshow" data-k="">✕ إلغاء التصفية</button></p>`:""}
     ${S.cuH?`<p class="small" style="margin:0">عرض حركات: <b>${esc(hName(S.cuH))}</b> <button class="ghost xs" data-act="cuhold" data-h="">✕ إلغاء التصفية</button></p>`:""}
-    <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:`<div class="row"><button class="ghost" data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div>`}
+    <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:""}
   <div class="tabs" role="tablist">${F.map(([k,l,fn])=>`<button role="tab" aria-selected="${cur[0]===k}" data-act="cufilter" data-k="${k}">${l}${fn?` <span class="num">${all.filter(fn).length}</span>`:""}</button>`).join("")}</div>
   ${body}
   ${closePanel()}

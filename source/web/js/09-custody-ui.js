@@ -45,6 +45,8 @@ function cuCard(x){
     ${cf(x,"supplier","المورد")}${csel(x,"pay","الدفع",[["cash","💵 نقداً (من العهدة)"],["credit","🤝 آجل (على حساب المورد)"],["gm","🏦 تحويل مباشر من المدير العام (لا يُخصم من العهدة)"]])}
     ${cf(x,"amount","المبلغ شامل الضريبة (درهم)","number")}${cf(x,"date","التاريخ","date")}
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
+    ${vatOut(x)?`<div class="full small muted">🧾 ${tr("لا تدخل في تقرير الضريبة")} (${tr(VAT_WHY[vatOut(x)])})</div>`:`${cf(x,"vat","الضريبة VAT (درهم)","number")}${cf(x,"supTrn","TRN المورد","text",'dir="ltr" inputmode="numeric"')}
+    ${!vatKnown(x)&&n(x.amount)>0?`<div class="full row"><button class="ghost small" data-act="cuvat5" data-id="${x.id}">${tr("احسب 5%")} = <span class="num">${money(vat5(x.amount))}</span></button></div>`:""}`}
     ${x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
     ${needsXfer(x)?`<div class="full notice small xferbox"><b>⏳ ${tr("عهدة")} <bdi class="u">${esc(holderOf(x))}</bdi> ${tr("لا تكفي — المستحق له")} <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span></b><button class="primary" data-act="cuxinv" data-id="${x.id}">↔️ تم تحويل <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span> إلى <bdi class="u">${esc(holderOf(x))}</bdi></button></div>`:""}
     ${x.xferId&&S.cu[x.xferId]?`<div class="full small" style="color:var(--ok)">✓ حُوِّلت قيمتها إلى <bdi class="u">${esc(holderOf(x))}</bdi> بتاريخ <span class="num">${esc(S.cu[x.xferId].date||"")}</span></div>`:""}
@@ -106,7 +108,7 @@ function cuView(){
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();
-  else { const list=(S.cuCar?Object.values(S.cu).filter(x=>isExp(x)&&x.target==="car:"+S.cuCar).sort((a,b)=>(b.date||"").localeCompare(a.date||"")):all.filter(cur[2])).filter(x=>!S.cuH||delta(x,S.cuH)!==0||(isExp(x)&&holderOf(x)===S.cuH)); body=list.length?`<div class="list">${list.map(cuCard).join("")}</div>`:`<div class="empty">${cur[0]==="miss"?"لا توجد فواتير تحتاج مراجعة. ✓":"لا يوجد شيء هنا بعد في الفترة الحالية."}</div>`; }
+  else { const list=(S.vatShow?Object.values(S.cu).filter(x=>S.vatShow.has(x.id)).sort((a,b)=>(a.date||"").localeCompare(b.date||"")):S.cuCar?Object.values(S.cu).filter(x=>isExp(x)&&x.target==="car:"+S.cuCar).sort((a,b)=>(b.date||"").localeCompare(a.date||"")):all.filter(cur[2])).filter(x=>!S.cuH||delta(x,S.cuH)!==0||(isExp(x)&&holderOf(x)===S.cuH)); body=list.length?`<div class="list">${list.map(cuCard).join("")}</div>`:`<div class="empty">${cur[0]==="miss"?"لا توجد فواتير تحتاج مراجعة. ✓":"لا يوجد شيء هنا بعد في الفترة الحالية."}</div>`; }
   return header("💼 العهدة والموردون") + meBox() + salaryBanner() + `
   <div class="panel"><div class="mini cumini">
     <div class="hl"><span class="small">${HS.length?"رصيد العهدة الرئيسية":"رصيد العهدة"}</span><b class="num">${money(c.mainBal)}</b></div>
@@ -127,11 +129,13 @@ function cuView(){
     return `<div class="panel notice small dupbox"><b>${tr("تحويلات عُهد قديمة")}: <span class="num">${xs.length}</span> · <span class="num">${money(tot)}</span> ${tr("درهم")}</b>
      <span>${tr("لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.")}</span>
      <div class="row"><button class="danger ${S.armed==="cuxferdel"?"armed":""}" data-act="cuxferdel">${S.armed==="cuxferdel"?tr("اضغط مرة أخرى لتأكيد الحذف"):"🗑️ "+tr("حذف التحويلات القديمة")}</button></div></div>`; })()}
+  ${vatPanel()}
   ${carPanel()}
   ${HS.length?`<div class="panel"><h2>العُهد</h2><div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
       return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):tr("الرصيد")}</span></button>
       ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له المستحق <span class="num">${money(holderShort(h))}</span></button>`:""}</div>`; }).join("")}</div>
     ${S.cuCar?`<p class="small" style="margin:0">${tr("عرض فواتير")}: <b>🚗 ${esc(S.cuCar)}</b> <button class="ghost xs" data-act="cucarshow" data-k="">✕ إلغاء التصفية</button></p>`:""}
+    ${S.vatShow?`<p class="small" style="margin:0">${tr("عرض الفواتير التي لم تُسجَّل ضريبتها")} <button class="ghost xs" data-act="vatshowx">✕ إلغاء التصفية</button></p>`:""}
     ${S.cuH?`<p class="small" style="margin:0">عرض حركات: <b>${esc(hName(S.cuH))}</b> <button class="ghost xs" data-act="cuhold" data-h="">✕ إلغاء التصفية</button></p>`:""}
     <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:""}
   <div class="tabs" role="tablist">${F.map(([k,l,fn])=>`<button role="tab" aria-selected="${cur[0]===k}" data-act="cufilter" data-k="${k}">${l}${fn?` <span class="num">${all.filter(fn).length}</span>`:""}</button>`).join("")}</div>

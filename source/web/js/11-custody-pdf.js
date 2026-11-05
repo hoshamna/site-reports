@@ -3,18 +3,18 @@ async function cuPdf(title, blocks, fname, tag){
   if(!window.html2canvas||!window.jspdf) throw new Error(tr("مكتبة التقرير لم تُحمّل"));
   const co=S.settings; const rep=document.getElementById("report"); rep.dir=lang==="en"?"ltr":"rtl";
   const logo=co.logoId?await toDataUrl(co.logoId):null;
-  const contacts=[co.address,co.phone&&`☎ <span dir="ltr">${esc(co.phone)}</span>`,co.email&&`<span dir="ltr">${esc(co.email)}</span>`,co.web&&`<span dir="ltr">${esc(co.web)}</span>`].filter(Boolean);
   blocks.unshift(`<div class="lh">${logo&&co.logoWide?`<div class="lhtop"><img class="lhbanner" src="${logo}"></div>`:`<div class="lhtop"><div class="lhname u"><div class="lhar">${esc(lang==="en"?(co.companyEn||co.company):co.company)}</div></div>${logo?`<img class="lhlogo" src="${logo}">`:""}</div>`}
-    ${contacts.length?`<div class="lhc">${contacts.map(x=>`<span>${String(x).startsWith("<")||String(x).startsWith("☎")?x:esc(x)}</span>`).join("")}</div>`:""}<div class="lhband"></div>
+    <div class="lhband"></div>
     <div class="lhtitle"><h1>${title}</h1><div class="lhdate">التاريخ <b class="num">${today()}</b></div></div></div>`);
   rep.innerHTML=blocks.join(""); translate(rep);
   await Promise.all([...rep.querySelectorAll("img")].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;})));
   try{ await document.fonts.ready; }catch(e){}
-  const { jsPDF }=window.jspdf; const pdf=new jsPDF({unit:"mm",format:"a4"}); const W=210,H=297,bottom=14; let y=0;
+  const { jsPDF }=window.jspdf; const pdf=new jsPDF({unit:"mm",format:"a4"}); const W=210,H=297,bottom=18; let y=0;
   for(const el of rep.children){ const cv=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",useCORS:true,logging:false});
     let w=W,h=cv.height*w/cv.width; if(h>H-bottom){ h=H-bottom; w=cv.width*h/cv.height; } if(y+h>H-bottom&&y>0){ pdf.addPage(); y=6; }
     pdf.addImage(cv.toDataURL("image/jpeg",0.86),"JPEG",(W-w)/2,y,w,h); y+=h; }
-  const pages=pdf.getNumberOfPages(); for(let p=1;p<=pages;p++){ pdf.setPage(p); pdf.setFontSize(8); pdf.setTextColor(120); pdf.text(`${p} / ${pages}`,W/2,H-4,{align:"center"}); }
+  const foot=await footBand(rep); const fh=foot?W*foot.r:0;
+  const pages=pdf.getNumberOfPages(); for(let p=1;p<=pages;p++){ pdf.setPage(p); if(foot) pdf.addImage(foot.d,"PNG",0,H-fh,W,fh); pdf.setFontSize(8); pdf.setTextColor(120); pdf.text(`${p} / ${pages}`,W/2,H-fh-2,{align:"center"}); }
   rep.innerHTML="";
   if(!downloads) throw new Error(tr("الحفظ غير متاح في هذا العرض"));
   try{ await downloads.save({filename:fname.replace(/[\\/:*?"<>|]/g,"-"),data:pdf.output("blob")}); S.lastPdf=tag; }

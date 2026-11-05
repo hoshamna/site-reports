@@ -73,6 +73,10 @@ async function toDataUrl(id){
     return await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); }); }
   catch(e){ return blobUrl(id); }
 }
+/* green contact band for the foot of every report page, like the tax invoice (no TRN) */
+async function footBand(rep){ const co=S.settings; try{ const fe=document.createElement("div"); fe.className="lhfoot";
+  fe.innerHTML=[co.poBox?`P.O Box ${esc(co.poBox)}`:"",co.address?esc(co.address):"",co.phone?`☎ ${esc(co.phone)}`:"",co.email?`✉ ${esc(co.email)}`:"",co.web?`🌐 ${esc(co.web)}`:""].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
+  if(!fe.innerHTML) return null; rep.appendChild(fe); translate(fe); const fc=await html2canvas(fe,{scale:2,backgroundColor:"#ffffff",logging:false}); fe.remove(); return {d:fc.toDataURL("image/png"),r:fc.height/fc.width}; }catch(e){ return null; } }
 async function makePdf(s, kind){
   attachMarks(s); syncPlans(s);
   if(!window.html2canvas || !window.jspdf) throw new Error(tr("مكتبة التقرير لم تُحمّل"));
@@ -186,8 +190,7 @@ async function makePdf(s, kind){
     pdf.addImage(cv.toDataURL("image/jpeg",0.86),"JPEG",(W-w)/2,y,w,h); y+=h;
   }
   const pages=pdf.getNumberOfPages();
-  let foot=null; try{ const fe=document.createElement("div"); fe.className="lhfoot"; fe.innerHTML=[co.poBox?`P.O Box ${esc(co.poBox)}`:"",co.address?esc(co.address):"",co.phone?`☎ ${esc(co.phone)}`:"",co.email?`✉ ${esc(co.email)}`:"",co.web?`🌐 ${esc(co.web)}`:""].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
-    rep.appendChild(fe); translate(fe); const fc=await html2canvas(fe,{scale:2,backgroundColor:"#ffffff",logging:false}); foot={d:fc.toDataURL("image/png"),r:fc.height/fc.width}; fe.remove(); }catch(e){}
+  const foot=await footBand(rep);
   for(let p=1;p<=pages;p++){ pdf.setPage(p);
     /* green contact band across the foot of every page, like the tax invoice */
     const fh=foot?W*foot.r:0; if(foot) pdf.addImage(foot.d,"PNG",0,H-fh,W,fh);

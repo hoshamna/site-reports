@@ -2283,7 +2283,8 @@ function authMsg(e){ const m=String(e&&e.message||e||""); const st=e&&e.status;
   if(/network|fetch/i.test(m)) return "تعذر الاتصال، تحقق من الإنترنت";
   return "تعذر التنفيذ: "+m; }
 async function loadLoginList(){ try{ S.loginList=await AU().list(); }catch(e){ S.loginList=S.loginList||[]; toast(authMsg(e)); } render(); }
-const role = () => (S.user&&S.user.role)||"admin";
+// nobody signed in: full access only in the offline (local) mode; with the database, no rights until the account is known
+const role = () => S.user ? (S.user.role||"admin") : (S.mode==="db" ? "" : "admin");
 const isAdmin = () => role()==="admin", isEng = () => role()==="eng", isBuyer = () => role()==="buyer";
 async function pinHash(uidv, pin){
   const data=new TextEncoder().encode("aseel|"+uidv+"|"+pin);
@@ -2331,7 +2332,8 @@ function pushPanel(){
 }
 async function refreshPush(){ if(!window.__push) return; try{ S.pushState=await window.__push.state(); }catch(e){ S.pushState="off"; } render(); }
 function cuCheckLow(){ if(!window.__push||S.mode!=="db"||!S.cuLoaded||!isAdmin()) return; clearTimeout(cuT._low);
-  cuT._low=setTimeout(()=>{ const c=cuCalc(); const sent=S.settings.cuLowSent;
+  cuT._low=setTimeout(()=>{ if(!S.user||!isAdmin()) return; // re-check: the account may have changed in the meantime
+    const c=cuCalc(); const sent=S.settings.cuLowSent;
     if(c.isLow&&!sent){ S.settings.cuLowSent=Date.now(); settingsSave(); const ids=users().filter(u=>u.notifyLow).map(u=>u.id);
       if(ids.length) window.__push.notify(ids, c.mainBal<0?"⚠️ رصيد العهدة بالسالب":"⚠️ رصيد العهدة منخفض", `الرصيد الحالي ${money(c.mainBal)} درهم، والحد الأدنى ${money(c.low)} درهم. نحتاج توريداً جديداً.`, "low").catch(e=>console.warn("push",e)); }
     else if(!c.isLow&&sent){ S.settings.cuLowSent=null; settingsSave(); } },4000); }

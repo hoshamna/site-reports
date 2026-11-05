@@ -52,7 +52,7 @@
     return api; }
   const client={
     auth:{
-      getSession:async()=>({data:{session}}),
+      getSession:async()=>{ if(window.__authDelay) await new Promise(r=>setTimeout(r,window.__authDelay)); return {data:{session}}; }, // __authDelay: a slow phone restoring its sign-in
       onAuthStateChange:f=>{ authSubs.add(f); setTimeout(()=>f("INITIAL_SESSION",session),0); return {data:{subscription:{unsubscribe(){authSubs.delete(f);}}}}; },
       signInWithPassword:async({email,password})=>{ await new Promise(r=>setTimeout(r,10)); const u=DB.users[email]; if(!u||u.password!==password) return {error:{message:"Invalid login credentials",status:400}};
         session={access_token:"tok-"+u.id,user:{id:u.id,email}}; SV("session",session); fireAuth("SIGNED_IN"); return {data:{session},error:null}; },

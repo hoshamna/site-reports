@@ -29,13 +29,19 @@ function vatData(P){ const inR=d=>d>=P.from&&d<=P.to;
   const S_=k=>a=>Math.round(a.reduce((t,r)=>t+n(r[k]),0)*100)/100;
   sales.sort((a,b)=>a.date.localeCompare(b.date)); pur.sort((a,b)=>a.date.localeCompare(b.date)); out.sort((a,b)=>a.date.localeCompare(b.date));
   const r={sales,pur,out,miss,sNet:S_("net")(sales),sVat:S_("vat")(sales),sGross:S_("gross")(sales),pNet:S_("net")(pur),pVat:S_("vat")(pur),pGross:S_("gross")(pur),oGross:S_("gross")(out)};
-  r.due=Math.round((r.sVat-r.pVat)*100)/100; return r; }
+  r.due=Math.round((r.sVat-r.pVat)*100)/100; r.dNet=Math.round((r.sNet-r.pNet)*100)/100; r.dGross=Math.round((r.sGross-r.pGross)*100)/100; return r; }
+// sales, purchases and the difference: before VAT, VAT, total
+const vatSumRows=d=>[["المبيعات",d.sNet,d.sVat,d.sGross,""],["المشتريات",d.pNet,d.pVat,d.pGross,""],["الفرق",d.dNet,d.due,d.dGross,"diff"]];
+function vatSumTable(d,money_){ const mm=money_||money;
+  return `<table class="vatsum"><thead><tr><th></th><th>${tr("قبل الضريبة")}</th><th>${tr("الضريبة")}</th><th>${tr("الإجمالي")}</th></tr></thead><tbody>
+   ${vatSumRows(d).map(([l,a,b,c,k])=>`<tr class="${k}"><th>${tr(l)}</th><td class="num">${mm(a)}</td><td class="num">${mm(b)}</td><td class="num">${mm(c)}</td></tr>`).join("")}</tbody></table>`; }
 function vatPanel(){ if(!isAdmin()) return ""; const Q=vatQuarters(6); const P=Q.find(q=>q.key===S.vatQ)||Q[1]||Q[0]; const d=vatData(P);
   return `<details class="panel vatbox" ${S.vatOpen?"open":""}><summary style="cursor:pointer;font-weight:600" data-act="vatopen">🧾 تقرير الضريبة (كل 3 أشهر)</summary>
    <label>الفترة<select id="vat-q" data-vatq="1">${Q.map(q=>`<option value="${q.key}" ${q.key===P.key?"selected":""}>${esc(q.label)}</option>`).join("")}</select></label>
    <div class="stats"><div class="stat"><span class="small muted">ضريبة المبيعات</span><b class="num">${money(d.sVat)}</b><span class="small muted"><span class="num">${d.sales.length}</span> فاتورة ضريبية</span></div>
     <div class="stat"><span class="small muted">ضريبة المشتريات</span><b class="num">${money(d.pVat)}</b><span class="small muted"><span class="num">${d.pur.length}</span> فاتورة</span></div>
     <div class="stat ${d.due>=0?"hl":"good"}" style="grid-column:1/-1"><span class="small">${d.due>=0?"المستحق للهيئة":"المسترد من الهيئة"}</span><b class="num">${money(Math.abs(d.due))} <small>درهم</small></b></div></div>
+   ${vatSumTable(d)}
    <p class="small muted" style="margin:0">لا تدخل في المشتريات: الوقود، والمرتبات، والرسوم الحكومية (تجديد الإقامة وبطاقة العمل وغيرها) — <span class="num">${d.out.length}</span> فاتورة بقيمة <span class="num">${money(d.oGross)}</span> درهم.</p>
    ${d.miss.length?`<div class="notice small dupbox"><b>⚠️ <span class="num">${d.miss.length}</span> فاتورة لم تُسجَّل ضريبتها</b><span>تُحسب ضريبتها صفراً حتى تُدخلها. افتح الفاتورة واكتب مبلغ الضريبة كما هو مكتوب فيها، أو احسب 5% للكل إذا كانت كلها من موردين مسجّلين في الضريبة.</span>
      <div class="row"><button class="${S.armed==="vat5"?"danger armed":""}" data-act="vat5" data-q="${P.key}">${S.armed==="vat5"?"اضغط مرة أخرى للتأكيد":"احسب 5% لهذه الفواتير"}</button><button class="ghost" data-act="vatmiss" data-q="${P.key}">عرضها</button></div></div>`:""}
@@ -44,7 +50,8 @@ function vatPanel(){ if(!isAdmin()) return ""; const Q=vatQuarters(6); const P=Q
 async function makeVatPdf(P){ const d=vatData(P); const co=S.settings; const m=v=>`<td class="num">${money(v)}</td>`;
   const blocks=[];
   blocks.push(`<div class="rb"><div class="info" style="grid-template-columns:1fr 1fr"><div><span>${tr("الفترة")}: </span><b class="num">${fmtD(P.from)} – ${fmtD(P.to)}</b></div>${co.trn?`<div><span>TRN: </span><b class="num">${esc(co.trn)}</b></div>`:""}</div>
-   <h2>${tr("ملخص الضريبة")}</h2><div class="kv" style="grid-template-columns:repeat(3,1fr)"><div>${tr("ضريبة المبيعات")}<b class="num">${money(d.sVat)}</b></div><div>${tr("ضريبة المشتريات")}<b class="num">${money(d.pVat)}</b></div><div class="hl">${d.due>=0?tr("المستحق للهيئة"):tr("المسترد من الهيئة")}<b class="num">${money(Math.abs(d.due))}</b></div></div></div>`);
+   <h2>${tr("ملخص الضريبة")}</h2><div class="kv" style="grid-template-columns:repeat(3,1fr)"><div>${tr("ضريبة المبيعات")}<b class="num">${money(d.sVat)}</b></div><div>${tr("ضريبة المشتريات")}<b class="num">${money(d.pVat)}</b></div><div class="hl">${d.due>=0?tr("المستحق للهيئة"):tr("المسترد من الهيئة")}<b class="num">${money(Math.abs(d.due))}</b></div></div>
+   <h2>${tr("المجاميع")}</h2>${tbl(["",tr("قبل الضريبة"),tr("الضريبة"),tr("الإجمالي")],vatSumRows(d).map(([l,a,b,c,k])=>`<tr${k?' style="font-weight:700"':""}><td>${tr(l)}</td>${m(a)}${m(b)}${m(c)}</tr>`))}</div>`);
   blocks.push(`<div class="rb"><h2>${tr("المبيعات (الفواتير الضريبية)")}</h2>${d.sales.length?tbl([tr("التاريخ"),tr("رقم الفاتورة"),tr("العميل"),tr("المشروع"),tr("المبلغ قبل الضريبة"),tr("الضريبة"),tr("الإجمالي")],
     d.sales.map(r=>`<tr><td class="num">${fmtD(r.date)}</td><td class="num">${esc(r.no)}</td><td class="u">${esc(r.to)}</td><td class="u">${esc(r.site)}</td>${m(r.net)}${m(r.vat)}${m(r.gross)}</tr>`),
     `<tr><th colspan="4">${tr("الإجمالي")}</th><th class="num">${money(d.sNet)}</th><th class="num">${money(d.sVat)}</th><th class="num">${money(d.sGross)}</th></tr>`):`<p>${tr("لا توجد فواتير ضريبية في هذه الفترة.")}</p>`}</div>`);
@@ -59,6 +66,7 @@ async function makeVatXls(P){ const d=vatData(P); const q=v=>{ const s=String(v?
   const L=[]; const row=(...a)=>L.push(a.map(q).join(","));
   row(tr("تقرير الضريبة"),P.label); row(tr("الفترة"),P.from,P.to); if(S.settings.trn) row("TRN",S.settings.trn); row("");
   row(tr("ضريبة المبيعات"),d.sVat); row(tr("ضريبة المشتريات"),d.pVat); row(d.due>=0?tr("المستحق للهيئة"):tr("المسترد من الهيئة"),Math.abs(d.due)); row("");
+  row(tr("المجاميع"),tr("قبل الضريبة"),tr("الضريبة"),tr("الإجمالي")); vatSumRows(d).forEach(([l,a,b,c])=>row(tr(l),a,b,c)); row("");
   row(tr("المبيعات (الفواتير الضريبية)")); row(tr("التاريخ"),tr("رقم الفاتورة"),tr("العميل"),tr("المشروع"),tr("المبلغ قبل الضريبة"),tr("الضريبة"),tr("الإجمالي"));
   d.sales.forEach(r=>row(r.date,r.no,r.to,r.site,r.net,r.vat,r.gross)); row(tr("الإجمالي"),"","","",d.sNet,d.sVat,d.sGross); row("");
   row(tr("المشتريات")); row(tr("التاريخ"),tr("المورد"),tr("رقم الفاتورة"),"TRN",tr("المبلغ قبل الضريبة"),tr("الضريبة"),tr("الإجمالي"),tr("ملاحظة"));

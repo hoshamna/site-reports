@@ -35,3 +35,4 @@ Object.entries({"المستندات":"Documents","مستند جديد":"New docu
  "✓ صدر برقم ":"✓ Issued as ","صدر المستند، لكن تعذر تجهيز PDF: ":"Issued, but the PDF could not be made: ","تعذر إنشاء الملف: ":"Could not make the file: ","تم إلغاء المستند ":"Cancelled document ","✓ تم حفظ الترقيم":"✓ Numbering saved",
  "لا يمكن: صدر مستند برقم أكبر من هذا":"Not possible: a document with a higher number was already issued","قاعدة البيانات غير متصلة":"The database is not connected","لم يُصدر المستند بعد. اضغط مرة أخرى للخروج بدون إصدار":"Not issued yet. Press again to leave without issuing",
  "إصدار Receipt Voucher":"Issue Receipt Voucher","إصدار Tax Invoice":"Issue Tax Invoice","✓ تم الحفظ":"✓ Saved"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"المبيعات":"Sales","المشتريات":"Purchases","الفرق":"Difference","المجاميع":"Totals","قبل الضريبة":"Before VAT"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });

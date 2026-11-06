@@ -29,6 +29,9 @@ test("VAT report for a quarter", async (t) => {
   await page.click('[data-act="cuopen"]'); await page.waitForTimeout(300);
   await page.click('[data-act="vatopen"]'); await page.waitForTimeout(100);
   assert.match(await app.text(), /المستحق للهيئة/);
+  // totals: sales, purchases and the difference (before VAT, VAT, total)
+  const rows = await page.$$eval(".vatsum tbody tr", (trs) => trs.map((r) => [...r.children].map((c) => c.textContent.trim())));
+  assert.deepEqual(rows, [["المبيعات", "10,000", "500", "10,500"], ["المشتريات", "3,550", "125", "3,675"], ["الفرق", "6,450", "375", "6,825"]]);
   await page.click('[data-act="vat5"]'); await page.click('[data-act="vat5"]'); await page.waitForTimeout(400);
   assert.equal(await app.eval(() => __T.vatData(__T.vatQuarters(2)[1]).pVat), 175, "5% of 1050 = 50 added");
   assert.equal(await app.eval(() => __T.vatData(__T.vatQuarters(2)[1]).miss.length), 0);

@@ -65,6 +65,14 @@ function cuCheckLow(){ if(!window.__push||S.mode!=="db"||!S.cuLoaded||!isAdmin()
     if(c.isLow&&!sent){ S.settings.cuLowSent=Date.now(); settingsSave(); const ids=users().filter(u=>u.notifyLow).map(u=>u.id);
       if(ids.length) window.__push.notify(ids, c.mainBal<0?"⚠️ رصيد العهدة بالسالب":"⚠️ رصيد العهدة منخفض", `الرصيد الحالي ${money(c.mainBal)} درهم، والحد الأدنى ${money(c.low)} درهم. نحتاج توريداً جديداً.`, "low").catch(e=>console.warn("push",e)); }
     else if(!c.isLow&&sent){ S.settings.cuLowSent=null; settingsSave(); } },4000); }
+// money left with an employee without invoices for N days: a reminder to him and an alert to the full-access users, once a day
+function cuCheckIdle(){ if(!window.__push||S.mode!=="db"||!S.cuLoaded||!S.user||!isAdmin()) return; clearTimeout(cuT._idle);
+  cuT._idle=setTimeout(()=>{ if(!S.user||!isAdmin()) return; const day=today(), sent={...(S.settings.cuIdleSent||{})}; let ch=false;
+    holders().forEach(h=>{ const bal=holderBal(h), d=holderIdle(h); if(!(bal>0)||d<idleDays()||sent[h]===day) return; sent[h]=day; ch=true;
+      const adm=users().filter(u=>u.notifyLow).map(u=>u.id), emp=users().filter(u=>u.name===h).map(u=>u.id);
+      if(adm.length) window.__push.notify(adm, tr("⏳ عهدة بدون فواتير"), `${tr("مع")} ${h} ${money(bal)} ${tr("درهم بدون فواتير منذ")} ${daysTxt(d)}.`, "idle-"+h).catch(e=>console.warn("push",e));
+      if(emp.length) window.__push.notify(emp, tr("⏳ ارفع فواتير العهدة"), `${tr("معك")} ${money(bal)} ${tr("درهم من العهدة بدون فواتير منذ")} ${daysTxt(d)}. ${tr("صوّر الفواتير من فضلك.")}`, "idle-me").catch(e=>console.warn("push",e)); });
+    if(ch){ S.settings.cuIdleSent=sent; settingsSave(); } },5000); }
 function canBackup(){ if(!S.user||!isAdmin()) return false; const us=users(); const any=us.some(u=>u.canBackup);
   const me=us.find(u=>u.id===S.user.id); if(any) return !!(me&&me.canBackup); return !!(me&&me.role==="admin"&&me.id===((us.find(u=>u.role==="admin")||{}).id)); }
 async function loadAutoBk(){ if(!window.__sb||S.autoBkBusy) return; S.autoBkBusy=true;

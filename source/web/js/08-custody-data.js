@@ -157,17 +157,26 @@ function cuCalc(){
   const low=n(S.settings.cuLow??1000); const mainBal=holderBal("main");
   return {dep, cash, credit, spCash, spAll, bal:dep-cash-spCash, mainBal, owed:credit-spAll, miss:all.filter(x=>isExp(x)&&(!cuLast()||(x.createdAt||0)>cuLast().createdAt)&&needsReview(x)).length, low, isLow:low>0&&mainBal<low};
 }
-// one custody only (5 Nov 2026): every cash invoice, whoever uploads it, comes off the main custody
-const holderOf=x=>"main";
+// employee custody (back on 10 Nov 2026): employees ticked in the custody page hold their own custody.
+// Only movements made under this system carry hv:2; anything older stays on the main custody, as it was.
+const personOn=x=>x.hv===2;
+const holderOf=x=>x.holder&&x.holder!=="main"&&personOn(x)?x.holder:"main";
+const cuHolderList=()=>(S.settings.cuHolders||[]).filter(Boolean);
 const mainHolderId=()=>S.settings.cuMainHolder||((users().find(u=>u.role==="admin")||{}).id)||"";
 const mainHolder=()=>{ const id=mainHolderId(); const u=id&&users().find(x=>x.id===id); return u?u.name:""; };
-function holders(){ return []; }
-function subDefault(name){ return false; }
+function holders(){ const set=new Set(cuHolderList()); Object.values(S.cu).forEach(x=>{ if(!personOn(x)) return; if(x.kind==="xfer"&&x.to) set.add(x.to); if(isExp(x)&&x.holder&&x.holder!=="main") set.add(x.holder); });
+  set.delete(""); set.delete(mainHolder()); return [...set]; }
+function subDefault(name){ return !!name&&name!==mainHolder()&&cuHolderList().includes(name); }
+// days the money has stayed with an employee without invoices: since his last invoice, or since he got custody
+function holderIdle(h){ const mine=Object.values(S.cu).filter(x=>personOn(x)&&((isExp(x)&&x.holder===h)||(x.kind==="xfer"&&x.to===h)));
+  const inv=mine.filter(isExp).map(dateOf).sort().pop(), got=mine.filter(x=>x.kind==="xfer"&&x.dir!=="back").map(dateOf).sort();
+  const since=inv||got[0]; if(!since) return 0; return Math.max(0,Math.round((Date.parse(today())-Date.parse(since))/864e5)); }
 function delta(x,h){ const a=n(x.amount);
   if(x.kind==="dep") return (h==="all"||h==="main")?a:0;
   if(isExp(x)) return (x.pay==="credit"||x.pay==="gm")?0:((h==="all"||holderOf(x)===h)?-a:0);
   if(x.kind==="spay") return x.method==="cash"&&(h==="all"||h==="main")?-a:0;
-  // old person-custody transfers no longer move money (they are deleted from the custody screen)
+  // transfers to an employee: out of the main custody, into his (older ones from before 10 Nov 2026 move nothing)
+  if(x.kind==="xfer"){ if(!personOn(x)||h==="all"||!x.to) return 0; const out=x.dir!=="back"; if(h==="main") return out?-a:a; if(h===x.to) return out?a:-a; }
   return 0; }
 const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=>a+delta(x,h),0);
 const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");

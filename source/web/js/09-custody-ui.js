@@ -78,11 +78,17 @@ function cuHome(){
 }
 function meBox(){ return !cuMe?`<div class="panel notice"><b>اكتب اسمك مرة واحدة</b><span class="small">ليظهر من صوّر كل فاتورة.</span><label>اسمك<input id="cu-me" data-cume="1" value="" placeholder="مثال: أحمد"></label></div>`:""; }
 function pdfNotice(tag){ return S.lastPdf===tag?`<div class="notice small"><b>${window.__ios?"✓ الملف جاهز.":"✓ تم حفظ الملف في التنزيلات."}</b> أرسله بزر «مشاركة»، أو من الواتساب: 📎 ثم «مستند».</div>${window.__lastFile?`<div class="row">${navigator.canShare?`<button class="primary big" data-act="sharefile">📤 مشاركة (واتساب…)</button>`:""}<button class="big" data-act="dlagain">${window.__ios?"📥 حفظ في الملفات / فتح":"⬇️ تحميل مرة أخرى"}</button></div>`:""}`:""; }
+const daysTxt=d=>lang==="en"?`${d} ${d===1?"day":"days"}`:d===1?"يوم واحد":d===2?"يومين":d<=10?`${d} أيام`:`${d} يوماً`;
+const idleDays=()=>Math.max(1,parseInt(S.settings.cuIdleDays,10)||3);
+// the employee's own custody: what is with him, and how long without invoices
+function cuMyBox(){ if(!subDefault(cuMe)) return ""; const bal=holderBal(cuMe), d=holderIdle(cuMe), late=bal>0&&d>=idleDays();
+  return `<div class="stat ${late?"hl":""}" style="text-align:center;margin-top:8px"><span class="small muted">${bal<0?tr("مستحق لك (لم يُحوَّل بعد)"):tr("رصيد عهدتك")}</span><b class="num" style="font-size:1.4rem;${bal<0?"color:var(--bad)":""}">${money(Math.abs(bal))}</b> <span class="small">درهم</span>
+   ${late?`<span class="small"><b>⏳ ${tr("بدون فواتير منذ")} <span class="num">${daysTxt(d)}</span>.</b> ${tr("صوّر الفواتير من فضلك.")}</span>`:""}</div>`; }
 function buyerView(){
   const mine=Object.values(S.cu).filter(x=>isExp(x)&&(!cuMe||x.by===cuMe)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,12);
   return `<div class="top"><div class="brand"><span class="eyebrow u">${esc(coName())}</span><h1>🧾 فواتير المشتريات</h1></div><div class="row">${userChip()}<button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"English"}</bdi></button></div></div>
   ${meBox()}
-  ${subDefault(cuMe)?(()=>{ const bal=holderBal(cuMe); return `<div class="stat" style="text-align:center;margin-top:8px"><span class="small muted">${bal<0?tr("مستحق لك (لم يُحوَّل بعد)"):tr("رصيد عهدتك")}</span><b class="num" style="font-size:1.4rem;${bal<0?"color:var(--bad)":""}">${money(Math.abs(bal))}</b> <span class="small">درهم</span></div>`; })():""}
+  ${cuMyBox()}
   <button class="primary buybig" data-act="cuscan" data-cam="1"><span>📷</span><b>صوّر الفاتورة</b></button>
   <div class="row" style="justify-content:center"><button class="ghost" data-act="cuscan">🖼️ من المعرض</button></div>
   <h2 style="margin-top:14px">آخر فواتيري</h2>
@@ -105,7 +111,7 @@ function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
   if(S.cuH&&S.cuH!=="main"&&!HS.includes(S.cuH)) S.cuH=null;
-  const F=[["all","الكل",x=>x.kind!=="spay"&&x.kind!=="xfer"],["miss","للمراجعة",x=>needsReview(x)],...(isAdmin()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
+  const F=[["all","الكل",x=>x.kind!=="spay"&&!(x.kind==="xfer"&&!personOn(x))],["miss","للمراجعة",x=>needsReview(x)],...(isAdmin()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();
@@ -127,19 +133,24 @@ function cuView(){
     <button class="qbtn" data-act="cudep"><span class="qic">📥</span><b>إشعار توريد</b><span class="small muted">صورة إشعار التحويل فقط</span></button>
     <button class="qbtn ${S.busy==="cust"?"busy":""}" data-act="cupdf"><span class="qic">📄</span><b>${S.busy==="cust"?"جارٍ التجهيز…":"كشف العهدة"}</b><span class="small muted">PDF للمدير العام</span></button></div>
   ${pdfNotice("cust")}
-  ${(()=>{ const xs=Object.values(S.cu).filter(x=>x.kind==="xfer"); if(!xs.length) return ""; const tot=xs.reduce((a,x)=>a+n(x.amount),0);
+  ${(()=>{ const xs=Object.values(S.cu).filter(x=>x.kind==="xfer"&&!personOn(x)); if(!xs.length) return ""; const tot=xs.reduce((a,x)=>a+n(x.amount),0);
     return `<div class="panel notice small dupbox"><b>${tr("تحويلات عُهد قديمة")}: <span class="num">${xs.length}</span> · <span class="num">${money(tot)}</span> ${tr("درهم")}</b>
-     <span>${tr("لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.")}</span>
+     <span>${tr("تحويلات من قبل نظام عهد الموظفين الحالي. لا تؤثر على أي رصيد، ويمكنك حذفها نهائياً.")}</span>
      <div class="row"><button class="danger ${S.armed==="cuxferdel"?"armed":""}" data-act="cuxferdel">${S.armed==="cuxferdel"?tr("اضغط مرة أخرى لتأكيد الحذف"):"🗑️ "+tr("حذف التحويلات القديمة")}</button></div></div>`; })()}
   ${vatPanel()}
   ${carPanel()}
-  ${HS.length?`<div class="panel"><h2>العُهد</h2><div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
-      return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):tr("الرصيد")}</span></button>
+  <div class="panel"><h2>${tr("عهد الموظفين")}</h2>${HS.length?`<div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
+      return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):h==="main"?tr("رصيدك"):tr("معه بدون فواتير")}</span>${h!=="main"&&bal>0&&holderIdle(h)>0?`<span class="small ${holderIdle(h)>=idleDays()?"neg":"muted"}">${tr("منذ")} <span class="num">${daysTxt(holderIdle(h))}</span></span>`:""}</button>
+      ${h!=="main"?`<div class="row"><button class="xs" data-act="cuxferpic" data-h="${esc(h)}">💸 ${tr("تحويل عهدة")}</button><button class="xs ghost" data-act="cuhpdf" data-h="${esc(h)}">📄 ${tr("كشف حساب")}</button></div>`:""}
       ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له المستحق <span class="num">${money(holderShort(h))}</span></button>`:""}</div>`; }).join("")}</div>
     ${S.cuCar?`<p class="small" style="margin:0">${tr("عرض فواتير")}: <b>🚗 ${esc(S.cuCar)}</b> <button class="ghost xs" data-act="cucarshow" data-k="">✕ إلغاء التصفية</button></p>`:""}
     ${S.vatShow?`<p class="small" style="margin:0">${tr("عرض الفواتير التي لم تُسجَّل ضريبتها")} <button class="ghost xs" data-act="vatshowx">✕ إلغاء التصفية</button></p>`:""}
     ${S.cuH?`<p class="small" style="margin:0">عرض حركات: <b>${esc(hName(S.cuH))}</b> <button class="ghost xs" data-act="cuhold" data-h="">✕ إلغاء التصفية</button></p>`:""}
-    <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:""}
+    <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div>`:`<p class="small muted" style="margin:0">${tr("لا يوجد موظف له عهدة بعد. اختر الموظفين من القائمة أدناه.")}</p>`}
+    <details ${S.cuHoldSet?"open":""}><summary style="cursor:pointer" data-act="cuholdsetopen">👥 ${tr("الموظفون الذين لهم عهدة")}</summary>
+     <div class="list">${users().filter(u=>u.name!==mainHolder()).map(u=>`<label class="dchk"><input type="checkbox" data-act="cuholdset" data-n="${esc(u.name)}" ${cuHolderList().includes(u.name)?"checked":""}> <bdi>${esc(u.name)}</bdi></label>`).join("")||`<span class="small muted">${tr("لا يوجد مستخدمون آخرون")}</span>`}</div>
+     <p class="small muted" style="margin:0">${tr("فواتير الموظف المختار تُخصم من عهدته، وتظهر في الكشف العام مع اسمه.")}</p>
+     <label>${tr("التنبيه إذا بقي المبلغ مع الموظف بدون فواتير (أيام)")}<input type="number" inputmode="numeric" min="1" data-set="cuIdleDays" value="${esc(idleDays())}"></label></details></div>
   <div class="tabs" role="tablist">${F.map(([k,l,fn])=>`<button role="tab" aria-selected="${cur[0]===k}" data-act="cufilter" data-k="${k}">${l}${fn?` <span class="num">${all.filter(fn).length}</span>`:""}</button>`).join("")}</div>
   ${body}
   ${closePanel()}

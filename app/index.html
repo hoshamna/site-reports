@@ -886,6 +886,13 @@ Object.entries({"المستندات":"Documents","مستند جديد":"New docu
  "لا يمكن: صدر مستند برقم أكبر من هذا":"Not possible: a document with a higher number was already issued","قاعدة البيانات غير متصلة":"The database is not connected","لم يُصدر المستند بعد. اضغط مرة أخرى للخروج بدون إصدار":"Not issued yet. Press again to leave without issuing",
  "إصدار Receipt Voucher":"Issue Receipt Voucher","إصدار Tax Invoice":"Issue Tax Invoice","✓ تم الحفظ":"✓ Saved"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"المبيعات":"Sales","المشتريات":"Purchases","الفرق":"Difference","المجاميع":"Totals","قبل الضريبة":"Before VAT"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"عهد الموظفين":"Employee custody","رصيدك":"Your balance","معه بدون فواتير":"With him, no invoices yet","منذ":"for","يوم":"days","💸 تحويل عهدة":"💸 Custody transfer","تحويل عهدة":"Custody transfer","كشف حساب":"Statement",
+ "لا يوجد موظف له عهدة بعد. اختر الموظفين من القائمة أدناه.":"No employee holds custody yet. Choose employees from the list below.","الموظفون الذين لهم عهدة":"Employees who hold custody","لا يوجد مستخدمون آخرون":"No other users",
+ "فواتير الموظف المختار تُخصم من عهدته، وتظهر في الكشف العام مع اسمه.":"A chosen employee's invoices come off his own custody and appear in the general statement with his name.",
+ "التنبيه إذا بقي المبلغ مع الموظف بدون فواتير (أيام)":"Alert when money stays with an employee without invoices (days)","بدون فواتير منذ":"No invoices for","صوّر الفواتير من فضلك.":"Please photograph the invoices.",
+ "تحويلات من قبل نظام عهد الموظفين الحالي. لا تؤثر على أي رصيد، ويمكنك حذفها نهائياً.":"Transfers from before the current employee custody. They affect no balance, and you can delete them for good.",
+ "✓ سُجّل تحويل عهدة ":"✓ Custody transfer recorded ","✓ سُجّل التحويل، أدخل المبلغ":"✓ Transfer recorded, enter the amount","⏳ عهدة بدون فواتير":"⏳ Custody without invoices","مع":"With","درهم بدون فواتير منذ":"AED without invoices for",
+ "⏳ ارفع فواتير العهدة":"⏳ Upload your custody invoices","معك":"You have","درهم من العهدة بدون فواتير منذ":"AED of custody without invoices for","من عهدة ":"from the custody of "}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 /* English for the Nov 2026 look refresh (added before the phrase list is built in 03-calc) */
 Object.assign(EN, {"واجهات ونوافذ": "Facades & windows", "أبواب فقط": "Doors only", "هندريل فقط": "Handrail only", "قارب الانتهاء": "Nearly done", "فيه مشكلة": "Has an issue", "الكل": "All", "فيه مشكلات": "With issues", "مشكلة": "issue", "💰 دفعة مستحقة": "💰 Payment due", "بيانات مثال": "Sample data", "رصيد العهدة منخفض:": "Custody balance is low:", "فاتورة للمراجعة": "invoices to review", "ابدأ بأول موقع": "Start with your first site", "أضف اسم الموقع وقيمة المشروع وعدد الشبابيك والأبواب، ثم تابع الإنجاز والصور من هنا.": "Add the site name, project value and the number of windows and doors, then follow progress and photos from here.", "+ موقع جديد": "+ New site", "ابحث عن موقع أو مهندس": "Search for a site or engineer", "تصفية المواقع": "Filter sites", "لا توجد مواقع هنا": "No sites here", "جرّب تصفية أخرى.": "Try another filter.", "لا يوجد موقع بهذا الاسم": "No site matches that name", "إضافة سريعة": "Quick add", "الأقسام": "Sections", "العهدة": "Custody", "الإعدادات": "Settings", "🔑 تغيير رمز الدخول": "🔑 Change PIN", "🚪 تسجيل الخروج": "🚪 Sign out", "المظهر": "Appearance", "اللغة": "Language", "الوضع": "Mode", "تلقائي": "Automatic", "فاتح": "Light", "داكن": "Dark", "«تلقائي» يتبع إعداد الهاتف: داكن في الليل إذا كان الهاتف داكناً.": "“Automatic” follows the phone setting: dark at night if the phone is dark.", "📲 أضف التطبيق إلى الشاشة الرئيسية": "📲 Add the app to your home screen", "مواقع جارية": "Active sites", "مشكلات مفتوحة": "Open issues", "مشكلة مفتوحة": "open issue", "الاستشاري: ": "Consultant: ", "الفريم": "Frame", "الزجاج": "Glass", "لتثبيت التطبيق:": "To install the app:", "لتثبيت التطبيق على الآيفون:": "To install the app on iPhone:", "من قائمة Chrome ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».": "From the Chrome ⋮ menu choose “Install app” or “Add to Home screen”.", "افتح الصفحة في Safari، ثم زر المشاركة ⬆️، ثم «إضافة إلى الشاشة الرئيسية».": "Open the page in Safari, tap Share ⬆️, then “Add to Home Screen”.", "📲 تثبيت التطبيق على الجوال": "📲 Install the app on your phone", "تحويلات عُهد قديمة": "Old custody transfers", "لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.": "There is no personal custody any more; every invoice comes off the main custody. These transfers no longer affect the balance, and you can delete them for good.", "اضغط مرة أخرى لتأكيد الحذف": "Tap again to confirm deleting", "حذف التحويلات القديمة": "Delete old transfers", "حُذفت التحويلات القديمة": "Old transfers deleted", "وقود": "Fuel", "مرتبات": "Salaries", "رسوم حكومية": "Government fees", "الربع": "Quarter", "🧾 تقرير الضريبة (كل 3 أشهر)": "🧾 VAT report (every 3 months)", "الفترة": "Period", "ضريبة المبيعات": "Output VAT (sales)", "ضريبة المشتريات": "Input VAT (purchases)", "المستحق للهيئة": "Payable to the FTA", "المسترد من الهيئة": "Refundable from the FTA", "لا تدخل في المشتريات: الوقود، والمرتبات، والرسوم الحكومية (تجديد الإقامة وبطاقة العمل وغيرها) —": "Not counted in purchases: fuel, salaries and government fees (residence and labour card renewals, etc.) —", "فاتورة بقيمة": "invoices worth", "فاتورة لم تُسجَّل ضريبتها": "invoices with no VAT entered", "تُحسب ضريبتها صفراً حتى تُدخلها. افتح الفاتورة واكتب مبلغ الضريبة كما هو مكتوب فيها، أو احسب 5% للكل إذا كانت كلها من موردين مسجّلين في الضريبة.": "Their VAT counts as zero until you enter it. Open the invoice and type the VAT shown on it, or work out 5% for all of them if they are all from VAT-registered suppliers.", "اضغط مرة أخرى للتأكيد": "Tap again to confirm", "احسب 5% لهذه الفواتير": "Work out 5% for these invoices", "عرضها": "Show them", "ملخص الضريبة": "VAT summary", "المبيعات (الفواتير الضريبية)": "Sales (tax invoices)", "لا توجد فواتير ضريبية في هذه الفترة.": "No tax invoices in this period.", "لا توجد مشتريات في هذه الفترة.": "No purchases in this period.", "فواتير لم تُسجَّل ضريبتها، وحُسبت ضريبتها صفراً": "Invoices with no VAT entered, counted as zero", "لا تدخل في الضريبة": "Not counted for VAT", "السبب": "Reason", "تقرير الضريبة": "VAT report", "لم تُسجَّل الضريبة": "VAT not entered", "ملاحظة": "Note", "حُسبت ضريبة 5% لـ ": "5% VAT worked out for ", " فاتورة": " invoices", "عرض الفواتير التي لم تُسجَّل ضريبتها": "Showing invoices with no VAT entered", "✕ إلغاء التصفية": "✕ Clear filter", "لا تدخل في تقرير الضريبة": "Not counted in the VAT report", "الضريبة VAT (درهم)": "VAT (AED)", "TRN المورد": "Supplier TRN", "احسب 5%": "Work out 5%", "🧾 يستقبل تنبيهاً بكل فاتورة جديدة": "🧾 Gets an alert for every new invoice", "سيصله تنبيه بكل فاتورة جديدة": "will get an alert for every new invoice", "لن يصله تنبيه الفواتير": "Won't get invoice alerts", "رُوجعت": "Reviewed", "راجعتها": "Reviewed it", "لم أراجعها": "Not reviewed", "الفواتير الجديدة التي لم تراجعها بعد. المراجعة للتأكيد فقط، والفواتير مخصومة من العهدة.": "New invoices you haven't reviewed yet. Reviewing is only a confirmation; the invoices are already deducted from custody.", "راجعت الكل": "Reviewed all", "راجعت كل الفواتير": "All invoices reviewed", "فاتورة جديدة لم تراجعها": "new invoice not reviewed", "فواتير جديدة لم تراجعها": "new invoices not reviewed", "فواتير جديدة لم تراجعها:": "New invoices not reviewed:", "صباح الخير": "Good morning", "نهارك سعيد": "Good afternoon", "مساء الخير": "Good evening", "أصيل في العمل،": "Genuine in work,", "أصيل في الوعد": "genuine in promise"});
 const PH = Object.keys(EN).sort((a,b)=>b.length-a.length);
@@ -1146,7 +1153,7 @@ async function boot(){
       mergeMarks(q.docs);
       if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render();
     }, ()=>toast("انقطع الاتصال بقاعدة البيانات"));
-    db.collection("custody").onSnapshot(q=>{ cuMerge(q.docs); S.cuLoaded=true; cuRecover(); cuCheckLow(); setTimeout(cuRecover,50000); if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, ()=>{});
+    db.collection("custody").onSnapshot(q=>{ cuMerge(q.docs); S.cuLoaded=true; cuRecover(); cuCheckLow(); cuCheckIdle(); setTimeout(cuRecover,50000); if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, ()=>{});
     db.collection("docs").onSnapshot(q=>{ docMerge(q.docs); S.docsLoaded=true; S.docsOk=true; if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); }, err=>{ if(isAdmin()&&/PGRST20[0-9]|42P01|Could not find|does not exist|schema cache/i.test(String(err&&(err.message||err.code)||""))){ S.docsOk=false; if(S.view==="docs") render(); } });
     db.doc("settings/company").onSnapshot(d=>{ if(d.exists){ S.settings={...S.settings,...JSON.parse(JSON.stringify(d.data()||{}))}; } if(!document.activeElement || !document.activeElement.matches("input,textarea,select")) render(); },()=>{});
     if(AU()) AU().onChange(onAuth); else { S.setLoaded=true; render(); }
@@ -2182,17 +2189,26 @@ function cuCalc(){
   const low=n(S.settings.cuLow??1000); const mainBal=holderBal("main");
   return {dep, cash, credit, spCash, spAll, bal:dep-cash-spCash, mainBal, owed:credit-spAll, miss:all.filter(x=>isExp(x)&&(!cuLast()||(x.createdAt||0)>cuLast().createdAt)&&needsReview(x)).length, low, isLow:low>0&&mainBal<low};
 }
-// one custody only (5 Nov 2026): every cash invoice, whoever uploads it, comes off the main custody
-const holderOf=x=>"main";
+// employee custody (back on 10 Nov 2026): employees ticked in the custody page hold their own custody.
+// Only movements made under this system carry hv:2; anything older stays on the main custody, as it was.
+const personOn=x=>x.hv===2;
+const holderOf=x=>x.holder&&x.holder!=="main"&&personOn(x)?x.holder:"main";
+const cuHolderList=()=>(S.settings.cuHolders||[]).filter(Boolean);
 const mainHolderId=()=>S.settings.cuMainHolder||((users().find(u=>u.role==="admin")||{}).id)||"";
 const mainHolder=()=>{ const id=mainHolderId(); const u=id&&users().find(x=>x.id===id); return u?u.name:""; };
-function holders(){ return []; }
-function subDefault(name){ return false; }
+function holders(){ const set=new Set(cuHolderList()); Object.values(S.cu).forEach(x=>{ if(!personOn(x)) return; if(x.kind==="xfer"&&x.to) set.add(x.to); if(isExp(x)&&x.holder&&x.holder!=="main") set.add(x.holder); });
+  set.delete(""); set.delete(mainHolder()); return [...set]; }
+function subDefault(name){ return !!name&&name!==mainHolder()&&cuHolderList().includes(name); }
+// days the money has stayed with an employee without invoices: since his last invoice, or since he got custody
+function holderIdle(h){ const mine=Object.values(S.cu).filter(x=>personOn(x)&&((isExp(x)&&x.holder===h)||(x.kind==="xfer"&&x.to===h)));
+  const inv=mine.filter(isExp).map(dateOf).sort().pop(), got=mine.filter(x=>x.kind==="xfer"&&x.dir!=="back").map(dateOf).sort();
+  const since=inv||got[0]; if(!since) return 0; return Math.max(0,Math.round((Date.parse(today())-Date.parse(since))/864e5)); }
 function delta(x,h){ const a=n(x.amount);
   if(x.kind==="dep") return (h==="all"||h==="main")?a:0;
   if(isExp(x)) return (x.pay==="credit"||x.pay==="gm")?0:((h==="all"||holderOf(x)===h)?-a:0);
   if(x.kind==="spay") return x.method==="cash"&&(h==="all"||h==="main")?-a:0;
-  // old person-custody transfers no longer move money (they are deleted from the custody screen)
+  // transfers to an employee: out of the main custody, into his (older ones from before 10 Nov 2026 move nothing)
+  if(x.kind==="xfer"){ if(!personOn(x)||h==="all"||!x.to) return 0; const out=x.dir!=="back"; if(h==="main") return out?-a:a; if(h===x.to) return out?a:-a; }
   return 0; }
 const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=>a+delta(x,h),0);
 const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");
@@ -2305,11 +2321,17 @@ function cuHome(){
 }
 function meBox(){ return !cuMe?`<div class="panel notice"><b>اكتب اسمك مرة واحدة</b><span class="small">ليظهر من صوّر كل فاتورة.</span><label>اسمك<input id="cu-me" data-cume="1" value="" placeholder="مثال: أحمد"></label></div>`:""; }
 function pdfNotice(tag){ return S.lastPdf===tag?`<div class="notice small"><b>${window.__ios?"✓ الملف جاهز.":"✓ تم حفظ الملف في التنزيلات."}</b> أرسله بزر «مشاركة»، أو من الواتساب: 📎 ثم «مستند».</div>${window.__lastFile?`<div class="row">${navigator.canShare?`<button class="primary big" data-act="sharefile">📤 مشاركة (واتساب…)</button>`:""}<button class="big" data-act="dlagain">${window.__ios?"📥 حفظ في الملفات / فتح":"⬇️ تحميل مرة أخرى"}</button></div>`:""}`:""; }
+const daysTxt=d=>lang==="en"?`${d} ${d===1?"day":"days"}`:d===1?"يوم واحد":d===2?"يومين":d<=10?`${d} أيام`:`${d} يوماً`;
+const idleDays=()=>Math.max(1,parseInt(S.settings.cuIdleDays,10)||3);
+// the employee's own custody: what is with him, and how long without invoices
+function cuMyBox(){ if(!subDefault(cuMe)) return ""; const bal=holderBal(cuMe), d=holderIdle(cuMe), late=bal>0&&d>=idleDays();
+  return `<div class="stat ${late?"hl":""}" style="text-align:center;margin-top:8px"><span class="small muted">${bal<0?tr("مستحق لك (لم يُحوَّل بعد)"):tr("رصيد عهدتك")}</span><b class="num" style="font-size:1.4rem;${bal<0?"color:var(--bad)":""}">${money(Math.abs(bal))}</b> <span class="small">درهم</span>
+   ${late?`<span class="small"><b>⏳ ${tr("بدون فواتير منذ")} <span class="num">${daysTxt(d)}</span>.</b> ${tr("صوّر الفواتير من فضلك.")}</span>`:""}</div>`; }
 function buyerView(){
   const mine=Object.values(S.cu).filter(x=>isExp(x)&&(!cuMe||x.by===cuMe)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,12);
   return `<div class="top"><div class="brand"><span class="eyebrow u">${esc(coName())}</span><h1>🧾 فواتير المشتريات</h1></div><div class="row">${userChip()}<button class="lang ghost" data-act="lang"><bdi class="u">${lang==="en"?"عربي":"English"}</bdi></button></div></div>
   ${meBox()}
-  ${subDefault(cuMe)?(()=>{ const bal=holderBal(cuMe); return `<div class="stat" style="text-align:center;margin-top:8px"><span class="small muted">${bal<0?tr("مستحق لك (لم يُحوَّل بعد)"):tr("رصيد عهدتك")}</span><b class="num" style="font-size:1.4rem;${bal<0?"color:var(--bad)":""}">${money(Math.abs(bal))}</b> <span class="small">درهم</span></div>`; })():""}
+  ${cuMyBox()}
   <button class="primary buybig" data-act="cuscan" data-cam="1"><span>📷</span><b>صوّر الفاتورة</b></button>
   <div class="row" style="justify-content:center"><button class="ghost" data-act="cuscan">🖼️ من المعرض</button></div>
   <h2 style="margin-top:14px">آخر فواتيري</h2>
@@ -2332,7 +2354,7 @@ function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
   if(S.cuH&&S.cuH!=="main"&&!HS.includes(S.cuH)) S.cuH=null;
-  const F=[["all","الكل",x=>x.kind!=="spay"&&x.kind!=="xfer"],["miss","للمراجعة",x=>needsReview(x)],...(isAdmin()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
+  const F=[["all","الكل",x=>x.kind!=="spay"&&!(x.kind==="xfer"&&!personOn(x))],["miss","للمراجعة",x=>needsReview(x)],...(isAdmin()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();
@@ -2354,19 +2376,24 @@ function cuView(){
     <button class="qbtn" data-act="cudep"><span class="qic">📥</span><b>إشعار توريد</b><span class="small muted">صورة إشعار التحويل فقط</span></button>
     <button class="qbtn ${S.busy==="cust"?"busy":""}" data-act="cupdf"><span class="qic">📄</span><b>${S.busy==="cust"?"جارٍ التجهيز…":"كشف العهدة"}</b><span class="small muted">PDF للمدير العام</span></button></div>
   ${pdfNotice("cust")}
-  ${(()=>{ const xs=Object.values(S.cu).filter(x=>x.kind==="xfer"); if(!xs.length) return ""; const tot=xs.reduce((a,x)=>a+n(x.amount),0);
+  ${(()=>{ const xs=Object.values(S.cu).filter(x=>x.kind==="xfer"&&!personOn(x)); if(!xs.length) return ""; const tot=xs.reduce((a,x)=>a+n(x.amount),0);
     return `<div class="panel notice small dupbox"><b>${tr("تحويلات عُهد قديمة")}: <span class="num">${xs.length}</span> · <span class="num">${money(tot)}</span> ${tr("درهم")}</b>
-     <span>${tr("لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.")}</span>
+     <span>${tr("تحويلات من قبل نظام عهد الموظفين الحالي. لا تؤثر على أي رصيد، ويمكنك حذفها نهائياً.")}</span>
      <div class="row"><button class="danger ${S.armed==="cuxferdel"?"armed":""}" data-act="cuxferdel">${S.armed==="cuxferdel"?tr("اضغط مرة أخرى لتأكيد الحذف"):"🗑️ "+tr("حذف التحويلات القديمة")}</button></div></div>`; })()}
   ${vatPanel()}
   ${carPanel()}
-  ${HS.length?`<div class="panel"><h2>العُهد</h2><div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
-      return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):tr("الرصيد")}</span></button>
+  <div class="panel"><h2>${tr("عهد الموظفين")}</h2>${HS.length?`<div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
+      return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):h==="main"?tr("رصيدك"):tr("معه بدون فواتير")}</span>${h!=="main"&&bal>0&&holderIdle(h)>0?`<span class="small ${holderIdle(h)>=idleDays()?"neg":"muted"}">${tr("منذ")} <span class="num">${daysTxt(holderIdle(h))}</span></span>`:""}</button>
+      ${h!=="main"?`<div class="row"><button class="xs" data-act="cuxferpic" data-h="${esc(h)}">💸 ${tr("تحويل عهدة")}</button><button class="xs ghost" data-act="cuhpdf" data-h="${esc(h)}">📄 ${tr("كشف حساب")}</button></div>`:""}
       ${pend.length?`<button class="primary" data-act="cuxall" data-h="${esc(h)}">↔️ حوّلت له المستحق <span class="num">${money(holderShort(h))}</span></button>`:""}</div>`; }).join("")}</div>
     ${S.cuCar?`<p class="small" style="margin:0">${tr("عرض فواتير")}: <b>🚗 ${esc(S.cuCar)}</b> <button class="ghost xs" data-act="cucarshow" data-k="">✕ إلغاء التصفية</button></p>`:""}
     ${S.vatShow?`<p class="small" style="margin:0">${tr("عرض الفواتير التي لم تُسجَّل ضريبتها")} <button class="ghost xs" data-act="vatshowx">✕ إلغاء التصفية</button></p>`:""}
     ${S.cuH?`<p class="small" style="margin:0">عرض حركات: <b>${esc(hName(S.cuH))}</b> <button class="ghost xs" data-act="cuhold" data-h="">✕ إلغاء التصفية</button></p>`:""}
-    <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div></div>`:""}
+    <div class="row"><button data-act="cuxfer">↔️ تحويل من الرئيسية إلى عهدة شخص</button></div>`:`<p class="small muted" style="margin:0">${tr("لا يوجد موظف له عهدة بعد. اختر الموظفين من القائمة أدناه.")}</p>`}
+    <details ${S.cuHoldSet?"open":""}><summary style="cursor:pointer" data-act="cuholdsetopen">👥 ${tr("الموظفون الذين لهم عهدة")}</summary>
+     <div class="list">${users().filter(u=>u.name!==mainHolder()).map(u=>`<label class="dchk"><input type="checkbox" data-act="cuholdset" data-n="${esc(u.name)}" ${cuHolderList().includes(u.name)?"checked":""}> <bdi>${esc(u.name)}</bdi></label>`).join("")||`<span class="small muted">${tr("لا يوجد مستخدمون آخرون")}</span>`}</div>
+     <p class="small muted" style="margin:0">${tr("فواتير الموظف المختار تُخصم من عهدته، وتظهر في الكشف العام مع اسمه.")}</p>
+     <label>${tr("التنبيه إذا بقي المبلغ مع الموظف بدون فواتير (أيام)")}<input type="number" inputmode="numeric" min="1" data-set="cuIdleDays" value="${esc(idleDays())}"></label></details></div>
   <div class="tabs" role="tablist">${F.map(([k,l,fn])=>`<button role="tab" aria-selected="${cur[0]===k}" data-act="cufilter" data-k="${k}">${l}${fn?` <span class="num">${all.filter(fn).length}</span>`:""}</button>`).join("")}</div>
   ${body}
   ${closePanel()}
@@ -2557,7 +2584,7 @@ async function makeCustPdf(closeId, range){
     const sumRow=(rows)=>`<tr><th colspan="2">الإجمالي</th><th class="num">${money(rows.reduce((a,r)=>a+r[1].cash,0))}</th><th class="num">${money(rows.reduce((a,r)=>a+r[1].cr,0))}</th><th class="num">${money(rows.reduce((a,r)=>a+r[1].cash+r[1].cr,0))}</th></tr>`;
     const t1=by(x=>cuTargetName(x)); B.push(`<div class="rb"><h2>المصروف حسب الموقع والسيارة</h2>${tbl(["البند","الفواتير","نقداً","آجل","الإجمالي"],t1.map(([k,v])=>`<tr><td>${U(k)}</td><td class="num">${v.c}</td><td class="num">${money(v.cash)}</td><td class="num">${money(v.cr)}</td><td class="num">${money(v.cash+v.cr)}</td></tr>`),sumRow(t1))}</div>`);
     const t2=by(x=>(cuCat(x.cat)||{l:"— بدون بند —"}).l); B.push(`<div class="rb"><h2>المصروف حسب البند</h2>${tbl(["البند","الفواتير","نقداً","آجل","الإجمالي"],t2.map(([k,v])=>`<tr><td>${U(k)}</td><td class="num">${v.c}</td><td class="num">${money(v.cash)}</td><td class="num">${money(v.cr)}</td><td class="num">${money(v.cash+v.cr)}</td></tr>`),sumRow(t2))}</div>`);
-    B.push(`<div class="rb"><h2>تفاصيل الفواتير</h2>${tbl(["#","التاريخ","على حساب","البند","المورد","الدفع","المبلغ"],ex.map((x,i)=>`<tr><td class="num">${i+1}</td><td class="num">${esc(x.date||"")}</td><td>${U(cuTargetName(x))}</td><td>${U((cuCat(x.cat)||{l:"—"}).l)}</td><td>${U(x.supplier||"—")}</td><td>${payLbl(x)}</td><td class="num">${money(x.amount)}</td></tr>`))}</div>`); }
+    B.push(`<div class="rb"><h2>تفاصيل الفواتير</h2>${tbl(["#","التاريخ","على حساب","البند","المورد","الدفع","المبلغ"],ex.map((x,i)=>`<tr><td class="num">${i+1}</td><td class="num">${esc(x.date||"")}</td><td>${U(cuTargetName(x))}</td><td>${U((cuCat(x.cat)||{l:"—"}).l)}</td><td>${U(x.supplier||"—")}</td><td>${payLbl(x)}${holderOf(x)!=="main"?" — "+tr("من عهدة ")+U(holderOf(x)):""}</td><td class="num">${money(x.amount)}</td></tr>`))}</div>`); }
   const sups=to?[]:range?supsUntil(range.to):cuSuppliers().filter(s=>s.inv.length||s.pay.length);
   if(sups.length) B.push(`<div class="rb"><h2>حسابات الموردين (آجل)</h2>${tbl(["المورد","الفواتير الآجلة","المسدّد","المستحق"],sups.map(s=>`<tr><td>${U(s.name)}</td><td class="num">${money(s.invSum)}</td><td class="num">${money(s.paySum)}</td><td class="num">${money(s.bal)}</td></tr>`),`<tr><th colspan="3">إجمالي المستحق للموردين</th><th class="num">${money(c.owed)}</th></tr>`)}</div>`);
   { const HS=holders(); if(HS.length&&!to){ const until=range?range.to:"9999"; const bal=h=>Object.values(S.cu).filter(x=>x.kind!=="close"&&dateOf(x)<=until).reduce((a,x)=>a+delta(x,h),0);
@@ -2676,6 +2703,7 @@ app.addEventListener("input", e=>{ const t=e.target;
   if(!t.dataset.cu) return; const [id,k]=t.dataset.cu.split("."); const x=S.cu[id]; if(!x) return;
   if(!cuOrig[id]) cuOrig[id]=JSON.parse(JSON.stringify(x));
   x[k]=t.type==="number"?(t.value===""?0:n(t.value)):t.value;
+  if(k==="holder"||k==="to") x.hv=2;
   if(k==="pay"&&x.pay==="credit"&&x.supplier&&!isCreditSup(x.supplier)){ S.settings.cuCredit=[...cuCredit(),x.supplier.trim()]; settingsSave(); }
   if(k==="supplier"&&isCreditSup(x.supplier)) x.pay="credit";
   if(k==="target"&&String(x.target).startsWith("car:")&&(cuCat(x.cat)||{}).t!=="car") x.cat="fuel";
@@ -2701,7 +2729,7 @@ app.addEventListener("click", async e=>{
     const pre=b.dataset.site||(S.view==="site"?S.cur:null);
     const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
     const lbl=b.querySelector("b")||b; const old=lbl.textContent; b.classList.add("busy"); lbl.textContent=tr("جارٍ الرفع…");
-    const nx={id:uid(),kind:"exp",by:cuMe,holder:subDefault(cuMe)?cuMe:"main",target:b.dataset.site||"",cat:"",pay:"cash",supplier:"",amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};
+    const nx={id:uid(),kind:"exp",by:cuMe,holder:subDefault(cuMe)?cuMe:"main",hv:2,target:b.dataset.site||"",cat:"",pay:"cash",supplier:"",amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};
     try{ const u=await cuUpload(files[0]); if(!u){ b.classList.remove("busy"); lbl.textContent=old; return; }
       nx.fileId=u.r.id; nx.fileType=u.r.type; if(u.r.type==="image") nx.reading=!!(canRead&&sample); cuPut(nx,true);
       if(!nx.target){ S.cuPick=nx.id; S.cuPre=pre; }
@@ -2716,7 +2744,7 @@ app.addEventListener("click", async e=>{
   else if(a==="cupickopen"&&x){ S.cuPick=id; S.cuPre=null; render(); }
   else if(a==="cumanual"||a==="cusalary"){ if(!needMe()) return;
     const sk=a==="cusalary"?(b.dataset.m||salaryDue()||prevMonthOf(today())):null;
-    const nx={id:uid(),kind:"exp",by:cuMe,holder:"main",target:"gen",cat:sk?"salary":"",pay:"cash",supplier:"",amount:0,date:today(),desc:sk?salaryDesc(sk):"",fileId:null,fileType:null,createdAt:Date.now()};
+    const nx={id:uid(),kind:"exp",by:cuMe,holder:subDefault(cuMe)?cuMe:"main",hv:2,target:"gen",cat:sk?"salary":"",pay:"cash",supplier:"",amount:0,date:today(),desc:sk?salaryDesc(sk):"",fileId:null,fileType:null,createdAt:Date.now()};
     if(sk) nx.salMonth=sk; if(a==="cusalary") S.view="cust";
     S.cuF="all"; S.cuEdit=nx.id; cuPut(nx,true); render();
     setTimeout(()=>{ const el=document.getElementById("cu-"+nx.id+"-amount"); if(el){ el.scrollIntoView({block:"center"}); el.focus(); } },80); }
@@ -2728,7 +2756,7 @@ app.addEventListener("click", async e=>{
   else if(a==="cufile"&&x){ const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return; b.classList.add("busy"); b.textContent=tr("جارٍ الرفع…");
     try{ const u=await cuUpload(files[0]); if(u){ dropAsset(x.fileId); x.fileId=u.r.id; x.fileType=u.r.type; cuPut(x,true); if(u.r.type==="image"&&!n(x.amount)) await cuReadDep(id,u.f); } }catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الملف"); } render(); }
   else if(a==="cudel"&&x){ const key="cu"+id; if(S.armed===key){ S.armed=null; const ids=[id,...(x.kind==="xfer"?Object.values(S.cu).filter(y=>y.xferId===id).map(y=>y.id):[])]; const snap=cuSnap(ids); cuDel(id); undoToast("🗑️ تم الحذف", snap); render(); } else { S.armed=key; setTimeout(()=>{ if(S.armed===key){ S.armed=null; render(); } },4000); render(); } }
-  else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer").map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
+  else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer"&&!personOn(y)).map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
   else if(a==="cuvat5"&&x){ x.vat=vat5(x.amount); cuPut(x,true); render(); }
   else if(a==="vatshowx"){ S.vatShow=null; render(); }
   else if(a==="curev"&&x){ if(!isAdmin()) return; x.rev={by:cuMe||"",at:new Date().toISOString()}; cuPut(x,true); render(); }
@@ -2759,10 +2787,19 @@ app.addEventListener("click", async e=>{
     const snap=cuOrig[id]?{[id]:JSON.parse(JSON.stringify(cuOrig[id]))}:cuSnap([id]); x.ok=true; cuPut(x,true); if(S.cuEdit===id) S.cuEdit=null; undoToast("✓ تم الحفظ", snap); render(); }
   else if(a==="cucancel"&&x){ if(cuOrig[id]){ S.cu[id]=cuOrig[id]; delete cuOrig[id]; } if(S.cuEdit===id) S.cuEdit=null; toast(tr("↩️ أُلغي التعديل")); render(); }
   else if(a==="cuhold"){ S.cuH=b.dataset.h||null; render(); }
-  else if(a==="cuxfer"){ const h=S.cuH&&S.cuH!=="main"?S.cuH:(holders().filter(v=>v!==mainHolder())[0]||""); const nx={id:uid(),kind:"xfer",dir:"out",to:h,by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()}; S.cuF="all"; cuPut(nx,true); render(); undoToast("تم إنشاء تحويل جديد", {[nx.id]:null}); setTimeout(()=>{ const el=document.getElementById(`cu-${nx.id}-${h?"amount":"to"}`); el&&(el.scrollIntoView({block:"center"}),el.focus()); },40); }
-  else if(a==="cuxinv"&&x){ const nid=uid(); const snap=cuSnap([x.id,nid]); const nx={id:nid,kind:"xfer",dir:"out",to:holderOf(x),by:cuMe,amount:Math.min(n(x.amount),holderShort(holderOf(x))),date:today(),desc:"",inv:[x.id],fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); x.xferId=nx.id; cuPut(x,true); undoToast("✓ سُجّل التحويل إلى "+holderOf(x), snap); render(); }
+  else if(a==="cuholdsetopen"){ e.preventDefault(); S.cuHoldSet=!S.cuHoldSet; render(); }
+  else if(a==="cuhpdf"){ S.cuRangeH=b.dataset.h; S.cuRange={k:"cust"}; render(); }
+  else if(a==="cuholdset"){ const name=b.dataset.n; const L=cuHolderList(); S.settings.cuHolders=L.includes(name)?L.filter(v=>v!==name):[...L,name]; settingsSave(); render(); }
+  else if(a==="cuxferpic"){ // transfer from the bank: photo of the receipt first, amount and date are read from it
+    const h=b.dataset.h||(S.cuH&&S.cuH!=="main"?S.cuH:(holders()[0]||"")); const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
+    const nx={id:uid(),kind:"xfer",hv:2,dir:"out",to:h,by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()}; b.classList.add("busy");
+    try{ const u=await cuUpload(files[0]); if(u){ nx.fileId=u.r.id; nx.fileType=u.r.type; S.cuF="all"; cuPut(nx,true); render(); if(u.r.type==="image") await cuReadDep(nx.id,u.f);
+      const y=S.cu[nx.id]; if(y) undoToast(n(y.amount)>0?tr("✓ سُجّل تحويل عهدة ")+money(y.amount)+(h?" → "+h:""):tr("✓ سُجّل التحويل، أدخل المبلغ"), {[nx.id]:null}); } }
+    catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الملف"); } render(); setTimeout(()=>{ const el=document.getElementById(`cu-${nx.id}-${h?"amount":"to"}`); el&&el.scrollIntoView({block:"center"}); },60); }
+  else if(a==="cuxfer"){ const h=S.cuH&&S.cuH!=="main"?S.cuH:(holders().filter(v=>v!==mainHolder())[0]||""); const nx={id:uid(),kind:"xfer",hv:2,dir:"out",to:h,by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()}; S.cuF="all"; cuPut(nx,true); render(); undoToast("تم إنشاء تحويل جديد", {[nx.id]:null}); setTimeout(()=>{ const el=document.getElementById(`cu-${nx.id}-${h?"amount":"to"}`); el&&(el.scrollIntoView({block:"center"}),el.focus()); },40); }
+  else if(a==="cuxinv"&&x){ const nid=uid(); const snap=cuSnap([x.id,nid]); const nx={id:nid,kind:"xfer",hv:2,dir:"out",to:holderOf(x),by:cuMe,amount:Math.min(n(x.amount),holderShort(holderOf(x))),date:today(),desc:"",inv:[x.id],fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); x.xferId=nx.id; cuPut(x,true); undoToast("✓ سُجّل التحويل إلى "+holderOf(x), snap); render(); }
   else if(a==="cuxall"){ const h=b.dataset.h; const pend=Object.values(S.cu).filter(y=>needsXfer(y)&&holderOf(y)===h); if(!pend.length) return; const amt=holderShort(h);
-    const nid=uid(); const snap=cuSnap([nid,...pend.map(y=>y.id)]); const nx={id:nid,kind:"xfer",dir:"out",to:h,by:cuMe,amount:Math.round(amt*100)/100,date:today(),desc:"",inv:pend.map(y=>y.id),fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); pend.forEach(y=>{ y.xferId=nx.id; cuPut(y,true); }); undoToast("✓ سُجّل تحويل "+money(amt)+" إلى "+h, snap); render(); }
+    const nid=uid(); const snap=cuSnap([nid,...pend.map(y=>y.id)]); const nx={id:nid,kind:"xfer",hv:2,dir:"out",to:h,by:cuMe,amount:Math.round(amt*100)/100,date:today(),desc:"",inv:pend.map(y=>y.id),fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); pend.forEach(y=>{ y.xferId=nx.id; cuPut(y,true); }); undoToast("✓ سُجّل تحويل "+money(amt)+" إلى "+h, snap); render(); }
   else if(a==="cudupok"&&x){ const snap=cuSnap([id]); x.dupOk=true; cuPut(x,true); undoToast("تم: ليست مكررة", snap); render(); }
   else if(a==="cuclose"){ const k="cuclose"; if(S.armed!==k){ S.armed=k; setTimeout(()=>{ if(S.armed===k){ S.armed=null; render(); } },5000); render(); return; } S.armed=null;
     const last=cuLast(); const list=Object.values(S.cu).filter(y=>inPeriod(y,last,null)); const pc=periodCalc(list,last?n(last.bal):0); const cc=cuCalc();
@@ -2842,6 +2879,14 @@ function cuCheckLow(){ if(!window.__push||S.mode!=="db"||!S.cuLoaded||!isAdmin()
     if(c.isLow&&!sent){ S.settings.cuLowSent=Date.now(); settingsSave(); const ids=users().filter(u=>u.notifyLow).map(u=>u.id);
       if(ids.length) window.__push.notify(ids, c.mainBal<0?"⚠️ رصيد العهدة بالسالب":"⚠️ رصيد العهدة منخفض", `الرصيد الحالي ${money(c.mainBal)} درهم، والحد الأدنى ${money(c.low)} درهم. نحتاج توريداً جديداً.`, "low").catch(e=>console.warn("push",e)); }
     else if(!c.isLow&&sent){ S.settings.cuLowSent=null; settingsSave(); } },4000); }
+// money left with an employee without invoices for N days: a reminder to him and an alert to the full-access users, once a day
+function cuCheckIdle(){ if(!window.__push||S.mode!=="db"||!S.cuLoaded||!S.user||!isAdmin()) return; clearTimeout(cuT._idle);
+  cuT._idle=setTimeout(()=>{ if(!S.user||!isAdmin()) return; const day=today(), sent={...(S.settings.cuIdleSent||{})}; let ch=false;
+    holders().forEach(h=>{ const bal=holderBal(h), d=holderIdle(h); if(!(bal>0)||d<idleDays()||sent[h]===day) return; sent[h]=day; ch=true;
+      const adm=users().filter(u=>u.notifyLow).map(u=>u.id), emp=users().filter(u=>u.name===h).map(u=>u.id);
+      if(adm.length) window.__push.notify(adm, tr("⏳ عهدة بدون فواتير"), `${tr("مع")} ${h} ${money(bal)} ${tr("درهم بدون فواتير منذ")} ${daysTxt(d)}.`, "idle-"+h).catch(e=>console.warn("push",e));
+      if(emp.length) window.__push.notify(emp, tr("⏳ ارفع فواتير العهدة"), `${tr("معك")} ${money(bal)} ${tr("درهم من العهدة بدون فواتير منذ")} ${daysTxt(d)}. ${tr("صوّر الفواتير من فضلك.")}`, "idle-me").catch(e=>console.warn("push",e)); });
+    if(ch){ S.settings.cuIdleSent=sent; settingsSave(); } },5000); }
 function canBackup(){ if(!S.user||!isAdmin()) return false; const us=users(); const any=us.some(u=>u.canBackup);
   const me=us.find(u=>u.id===S.user.id); if(any) return !!(me&&me.canBackup); return !!(me&&me.role==="admin"&&me.id===((us.find(u=>u.role==="admin")||{}).id)); }
 async function loadAutoBk(){ if(!window.__sb||S.autoBkBusy) return; S.autoBkBusy=true;

@@ -7,6 +7,7 @@ app.addEventListener("input", e=>{ const t=e.target;
   if(!t.dataset.cu) return; const [id,k]=t.dataset.cu.split("."); const x=S.cu[id]; if(!x) return;
   if(!cuOrig[id]) cuOrig[id]=JSON.parse(JSON.stringify(x));
   x[k]=t.type==="number"?(t.value===""?0:n(t.value)):t.value;
+  if(k==="holder"||k==="to") x.hv=2;
   if(k==="pay"&&x.pay==="credit"&&x.supplier&&!isCreditSup(x.supplier)){ S.settings.cuCredit=[...cuCredit(),x.supplier.trim()]; settingsSave(); }
   if(k==="supplier"&&isCreditSup(x.supplier)) x.pay="credit";
   if(k==="target"&&String(x.target).startsWith("car:")&&(cuCat(x.cat)||{}).t!=="car") x.cat="fuel";
@@ -32,7 +33,7 @@ app.addEventListener("click", async e=>{
     const pre=b.dataset.site||(S.view==="site"?S.cur:null);
     const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
     const lbl=b.querySelector("b")||b; const old=lbl.textContent; b.classList.add("busy"); lbl.textContent=tr("جارٍ الرفع…");
-    const nx={id:uid(),kind:"exp",by:cuMe,holder:subDefault(cuMe)?cuMe:"main",target:b.dataset.site||"",cat:"",pay:"cash",supplier:"",amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};
+    const nx={id:uid(),kind:"exp",by:cuMe,holder:subDefault(cuMe)?cuMe:"main",hv:2,target:b.dataset.site||"",cat:"",pay:"cash",supplier:"",amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()};
     try{ const u=await cuUpload(files[0]); if(!u){ b.classList.remove("busy"); lbl.textContent=old; return; }
       nx.fileId=u.r.id; nx.fileType=u.r.type; if(u.r.type==="image") nx.reading=!!(canRead&&sample); cuPut(nx,true);
       if(!nx.target){ S.cuPick=nx.id; S.cuPre=pre; }
@@ -47,7 +48,7 @@ app.addEventListener("click", async e=>{
   else if(a==="cupickopen"&&x){ S.cuPick=id; S.cuPre=null; render(); }
   else if(a==="cumanual"||a==="cusalary"){ if(!needMe()) return;
     const sk=a==="cusalary"?(b.dataset.m||salaryDue()||prevMonthOf(today())):null;
-    const nx={id:uid(),kind:"exp",by:cuMe,holder:"main",target:"gen",cat:sk?"salary":"",pay:"cash",supplier:"",amount:0,date:today(),desc:sk?salaryDesc(sk):"",fileId:null,fileType:null,createdAt:Date.now()};
+    const nx={id:uid(),kind:"exp",by:cuMe,holder:subDefault(cuMe)?cuMe:"main",hv:2,target:"gen",cat:sk?"salary":"",pay:"cash",supplier:"",amount:0,date:today(),desc:sk?salaryDesc(sk):"",fileId:null,fileType:null,createdAt:Date.now()};
     if(sk) nx.salMonth=sk; if(a==="cusalary") S.view="cust";
     S.cuF="all"; S.cuEdit=nx.id; cuPut(nx,true); render();
     setTimeout(()=>{ const el=document.getElementById("cu-"+nx.id+"-amount"); if(el){ el.scrollIntoView({block:"center"}); el.focus(); } },80); }
@@ -59,7 +60,7 @@ app.addEventListener("click", async e=>{
   else if(a==="cufile"&&x){ const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return; b.classList.add("busy"); b.textContent=tr("جارٍ الرفع…");
     try{ const u=await cuUpload(files[0]); if(u){ dropAsset(x.fileId); x.fileId=u.r.id; x.fileType=u.r.type; cuPut(x,true); if(u.r.type==="image"&&!n(x.amount)) await cuReadDep(id,u.f); } }catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الملف"); } render(); }
   else if(a==="cudel"&&x){ const key="cu"+id; if(S.armed===key){ S.armed=null; const ids=[id,...(x.kind==="xfer"?Object.values(S.cu).filter(y=>y.xferId===id).map(y=>y.id):[])]; const snap=cuSnap(ids); cuDel(id); undoToast("🗑️ تم الحذف", snap); render(); } else { S.armed=key; setTimeout(()=>{ if(S.armed===key){ S.armed=null; render(); } },4000); render(); } }
-  else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer").map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
+  else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer"&&!personOn(y)).map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
   else if(a==="cuvat5"&&x){ x.vat=vat5(x.amount); cuPut(x,true); render(); }
   else if(a==="vatshowx"){ S.vatShow=null; render(); }
   else if(a==="curev"&&x){ if(!isAdmin()) return; x.rev={by:cuMe||"",at:new Date().toISOString()}; cuPut(x,true); render(); }
@@ -90,10 +91,19 @@ app.addEventListener("click", async e=>{
     const snap=cuOrig[id]?{[id]:JSON.parse(JSON.stringify(cuOrig[id]))}:cuSnap([id]); x.ok=true; cuPut(x,true); if(S.cuEdit===id) S.cuEdit=null; undoToast("✓ تم الحفظ", snap); render(); }
   else if(a==="cucancel"&&x){ if(cuOrig[id]){ S.cu[id]=cuOrig[id]; delete cuOrig[id]; } if(S.cuEdit===id) S.cuEdit=null; toast(tr("↩️ أُلغي التعديل")); render(); }
   else if(a==="cuhold"){ S.cuH=b.dataset.h||null; render(); }
-  else if(a==="cuxfer"){ const h=S.cuH&&S.cuH!=="main"?S.cuH:(holders().filter(v=>v!==mainHolder())[0]||""); const nx={id:uid(),kind:"xfer",dir:"out",to:h,by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()}; S.cuF="all"; cuPut(nx,true); render(); undoToast("تم إنشاء تحويل جديد", {[nx.id]:null}); setTimeout(()=>{ const el=document.getElementById(`cu-${nx.id}-${h?"amount":"to"}`); el&&(el.scrollIntoView({block:"center"}),el.focus()); },40); }
-  else if(a==="cuxinv"&&x){ const nid=uid(); const snap=cuSnap([x.id,nid]); const nx={id:nid,kind:"xfer",dir:"out",to:holderOf(x),by:cuMe,amount:Math.min(n(x.amount),holderShort(holderOf(x))),date:today(),desc:"",inv:[x.id],fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); x.xferId=nx.id; cuPut(x,true); undoToast("✓ سُجّل التحويل إلى "+holderOf(x), snap); render(); }
+  else if(a==="cuholdsetopen"){ e.preventDefault(); S.cuHoldSet=!S.cuHoldSet; render(); }
+  else if(a==="cuhpdf"){ S.cuRangeH=b.dataset.h; S.cuRange={k:"cust"}; render(); }
+  else if(a==="cuholdset"){ const name=b.dataset.n; const L=cuHolderList(); S.settings.cuHolders=L.includes(name)?L.filter(v=>v!==name):[...L,name]; settingsSave(); render(); }
+  else if(a==="cuxferpic"){ // transfer from the bank: photo of the receipt first, amount and date are read from it
+    const h=b.dataset.h||(S.cuH&&S.cuH!=="main"?S.cuH:(holders()[0]||"")); const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return;
+    const nx={id:uid(),kind:"xfer",hv:2,dir:"out",to:h,by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()}; b.classList.add("busy");
+    try{ const u=await cuUpload(files[0]); if(u){ nx.fileId=u.r.id; nx.fileType=u.r.type; S.cuF="all"; cuPut(nx,true); render(); if(u.r.type==="image") await cuReadDep(nx.id,u.f);
+      const y=S.cu[nx.id]; if(y) undoToast(n(y.amount)>0?tr("✓ سُجّل تحويل عهدة ")+money(y.amount)+(h?" → "+h:""):tr("✓ سُجّل التحويل، أدخل المبلغ"), {[nx.id]:null}); } }
+    catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الملف"); } render(); setTimeout(()=>{ const el=document.getElementById(`cu-${nx.id}-${h?"amount":"to"}`); el&&el.scrollIntoView({block:"center"}); },60); }
+  else if(a==="cuxfer"){ const h=S.cuH&&S.cuH!=="main"?S.cuH:(holders().filter(v=>v!==mainHolder())[0]||""); const nx={id:uid(),kind:"xfer",hv:2,dir:"out",to:h,by:cuMe,amount:0,date:today(),desc:"",fileId:null,fileType:null,createdAt:Date.now()}; S.cuF="all"; cuPut(nx,true); render(); undoToast("تم إنشاء تحويل جديد", {[nx.id]:null}); setTimeout(()=>{ const el=document.getElementById(`cu-${nx.id}-${h?"amount":"to"}`); el&&(el.scrollIntoView({block:"center"}),el.focus()); },40); }
+  else if(a==="cuxinv"&&x){ const nid=uid(); const snap=cuSnap([x.id,nid]); const nx={id:nid,kind:"xfer",hv:2,dir:"out",to:holderOf(x),by:cuMe,amount:Math.min(n(x.amount),holderShort(holderOf(x))),date:today(),desc:"",inv:[x.id],fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); x.xferId=nx.id; cuPut(x,true); undoToast("✓ سُجّل التحويل إلى "+holderOf(x), snap); render(); }
   else if(a==="cuxall"){ const h=b.dataset.h; const pend=Object.values(S.cu).filter(y=>needsXfer(y)&&holderOf(y)===h); if(!pend.length) return; const amt=holderShort(h);
-    const nid=uid(); const snap=cuSnap([nid,...pend.map(y=>y.id)]); const nx={id:nid,kind:"xfer",dir:"out",to:h,by:cuMe,amount:Math.round(amt*100)/100,date:today(),desc:"",inv:pend.map(y=>y.id),fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); pend.forEach(y=>{ y.xferId=nx.id; cuPut(y,true); }); undoToast("✓ سُجّل تحويل "+money(amt)+" إلى "+h, snap); render(); }
+    const nid=uid(); const snap=cuSnap([nid,...pend.map(y=>y.id)]); const nx={id:nid,kind:"xfer",hv:2,dir:"out",to:h,by:cuMe,amount:Math.round(amt*100)/100,date:today(),desc:"",inv:pend.map(y=>y.id),fileId:null,fileType:null,createdAt:Date.now()}; cuPut(nx,true); pend.forEach(y=>{ y.xferId=nx.id; cuPut(y,true); }); undoToast("✓ سُجّل تحويل "+money(amt)+" إلى "+h, snap); render(); }
   else if(a==="cudupok"&&x){ const snap=cuSnap([id]); x.dupOk=true; cuPut(x,true); undoToast("تم: ليست مكررة", snap); render(); }
   else if(a==="cuclose"){ const k="cuclose"; if(S.armed!==k){ S.armed=k; setTimeout(()=>{ if(S.armed===k){ S.armed=null; render(); } },5000); render(); return; } S.armed=null;
     const last=cuLast(); const list=Object.values(S.cu).filter(y=>inPeriod(y,last,null)); const pc=periodCalc(list,last?n(last.bal):0); const cc=cuCalc();

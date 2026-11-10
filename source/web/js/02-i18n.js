@@ -43,3 +43,4 @@ Object.entries({"عهد الموظفين":"Employee custody","رصيدك":"Your 
  "تحويلات من قبل نظام عهد الموظفين الحالي. لا تؤثر على أي رصيد، ويمكنك حذفها نهائياً.":"Transfers from before the current employee custody. They affect no balance, and you can delete them for good.",
  "✓ سُجّل تحويل عهدة ":"✓ Custody transfer recorded ","✓ سُجّل التحويل، أدخل المبلغ":"✓ Transfer recorded, enter the amount","⏳ عهدة بدون فواتير":"⏳ Custody without invoices","مع":"With","درهم بدون فواتير منذ":"AED without invoices for",
  "⏳ ارفع فواتير العهدة":"⏳ Upload your custody invoices","معك":"You have","درهم من العهدة بدون فواتير منذ":"AED of custody without invoices for","من عهدة ":"from the custody of "}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"عهدة":"Custody of","مجموع ما مع الموظفين":"Total with the employees","إجمالي العهدة (معك + مع الموظفين)":"All custody money (yours + with the employees)"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });

@@ -29,6 +29,9 @@ test("balances: transfer out of the main custody, the employee's invoices off hi
   await app.page.click('[data-act="cuopen"]'); await app.page.waitForTimeout(300);
   const txt = await app.text();
   assert.match(txt, /عهد الموظفين/); assert.match(txt, /معه بدون فواتير/);
+  // the main custody summary: what is with each employee, their total, and all the money
+  const rows = await app.page.$$eval(".empsum tr", (trs) => trs.map((r) => [...r.children].map((c) => c.textContent.replace(/\s+/g, " ").trim())));
+  assert.deepEqual(rows, [["عهدة أحمد", "550"], ["مجموع ما مع الموظفين", "550"], ["إجمالي العهدة (معك + مع الموظفين)", "9,360"]]);
   assert.equal(await app.page.locator('[data-act="cuxferpic"][data-h="أحمد"]').count(), 1, "custody transfer button on the employee's card");
   assert.equal(await app.page.locator('[data-act="cuhpdf"][data-h="أحمد"]').count(), 1, "statement button on the employee's card");
   // the general list shows the employee's invoice and the transfer

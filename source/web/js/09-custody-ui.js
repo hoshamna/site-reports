@@ -107,6 +107,12 @@ function carPanel(){
    <tr><th>${tr("الإجمالي")}</th><th class="num">${money(tot.fuel)}</th><th class="num">${money(tot.fix)}</th><th class="num">${money(tot.other)}</th><th class="num">${money(tot.total)}</th><th></th></tr></table></div>
    <p class="small muted" style="margin:0">${tr("اضغط اسم السيارة لعرض فواتيرها. تُحسب كل الفواتير المسجّلة على حساب السيارة، نقداً أو آجلاً.")}</p></details>`;
 }
+// what is left with each employee, their total, and all the custody money (yours + with the employees)
+function empSum(c){ const HS=holders(); if(!HS.length) return ""; const rows=HS.map(h=>[h,Math.round(holderBal(h)*100)/100]);
+  const tot=Math.round(rows.reduce((a,[,v])=>a+v,0)*100)/100;
+  return `<table class="vatsum empsum"><tbody>${rows.map(([h,v])=>`<tr><th>${tr("عهدة")} <bdi>${esc(h)}</bdi></th><td class="num ${v<0?"neg":""}">${money(Math.abs(v))}${v<0?` <small>${tr("(مستحق له)")}</small>`:""}</td></tr>`).join("")}
+   <tr><th>${tr("مجموع ما مع الموظفين")}</th><td class="num"><b>${money(tot)}</b></td></tr>
+   <tr class="diff"><th>${tr("إجمالي العهدة (معك + مع الموظفين)")}</th><td class="num">${money(Math.round((c.mainBal+tot)*100)/100)}</td></tr></tbody></table>`; }
 function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
@@ -123,6 +129,7 @@ function cuView(){
     <div><span class="muted small">التوريدات${last?" (الفترة)":""}</span><b class="num">${money(pc.dep)}</b></div>
     <div><span class="muted small">المصروف النقدي${last?" (الفترة)":""}</span><b class="num">${money(pc.cash+pc.spCash)}</b></div>
     <div ${c.owed>0?'class="warn" data-act="cufilter" data-k="sup" role="button"':""}><span class="small">مستحق للموردين (آجل)</span><b class="num">${money(c.owed)}</b></div></div>
+    ${empSum(c)}
     ${last?`<p class="small muted" style="margin:8px 0 0">الرصيد المُرحَّل من إقفال <span class="num">${esc(last.date)}</span>: <b class="num">${money(last.bal)}</b> درهم</p>`:""}
     ${c.isLow?`<div class="notice small lowbox" style="margin-top:8px"><b>⚠️ ${c.mainBal<0?"رصيد العهدة بالسالب":"رصيد العهدة منخفض"}: <span class="num">${money(c.mainBal)}</span> درهم</b><span>الحد الأدنى المحدد <span class="num">${money(c.low)}</span> درهم. يحتاج توريداً جديداً من المدير العام.</span>
       <a class="btn primary" href="${esc(cuWa(S.settings.cuOwnerPhone,lowMsg(c)))}" target="_blank" rel="noopener">📲 أبلغ المدير العام على واتساب</a></div>`:""}</div>

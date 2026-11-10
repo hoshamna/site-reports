@@ -613,3 +613,4 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .vatsum thead th{font-size:12px;color:var(--muted);font-weight:600}
 .vatsum tbody th{font-weight:600} .vatsum td{font-variant-numeric:tabular-nums}
 .vatsum tr.diff th,.vatsum tr.diff td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
+.empsum{margin:10px 0 0} .empsum td{text-align:end} .empsum .neg{color:var(--bad)}

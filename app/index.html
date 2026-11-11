@@ -2126,7 +2126,14 @@ function undoToast(msg, snap){
   t.querySelector(".ok").onclick=()=>{ clearTimeout(tm); t.remove(); };
   t.querySelector(".un").onclick=()=>{ clearTimeout(tm); t.remove(); if(typeof snap==="function") snap(); else cuRestore(snap); toast("↩️ تم التراجع"); render(); };
 }
+// an employee's invoice that reached the app without its custody (uploaded from a phone still on the older version):
+// put it on his own custody. A choice made by hand on the card (hv set) is never changed.
+const EMP_CU_FROM=Date.parse("2026-11-10T17:59:00+04:00");
+function cuFixHolders(){ if(!S.user||!isAdmin()||!S.cuLoaded||S.canWrite===false) return; const L=cuHolderList();
+  Object.values(S.cu).forEach(x=>{ if(!isExp(x)||x.hv||!L.includes(x.by)||(x.holder&&x.holder!=="main")||(x.createdAt||0)<EMP_CU_FROM||x.reading||cuT[x.id]) return;
+    x.holder=x.by; x.hv=2; x.updatedAt=Date.now(); cuPut(x,true); }); }
 function cuReconcile(){
+  cuFixHolders();
   if(!isAdmin()||!S.cuLoaded||!S.sitesLoaded) return;
   Object.values(S.cu).forEach(x=>{ if(x.kind!=="exp"||x.reading||cuPend[x.id]>0||cuT[x.id]) return;
     const want=S.sites[x.target]?x.target:null; const s=want&&S.sites[want]; const p=s&&(s.purchases||[]).find(q=>q.id===x.purId||q.cuId===x.id);

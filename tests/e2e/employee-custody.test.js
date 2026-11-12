@@ -70,17 +70,19 @@ test("money left with an employee for 3 days without invoices: reminder to him, 
   assert.deepEqual(await app.eval(() => (window.__notified || []).filter((a) => /^idle/.test(a[3])).map((a) => a[2])), [], "not again the same day");
 });
 
-test("an employee's invoice that came without its custody (older app on his phone) is moved to his custody", async (t) => {
+test("an employee's invoice that landed on the main custody is moved to his; a hand choice stays", async (t) => {
   const app = await openApp({ init: () => { setTimeout(() => { const D = window.__mockDB(); D.custody = {}; const c = (id, d) => { D.custody[id] = { id, created_by: null, data: { id, ...d } }; };
     c("dep", { kind: "dep", by: "هشام", amount: 1000, date: "2026-11-10", createdAt: Date.parse("2026-11-10T09:00:00+04:00") });
     c("x1", { kind: "xfer", hv: 2, dir: "out", to: "أحمد", by: "هشام", amount: 500, date: "2026-11-10", createdAt: Date.parse("2026-11-10T19:00:00+04:00") });
     c("new", { kind: "exp", by: "أحمد", holder: "main", target: "gen", cat: "acc", pay: "cash", supplier: "Shop", amount: 120, date: "2026-11-11", createdAt: Date.parse("2026-11-11T09:00:00+04:00") });
     c("before", { kind: "exp", by: "أحمد", holder: "main", target: "gen", cat: "acc", pay: "cash", supplier: "Old", amount: 30, date: "2026-11-09", createdAt: Date.parse("2026-11-09T09:00:00+04:00") });
-    c("hand", { kind: "exp", hv: 2, by: "أحمد", holder: "main", target: "gen", cat: "acc", pay: "cash", supplier: "Chosen", amount: 10, date: "2026-11-11", createdAt: Date.parse("2026-11-11T09:30:00+04:00") });
-    D.settings.company.data.cuHolders = ["أحمد"]; }, 0); } });
+    c("auto", { kind: "exp", hv: 2, by: "أحمد", holder: "main", target: "car:Victor", cat: "fuel", pay: "cash", supplier: "Emarat", amount: 80, date: "2026-11-12", createdAt: Date.parse("2026-11-12T09:00:00+04:00") });
+    c("hand", { kind: "exp", hv: 2, hvm: 1, by: "أحمد", holder: "main", target: "gen", cat: "acc", pay: "cash", supplier: "Chosen", amount: 10, date: "2026-11-11", createdAt: Date.parse("2026-11-11T09:30:00+04:00") });
+    D.settings.company.data.cuHolders = []; }, 0); } }); // not ticked: the transfer he received is enough
   t.after(() => app.close());
   await app.login("هشام", "1234"); await app.page.waitForTimeout(1500);
   const r = await app.eval(() => ({ emp: __T.holderBal("أحمد"), main: __T.holderBal("main"), db: window.__mockDB().custody.new.data.holder }));
-  // employee: 500 − 120 = 380; main: 1000 − 500 − 30 (before the change) − 10 (chosen by hand) = 460
-  assert.deepEqual(r, { emp: 380, main: 460, db: "أحمد" });
+  // employee: 500 − 120 − 80 = 300; main: 1000 − 500 − 30 (before the change) − 10 (chosen by hand) = 460
+  assert.deepEqual(r, { emp: 300, main: 460, db: "أحمد" });
+  assert.equal(await app.eval(() => window.__mockDB().custody.auto.data.holder), "أحمد");
 });

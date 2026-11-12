@@ -92,11 +92,11 @@ function undoToast(msg, snap){
   t.querySelector(".ok").onclick=()=>{ clearTimeout(tm); t.remove(); };
   t.querySelector(".un").onclick=()=>{ clearTimeout(tm); t.remove(); if(typeof snap==="function") snap(); else cuRestore(snap); toast("↩️ تم التراجع"); render(); };
 }
-// an employee's invoice that reached the app without its custody (uploaded from a phone still on the older version):
-// put it on his own custody. A choice made by hand on the card (hv set) is never changed.
+// an employee's invoice that reached the app on the main custody (older app on his phone, or he was not yet marked as
+// holding custody): put it on his own custody. A choice made by hand on the card («دُفعت من», hvm) is never changed.
 const EMP_CU_FROM=Date.parse("2026-11-10T17:59:00+04:00");
-function cuFixHolders(){ if(!S.user||!isAdmin()||!S.cuLoaded||S.canWrite===false) return; const L=cuHolderList();
-  Object.values(S.cu).forEach(x=>{ if(!isExp(x)||x.hv||!L.includes(x.by)||(x.holder&&x.holder!=="main")||(x.createdAt||0)<EMP_CU_FROM||x.reading||cuT[x.id]) return;
+function cuFixHolders(){ if(!S.user||!isAdmin()||!S.cuLoaded||S.canWrite===false) return; const L=holders();
+  Object.values(S.cu).forEach(x=>{ if(!isExp(x)||x.hvm||!L.includes(x.by)||(x.holder&&x.holder!=="main")||(x.createdAt||0)<EMP_CU_FROM||x.reading||cuT[x.id]) return;
     x.holder=x.by; x.hv=2; x.updatedAt=Date.now(); cuPut(x,true); }); }
 function cuReconcile(){
   cuFixHolders();
@@ -173,7 +173,8 @@ const mainHolderId=()=>S.settings.cuMainHolder||((users().find(u=>u.role==="admi
 const mainHolder=()=>{ const id=mainHolderId(); const u=id&&users().find(x=>x.id===id); return u?u.name:""; };
 function holders(){ const set=new Set(cuHolderList()); Object.values(S.cu).forEach(x=>{ if(!personOn(x)) return; if(x.kind==="xfer"&&x.to) set.add(x.to); if(isExp(x)&&x.holder&&x.holder!=="main") set.add(x.holder); });
   set.delete(""); set.delete(mainHolder()); return [...set]; }
-function subDefault(name){ return !!name&&name!==mainHolder()&&cuHolderList().includes(name); }
+// an employee holds custody when ticked in the custody page, or once he has received a custody transfer
+function subDefault(name){ return !!name&&name!==mainHolder()&&holders().includes(name); }
 // days the money has stayed with an employee without invoices: since his last invoice, or since he got custody
 function holderIdle(h){ const mine=Object.values(S.cu).filter(x=>personOn(x)&&((isExp(x)&&x.holder===h)||(x.kind==="xfer"&&x.to===h)));
   const inv=mine.filter(isExp).map(dateOf).sort().pop(), got=mine.filter(x=>x.kind==="xfer"&&x.dir!=="back").map(dateOf).sort();

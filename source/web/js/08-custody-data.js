@@ -58,12 +58,15 @@ function invAlert(x){ try{ if(!isExp(x)||x.reading||x.notified||!(n(x.amount)>0)
   const ids=invAlertIds(); if(!ids.length) return;
   const body=[x.supplier||"",money(x.amount)+" درهم",x.target?cuTargetName(x):"",x.pay==="credit"?"آجل":""].filter(Boolean).join(" · ");
   Promise.resolve(window.__push.notify(ids,"🧾 فاتورة جديدة"+(x.by?" — "+x.by:""),body,"inv-"+x.id)).catch(()=>{}); }catch(e){} }
+// who may change invoices: Hesham and GM (asked from the database once signed in; before the setup is run, full-access users)
+const cuEditor=()=>S.cuEditor===true||(S.cuEditor==null&&isAdmin());
+const cuMineOpen=x=>!!cuMe&&x.by===cuMe&&!x.ok&&!x.rev&&Date.now()-(x.createdAt||0)<864e5;
 function cuPut(x, now){
   if(S.canWrite===false){ toast("صلاحيتك مشاهدة فقط، فلا يُحفظ التعديل"); return; }
   delete cuOrig[x.id];
   x.updatedAt=Date.now(); S.cu[x.id]=x; invAlert(x); cuSync(x);
   const go=()=>{ const cur=S.cu[x.id]; if(!cur) return; cuPend[x.id]=(cuPend[x.id]||0)+1; const body=JSON.parse(JSON.stringify(cur)); delete body.reading;
-    if(S.mode==="db") track(db.doc("custody/"+x.id).set(body)).then(()=>{ delete cuRetry[x.id]; }).catch(e=>{ cuRetry[x.id]=1; const m=String(e&&e.message||e&&e.code||""); toast(/custody|schema cache|does not exist|relation/i.test(m)?"جدول العهدة غير موجود في قاعدة البيانات — نفّذ أوامر SQL الخاصة بالعهدة":"تعذر حفظ العهدة: "+m); }).finally(()=>{ cuPend[x.id]--; });
+    if(S.mode==="db") track(db.doc("custody/"+x.id).set(body)).then(()=>{ delete cuRetry[x.id]; }).catch(e=>{ const m=String(e&&e.message||e&&e.code||""); if(/locked:/.test(m)){ toast(tr("هذه الفاتورة محفوظة. تعديلها لهشام وGM فقط")); return; } cuRetry[x.id]=1; toast(/custody|schema cache|does not exist|relation/i.test(m)?"جدول العهدة غير موجود في قاعدة البيانات — نفّذ أوامر SQL الخاصة بالعهدة":"تعذر حفظ العهدة: "+m); }).finally(()=>{ cuPend[x.id]--; });
     else { cuLocal(); cuPend[x.id]--; } };
   clearTimeout(cuT[x.id]); if(now){ cuT[x.id]=null; go(); } else cuT[x.id]=setTimeout(()=>{ cuT[x.id]=null; go(); },500);
   cuCheckLow();
@@ -95,12 +98,12 @@ function undoToast(msg, snap){
 // an employee's invoice that reached the app without its custody (uploaded from a phone still on the older version):
 // put it on his own custody. A choice made by hand on the card (hv set) is never changed.
 const EMP_CU_FROM=Date.parse("2026-11-10T17:59:00+04:00");
-function cuFixHolders(){ if(!S.user||!isAdmin()||!S.cuLoaded||S.canWrite===false) return; const L=cuHolderList();
+function cuFixHolders(){ if(!S.user||!cuEditor()||!S.cuLoaded||S.canWrite===false) return; const L=cuHolderList();
   Object.values(S.cu).forEach(x=>{ if(!isExp(x)||x.hv||!L.includes(x.by)||(x.holder&&x.holder!=="main")||(x.createdAt||0)<EMP_CU_FROM||x.reading||cuT[x.id]) return;
     x.holder=x.by; x.hv=2; x.updatedAt=Date.now(); cuPut(x,true); }); }
 function cuReconcile(){
   cuFixHolders();
-  if(!isAdmin()||!S.cuLoaded||!S.sitesLoaded) return;
+  if(!cuEditor()||!S.cuLoaded||!S.sitesLoaded) return;
   Object.values(S.cu).forEach(x=>{ if(x.kind!=="exp"||x.reading||cuPend[x.id]>0||cuT[x.id]) return;
     const want=S.sites[x.target]?x.target:null; const s=want&&S.sites[want]; const p=s&&(s.purchases||[]).find(q=>q.id===x.purId||q.cuId===x.id);
     const ok=want?(p&&x.purSite===want&&n(p.amount)===n(x.amount)&&p.date===(x.date||p.date)&&(p.supplier||"")===(x.supplier||"")&&(p.fileId||null)===(x.fileId||null)&&(p.pay||"cash")===(x.pay||"cash")&&(p.cat||"")===(x.cat||"")):!x.purSite;
@@ -108,7 +111,7 @@ function cuReconcile(){
 }
 function cuRecover(){
   cuReconcile();
-  if(S.canWrite===false||!S.cuLoaded||!isAdmin()) return; const now=Date.now();
+  if(S.canWrite===false||!S.cuLoaded||!cuEditor()) return; const now=Date.now();
   Object.values(S.sites).forEach(s=>(s.purchases||[]).forEach(p=>{
     if(!p.cuId||S.cu[p.cuId]||cuTomb[p.cuId]){ delete cuOrph[p.cuId]; return; }
     if(!cuOrph[p.cuId]){ cuOrph[p.cuId]=now; return; } if(now-cuOrph[p.cuId]<45000) return;

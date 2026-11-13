@@ -59,12 +59,12 @@ app.addEventListener("click", async e=>{
     catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الإشعار"); render(); } }
   else if(a==="cufile"&&x){ const files=await pickFiles("image/*,application/pdf",false); if(!files.length) return; b.classList.add("busy"); b.textContent=tr("جارٍ الرفع…");
     try{ const u=await cuUpload(files[0]); if(u){ dropAsset(x.fileId); x.fileId=u.r.id; x.fileType=u.r.type; cuPut(x,true); if(u.r.type==="image"&&!n(x.amount)) await cuReadDep(id,u.f); } }catch(err){ if(!(err&&err.shown)) toast("تعذر رفع الملف"); } render(); }
-  else if(a==="cudel"&&x){ const key="cu"+id; if(S.armed===key){ S.armed=null; const ids=[id,...(x.kind==="xfer"?Object.values(S.cu).filter(y=>y.xferId===id).map(y=>y.id):[])]; const snap=cuSnap(ids); cuDel(id); undoToast("🗑️ تم الحذف", snap); render(); } else { S.armed=key; setTimeout(()=>{ if(S.armed===key){ S.armed=null; render(); } },4000); render(); } }
+  else if(a==="cudel"&&x){ if(isExp(x)&&!cuEditor()){ toast("حذف الفواتير لهشام وGM فقط"); return; } const key="cu"+id; if(S.armed===key){ S.armed=null; const ids=[id,...(x.kind==="xfer"?Object.values(S.cu).filter(y=>y.xferId===id).map(y=>y.id):[])]; const snap=cuSnap(ids); cuDel(id); undoToast("🗑️ تم الحذف", snap); render(); } else { S.armed=key; setTimeout(()=>{ if(S.armed===key){ S.armed=null; render(); } },4000); render(); } }
   else if(a==="cuxferdel"){ if(!isAdmin()) return; if(S.armed==="cuxferdel"){ S.armed=null; const ids=Object.values(S.cu).filter(y=>y.kind==="xfer"&&!personOn(y)).map(y=>y.id); const snap=cuSnap(ids); ids.forEach(cuDel); undoToast("🗑️ "+tr("حُذفت التحويلات القديمة"), snap); render(); } else { S.armed="cuxferdel"; setTimeout(()=>{ if(S.armed==="cuxferdel"){ S.armed=null; render(); } },4000); render(); } }
   else if(a==="cuvat5"&&x){ x.vat=vat5(x.amount); cuPut(x,true); render(); }
   else if(a==="vatshowx"){ S.vatShow=null; render(); }
-  else if(a==="curev"&&x){ if(!isAdmin()) return; x.rev={by:cuMe||"",at:new Date().toISOString()}; cuPut(x,true); render(); }
-  else if(a==="curevall"){ if(!isAdmin()) return; const last=cuLast(); const xs=Object.values(S.cu).filter(y=>unrev(y)&&inPeriod(y,last,null)); const at=new Date().toISOString(); xs.forEach(y=>{ y.rev={by:cuMe||"",at}; cuPut(y,true); }); toast("✓ "+tr("رُوجعت")+" "+xs.length); render(); }
+  else if(a==="curev"&&x){ if(!cuEditor()) return; x.rev={by:cuMe||"",at:new Date().toISOString()}; cuPut(x,true); render(); }
+  else if(a==="curevall"){ if(!cuEditor()) return; const last=cuLast(); const xs=Object.values(S.cu).filter(y=>unrev(y)&&inPeriod(y,last,null)); const at=new Date().toISOString(); xs.forEach(y=>{ y.rev={by:cuMe||"",at}; cuPut(y,true); }); toast("✓ "+tr("رُوجعت")+" "+xs.length); render(); }
   else if(a==="curevopen"){ S.view="cust"; S.cuF="rev"; S.cuSup=null; render(); window.scrollTo(0,0); }
   else if(a==="cusup"){ S.cuSup=b.dataset.k; render(); window.scrollTo(0,0); }
   else if(a==="cusupx"){ S.cuSup=null; render(); }
@@ -86,9 +86,9 @@ app.addEventListener("click", async e=>{
     else { const cur=cuCredit(); if(!cur.some(c=>c.toLowerCase()===v.toLowerCase())) S.settings[L]=[...cur,v]; }
     settingsSave(); S.cuSetOpen=true; render(); }
   else if(a==="culistdel"){ const L=b.dataset.l; const cur=L==="cuCars"?carList():[...cuCredit()]; const prev=JSON.parse(JSON.stringify(cur)); cur.splice(+b.dataset.i,1); S.settings[L]=cur; settingsSave(); S.cuSetOpen=true; settingsUndo(L, prev, "🗑️ تم الحذف"); render(); }
-  else if(a==="cuedit"&&x){ if(cuLocked(x)){ toast("رُوجعت هذه الفاتورة. التعديل بعد المراجعة للمدير العام"); return; } S.cuEdit=id; render(); setTimeout(()=>{ const el=document.getElementById(`cu-${id}-amount`); el&&el.scrollIntoView({block:"center"}); },40); }
+  else if(a==="cuedit"&&x){ if(cuLocked(x)){ toast("هذه الفاتورة محفوظة. تعديلها لهشام وGM فقط"); return; } S.cuEdit=id; render(); setTimeout(()=>{ const el=document.getElementById(`cu-${id}-amount`); el&&el.scrollIntoView({block:"center"}); },40); }
   else if(a==="cuok2"&&x){ const miss=isExp(x)?cuMissing(x):[]; if(miss.length){ toast(tr("أكمل أولاً: ")+miss.map(m=>tr(m)).join("، ")); return; } if(!(n(x.amount)>0)){ toast("أدخل المبلغ أولاً"); return; }
-    const snap=cuOrig[id]?{[id]:JSON.parse(JSON.stringify(cuOrig[id]))}:cuSnap([id]); x.ok=true; cuPut(x,true); if(S.cuEdit===id) S.cuEdit=null; undoToast("✓ تم الحفظ", snap); render(); }
+    const snap=cuOrig[id]?{[id]:JSON.parse(JSON.stringify(cuOrig[id]))}:cuSnap([id]); x.ok=true; cuPut(x,true); if(S.cuEdit===id) S.cuEdit=null; if(cuEditor()) undoToast("✓ تم الحفظ", snap); else toast(tr("✓ حُفظت الفاتورة")); render(); }
   else if(a==="cucancel"&&x){ if(cuOrig[id]){ S.cu[id]=cuOrig[id]; delete cuOrig[id]; } if(S.cuEdit===id) S.cuEdit=null; toast(tr("↩️ أُلغي التعديل")); render(); }
   else if(a==="cuhold"){ S.cuH=b.dataset.h||null; render(); }
   else if(a==="cuholdsetopen"){ e.preventDefault(); S.cuHoldSet=!S.cuHoldSet; render(); }

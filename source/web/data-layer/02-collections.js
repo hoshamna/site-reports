@@ -61,3 +61,6 @@
   set:async(counter,last)=>{ const {error}=await sb.rpc("set_doc_counter",{p_counter:counter,p_last:last}); if(error) throw err(error); },
   counters:async()=>{ const {data,error}=await sb.from("doc_counters").select("counter,last"); if(error) throw err(error); return Object.fromEntries((data||[]).map(r=>[r.counter,r.last])); }
  };
+
+ // may this account change invoices? (Hesham and GM; null when custody-guard.sql has not been run yet)
+ window.__cuEditor=async()=>{ try{ const {data,error}=await sb.rpc("is_cu_editor"); return error?null:!!data; }catch(e){ return null; } };

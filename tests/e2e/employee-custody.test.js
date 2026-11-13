@@ -101,3 +101,31 @@ test("a reviewed invoice shows as reviewed to the employee; a full-access user c
   // the same invoice, seen by a full-access user who did not review it yet, and the lock helper itself
   assert.equal(await app.eval(() => __T.S.cu.r1.rev.by), "هشام");
 });
+
+test("only Hesham and GM change invoices; an employee saves his own, then it is locked; another full-access user cannot edit", async (t) => {
+  const app = await openApp({ init: () => { setTimeout(() => { const D = window.__mockDB(); const c = (id, d) => { D.custody[id] = { id, created_by: null, data: { id, createdAt: Date.now(), hv: 2, kind: "exp", by: "أحمد", holder: "main", target: "gen", cat: "acc", pay: "cash", supplier: "S", date: "2026-11-13", ...d } }; };
+    c("e1", { supplier: "New shop", amount: 30 });
+    c("e2", { supplier: "Saved shop", amount: 20, ok: true });
+    c("e3", { supplier: "Old shop", amount: 10, createdAt: Date.now() - 2 * 864e5 }); }, 0); } });
+  t.after(() => app.close()); const { page } = app;
+  await app.login("أحمد", "5678"); await app.setPin("2468"); await page.waitForTimeout(500);
+  await app.eval(() => { const D = window.__mockDB(); const p = Object.values(D.profiles).find((x) => x.name === "أحمد"); for (const k of ["e1", "e2", "e3"]) D.custody[k].created_by = p.auth_id; }); // his own uploads
+  const row = (s) => page.locator(".buyrow", { hasText: s });
+  assert.equal(await row("New shop").locator('[data-act="cuok2"]').count(), 1, "save button on his new invoice");
+  assert.match(await row("Saved shop").textContent(), /محفوظة/);
+  assert.match(await row("Old shop").textContent(), /مقفلة/, "locked after 24 hours");
+  await row("New shop").locator('[data-act="cuok2"]').click(); await page.waitForTimeout(600);
+  assert.equal(await app.eval(() => window.__mockDB().custody.e1.data.ok), true);
+  assert.match(await row("New shop").textContent(), /محفوظة/);
+  // Hesham: can edit and delete
+  await app.logout(); await app.login("هشام", "1234"); await page.click('[data-act="cuopen"]'); await page.waitForTimeout(500);
+  assert.equal(await app.eval(() => __T.S.cuEditor), true);
+  const card = (s) => page.locator(".cuent", { hasText: s });
+  assert.equal(await card("Saved shop").locator('[data-act="cuedit"]').count(), 1);
+  // a full-access user who is not Hesham or GM
+  await app.eval(() => { __T.S.cuEditor = false; __T.render(); });
+  assert.equal(await card("Saved shop").locator('[data-act="cuedit"]').count(), 0);
+  assert.equal(await page.locator('[data-act="cudel"]').count(), 0, "no delete buttons");
+  assert.equal(await page.locator('[data-act="curev"]').count(), 0, "no review buttons");
+  assert.deepEqual(app.errors, []);
+});

@@ -18,6 +18,7 @@ insert into profiles (id, auth_id, name, role) values
   ('u2', '22222222-2222-2222-2222-222222222222', 'أحمد', 'buyer'),
   ('u3', '33333333-3333-3333-3333-333333333333', 'محمد', 'eng');
 delete from legacy_pins;
+insert into cu_editors (profile_id) select id from profiles where name in ('هشام', 'GM') on conflict do nothing; -- as custody-guard.sql does once the accounts exist
 create temp table r (k text, v text); grant all on r to anon, authenticated;
 
 -- signed out
@@ -115,29 +116,47 @@ select pg_temp.expect((select v from r where k = 'e_cnt') = '0', 'an engineer ca
 do $$ begin perform public.make_backup('auto'); end $$;
 select pg_temp.expect((select data->'docs' ? 'd1' from backups order by id desc limit 1), 'the daily backup includes the documents');
 
--- custody guard: employees cannot pick the custody, review, or change a reviewed invoice
+-- custody guard: only Hesham and GM edit, delete or review invoices; others complete theirs until «✓ حفظ» or 24 hours
+insert into profiles (id, auth_id, name, role) values ('u4', '44444444-4444-4444-4444-444444444444', 'سالم', 'admin') on conflict do nothing;
 update settings set data = data || '{"cuHolders":["أحمد"]}' where id = 'company';
+create or replace function pg_temp.now_ms() returns bigint language sql as $f$ select (extract(epoch from now()) * 1000)::bigint $f$;
 set role authenticated; set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
-insert into custody (id, data) values ('g1', '{"kind":"exp","by":"محمد","holder":"main","hv":2,"hvm":1,"rev":{"by":"me"},"amount":50}');
+insert into custody (id, data) values ('g1', jsonb_build_object('kind','exp','by','محمد','holder','main','hv',2,'hvm',1,'rev',jsonb_build_object('by','me'),'amount',50,'createdAt',pg_temp.now_ms()));
 update custody set data = data || '{"holder":"main","rev":{"by":"me"},"amount":60}' where id = 'g1';
+insert into custody (id, data) values ('g4', jsonb_build_object('kind','exp','amount',9,'createdAt',pg_temp.now_ms()));
+do $$ begin delete from custody where id = 'g4'; insert into r values ('g_del_own', case when found then 'allowed' else 'none' end); exception when others then insert into r values ('g_del_own', 'denied'); end $$;
+insert into custody (id, data) values ('g5', jsonb_build_object('kind','exp','amount',9,'createdAt',pg_temp.now_ms() - 2*86400000));
+do $$ begin update custody set data = data || '{"amount":1}' where id = 'g5'; insert into r values ('g_old', 'allowed'); exception when others then insert into r values ('g_old', 'denied'); end $$;
 reset role;
 select pg_temp.expect((select data->>'holder' from custody where id = 'g1') = 'أحمد', 'an employee who holds custody: his invoice goes to his own custody, whatever the app sent');
 select pg_temp.expect((select data->>'by' from custody where id = 'g1') = 'أحمد', 'an invoice is recorded in the name of who uploaded it');
 select pg_temp.expect(not (select data ? 'rev' from custody where id = 'g1') and not (select data ? 'hvm' from custody where id = 'g1'), 'an employee cannot mark his invoice reviewed');
-select pg_temp.expect((select (data->>'amount')::int from custody where id = 'g1') = 60, 'an employee can still correct his invoice before review');
--- the general manager reviews it, and sets the custody by hand
-set role authenticated; set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
-update custody set data = data || '{"rev":{"by":"هشام"},"holder":"main","hvm":1}' where id = 'g1';
-reset role;
-select pg_temp.expect((select data->>'holder' from custody where id = 'g1') = 'main' and (select data ? 'rev' from custody where id = 'g1'), 'a full-access user can review and choose the custody');
+select pg_temp.expect((select (data->>'amount')::int from custody where id = 'g1') = 60, 'an employee can complete his invoice before saving it');
+select pg_temp.expect((select v from r where k = 'g_del_own') = 'denied' and exists (select 1 from custody where id = 'g4'), 'an employee cannot delete even his own invoice');
+select pg_temp.expect((select v from r where k = 'g_old') = 'denied', 'an unsaved invoice locks itself after 24 hours');
 set role authenticated; set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+update custody set data = data || '{"ok":true,"amount":61}' where id = 'g1';
 do $$ begin update custody set data = data || '{"amount":999}' where id = 'g1'; insert into r values ('g_upd', 'allowed'); exception when others then insert into r values ('g_upd', 'denied'); end $$;
-do $$ begin delete from custody where id = 'g1'; insert into r values ('g_del', case when found then 'allowed' else 'none' end); exception when others then insert into r values ('g_del', 'denied'); end $$;
-insert into custody (id, data) values ('g2', '{"kind":"exp","amount":5}');
 reset role;
-select pg_temp.expect((select v from r where k = 'g_upd') = 'denied' and (select (data->>'amount')::int from custody where id = 'g1') = 60, 'after review an employee cannot change the invoice');
-select pg_temp.expect((select v from r where k = 'g_del') = 'denied' and exists (select 1 from custody where id = 'g1'), 'after review an employee cannot delete the invoice');
+select pg_temp.expect((select (data->>'amount')::int from custody where id = 'g1') = 61 and (select v from r where k = 'g_upd') = 'denied', 'after «✓ حفظ» the employee can no longer change it');
+-- another full-access user who is not Hesham or GM
+set role authenticated; set request.jwt.claim.sub = '44444444-4444-4444-4444-444444444444';
+do $$ begin update custody set data = data || '{"amount":5}' where id = 'g1'; insert into r values ('s_upd', 'allowed'); exception when others then insert into r values ('s_upd', 'denied'); end $$;
+do $$ begin update custody set data = data || '{"rev":{"by":"سالم"}}' where id = 'g4'; insert into r values ('s_rev', 'allowed'); exception when others then insert into r values ('s_rev', 'denied'); end $$;
+do $$ begin delete from custody where id = 'g1'; insert into r values ('s_del', 'allowed'); exception when others then insert into r values ('s_del', 'denied'); end $$;
+insert into custody (id, data) values ('s_dep', '{"kind":"dep","amount":500}');
+update custody set data = data || '{"amount":600}' where id = 's_dep';
+reset role;
+select pg_temp.expect((select v from r where k = 's_upd') = 'denied' and (select v from r where k = 's_rev') = 'denied' and (select v from r where k = 's_del') = 'denied', 'another full-access user cannot change, review or delete invoices');
+select pg_temp.expect((select (data->>'amount')::int from custody where id = 's_dep') = 600, 'deposits stay as before for full-access users');
+-- Hesham
+set role authenticated; set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+update custody set data = data || '{"rev":{"by":"هشام"},"holder":"main","hvm":1,"amount":62}' where id = 'g1';
+delete from custody where id = 'g4';
+reset role;
+select pg_temp.expect((select data->>'holder' from custody where id = 'g1') = 'main' and (select data ? 'rev' from custody where id = 'g1') and (select (data->>'amount')::int from custody where id = 'g1') = 62, 'Hesham can review, edit and choose the custody of any invoice');
+select pg_temp.expect(not exists (select 1 from custody where id = 'g4'), 'Hesham can delete an invoice');
 set role authenticated; set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
-insert into custody (id, data) values ('g3', '{"kind":"exp","holder":"محمد","amount":7}');
+insert into custody (id, data) values ('g3', jsonb_build_object('kind','exp','holder','محمد','amount',7,'createdAt',pg_temp.now_ms()));
 reset role;
 select pg_temp.expect((select data->>'holder' from custody where id = 'g3') = 'main', 'an employee without custody: his invoice stays on the main custody');

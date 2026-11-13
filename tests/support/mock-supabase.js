@@ -68,6 +68,7 @@
         const used=Math.max(0,...Object.values(DB.docs||{}).filter(d=>d.data.counter===k).map(d=>+d.data.seq||0));
         if(n==="set_doc_counter"){ if(args.p_last<used) return {data:null,error:{message:"below issued "+used}}; C[k].last=args.p_last; save(); return {data:args.p_last,error:null}; }
         const nx=Math.max(C[k].last,used)+1; C[k].last=nx; save(); window.__log.push("docno "+k+" "+nx); return {data:nx,error:null}; }
+      if(n==="is_cu_editor"){ if(window.__noGuardSql) return {data:null,error:{message:"Could not find the function public.is_cu_editor",code:"PGRST202"}}; const p=me(); return {data:!!p&&(window.__cuEditors||["هشام","GM"]).includes(p.name),error:null}; }
       if(n!=="login_list") return {error:{message:"no rpc"}}; return {data:[...Object.values(DB.profiles).map(p=>({id:p.id,name:p.name,role:p.role,legacy:false})),...Object.values(DB.legacy_pins).map(p=>({id:p.id,name:p.name,role:p.role,legacy:true}))],error:null}; },
     channel:n=>{ const c={n,subs:[],on(ev,f,cb){ c.subs.push({table:f.table,cb}); return c; },subscribe(){ chans.push(c); return c; }}; return c; },
     removeChannel:c=>{ const i=chans.indexOf(c); if(i>=0) chans.splice(i,1); },

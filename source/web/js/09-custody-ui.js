@@ -5,8 +5,8 @@ function targetOpts(x){ const o=[["","— اختر —"],...activeSites().map(s=
   if(x.target&&!o.some(v=>v[0]===x.target)) o.splice(1,0,[x.target,cuTargetName(x)]); return o; }
 function catOpts(){ return [["","— بدون بند —"],...cuCats().map(c=>[c.k,c.l])]; }
 function cuThumb(x){ return x.fileId?(x.fileType==="image"?`<button class="invbtn" data-act="cuview" data-id="${x.id}" aria-label="فتح الصورة"><img class="inv" src="${blobUrl(x.fileId)}" alt="الصورة"><span>🔍 فتح</span></button>`:`<span class="chip">ملف PDF مرفق</span>`):""; }
-function delBtn(x){ const k="cu"+x.id; return `<button class="ghost danger ${S.armed===k?"armed":""}" data-act="cudel" data-id="${x.id}">${S.armed===k?(x.purId?"تأكيد الحذف (ومن مشتريات الموقع)":"تأكيد الحذف"):"حذف"}</button>`; }
-const revMark=x=>!isAdmin()||!isExp(x)?"":x.rev?`<span class="chip done" title="${esc(x.rev.by||"")}">✓ ${tr("رُوجعت")} <span class="num">${esc(String(x.rev.at||"").slice(0,10))}</span></span>`:unrev(x)?`<button class="small revbtn" data-act="curev" data-id="${x.id}">✓ ${tr("راجعتها")}</button>`:"";
+function delBtn(x){ if(isExp(x)&&!cuEditor()) return ""; const k="cu"+x.id; return `<button class="ghost danger ${S.armed===k?"armed":""}" data-act="cudel" data-id="${x.id}">${S.armed===k?(x.purId?"تأكيد الحذف (ومن مشتريات الموقع)":"تأكيد الحذف"):"حذف"}</button>`; }
+const revMark=x=>!cuEditor()||!isExp(x)?"":x.rev?`<span class="chip done" title="${esc(x.rev.by||"")}">✓ ${tr("رُوجعت")} <span class="num">${esc(String(x.rev.at||"").slice(0,10))}</span></span>`:unrev(x)?`<button class="small revbtn" data-act="curev" data-id="${x.id}">✓ ${tr("راجعتها")}</button>`:"";
 function cuCompact(x){
   const miss=isExp(x)?cuMissing(x):[], dup=isExp(x)&&cuDupOf(x), c=isExp(x)&&cuCat(x.cat);
   const title=x.kind==="dep"?tr("📥 توريد من المدير العام"):x.kind==="xfer"?(x.dir==="back"?tr("↩️ إرجاع من ")+(x.to||""):tr("↔️ تحويل إلى ")+(x.to||"")):x.kind==="spay"?tr("💳 سداد للمورد: ")+(x.supplier||""):cuName(x);
@@ -17,8 +17,8 @@ function cuCompact(x){
       <span class="row" style="gap:4px">${miss.length?`<span class="chip bad">${tr("ناقصة")}</span>`:""}${dup?`<span class="chip bad">${tr("مكررة؟")}</span>`:""}${isExp(x)?`<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span>`:""}${needsXfer(x)?`<span class="chip ex">${tr("لم تُحوَّل")}</span>`:""}${revMark(x)}${cuLocked(x)?`<span class="chip done">✓ ${tr("رُوجعت")}</span>`:`<button class="ghost small" data-act="cuedit" data-id="${x.id}">✏️ تعديل</button>`}</span></div></div>`;
 }
 const okBtn=x=>`<span class="chip bad cunsaved" ${cuOrig[x.id]?"":"hidden"}>${tr("✏️ لم يُحفظ — اضغط ✓ موافق")}</span><button class="primary" data-act="cuok2" data-id="${x.id}">✓ موافق</button><button class="ghost cucx" data-act="cucancel" data-id="${x.id}" ${cuOrig[x.id]||S.cuEdit===x.id?"":"hidden"}>${tr("إلغاء التعديل")}</button>`;
-// after the general manager's review, only full-access users can change an invoice (also enforced in the database)
-const cuLocked=x=>!isAdmin()&&isExp(x)&&!!x.rev;
+// invoices: only Hesham and GM change, delete or review them; others complete their own until «✓ حفظ» or 24 hours (also enforced in the database)
+const cuLocked=x=>isExp(x)&&!cuEditor()&&!cuMineOpen(x);
 function cuCard(x){
   if((x.ok&&S.cuEdit!==x.id)||cuLocked(x)) return cuCompact(x);
   if(x.kind==="xfer"){ const back=x.dir==="back"; const invs=(x.inv||[]).map(i=>S.cu[i]).filter(Boolean);
@@ -50,7 +50,7 @@ function cuCard(x){
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
     ${vatOut(x)?`<div class="full small muted">🧾 ${tr("لا تدخل في تقرير الضريبة")} (${tr(VAT_WHY[vatOut(x)])})</div>`:`${cf(x,"vat","الضريبة VAT (درهم)","number")}${cf(x,"supTrn","TRN المورد","text",'dir="ltr" inputmode="numeric"')}
     ${!vatKnown(x)&&n(x.amount)>0?`<div class="full row"><button class="ghost small" data-act="cuvat5" data-id="${x.id}">${tr("احسب 5%")} = <span class="num">${money(vat5(x.amount))}</span></button></div>`:""}`}
-    ${isAdmin()&&x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
+    ${cuEditor()&&x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
     ${needsXfer(x)?`<div class="full notice small xferbox"><b>⏳ ${tr("عهدة")} <bdi class="u">${esc(holderOf(x))}</bdi> ${tr("لا تكفي — المستحق له")} <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span></b><button class="primary" data-act="cuxinv" data-id="${x.id}">↔️ تم تحويل <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span> إلى <bdi class="u">${esc(holderOf(x))}</bdi></button></div>`:""}
     ${x.xferId&&S.cu[x.xferId]?`<div class="full small" style="color:var(--ok)">✓ حُوِّلت قيمتها إلى <bdi class="u">${esc(holderOf(x))}</bdi> بتاريخ <span class="num">${esc(S.cu[x.xferId].date||"")}</span></div>`:""}
     <div class="full row">${cuThumb(x)}${x.fileId&&x.fileType==="image"&&!x.reading&&(!n(x.amount)||!x.supplier)?`<button class="primary" data-act="cureread" data-id="${x.id}">🔄 قراءة الفاتورة</button>`:""}${miss.includes("الموقع")&&!x.reading?`<button data-act="cupickopen" data-id="${x.id}">📍 اختر الموقع</button>`:""}${x.reading?"":okBtn(x)}${delBtn(x)}</div></div>`;
@@ -94,7 +94,7 @@ function buyerView(){
   <button class="primary buybig" data-act="cuscan" data-cam="1"><span>📷</span><b>صوّر الفاتورة</b></button>
   <div class="row" style="justify-content:center"><button class="ghost" data-act="cuscan">🖼️ من المعرض</button></div>
   <h2 style="margin-top:14px">آخر فواتيري</h2>
-  ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:x.rev?`<span class="chip done">✓ ${tr("رُوجعت")}</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<span class="chip done">✓</span>`}</div>
+  ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:x.rev?`<span class="chip done">✓ ${tr("رُوجعت")}</span>`:x.ok?`<span class="chip done">🔒 ${tr("محفوظة")}</span>`:!cuMineOpen(x)?`<span class="chip done">🔒 ${tr("مقفلة")}</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<button class="primary small" data-act="cuok2" data-id="${x.id}">✓ ${tr("حفظ")}</button>`}</div>
     <div class="full small muted">${esc(cuTargetName(x))} · <span class="num">${esc(x.date||"")}</span>${!x.target?` · <button class="ghost small" data-act="cupickopen" data-id="${x.id}">اختر الموقع</button>`:""}</div></div>`; }).join("")}</div>`:`<div class="empty">لم تصوّر فواتير بعد.</div>`}`;
 }
 function carPanel(){
@@ -119,7 +119,7 @@ function cuView(){
   const c=cuCalc(); const last=cuLast(); const all=Object.values(S.cu).filter(x=>inPeriod(x,last,null)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   const pc=periodCalc(all,last?n(last.bal):0); const HS=holders();
   if(S.cuH&&S.cuH!=="main"&&!HS.includes(S.cuH)) S.cuH=null;
-  const F=[["all","الكل",x=>x.kind!=="spay"&&!(x.kind==="xfer"&&!personOn(x))],["miss","للمراجعة",x=>needsReview(x)],...(isAdmin()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
+  const F=[["all","الكل",x=>x.kind!=="spay"&&!(x.kind==="xfer"&&!personOn(x))],["miss","للمراجعة",x=>needsReview(x)],...(cuEditor()?[["rev","لم أراجعها",x=>unrev(x)]]:[]),["credit","آجل",x=>isExp(x)&&x.pay==="credit"],["dep","التوريدات",x=>x.kind==="dep"],["sup","الموردون",null]];
   const cur=F.find(f=>f[0]===S.cuF)||F[0];
   let body;
   if(cur[0]==="sup") body=supView();

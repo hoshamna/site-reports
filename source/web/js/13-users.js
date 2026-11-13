@@ -22,6 +22,8 @@ async function pinHash(uidv, pin){
 function checkLogin(){}
 function onAuth(st){
   const was=S.user&&S.user.id; S.profiles=st.profiles||[]; S.user=st.user?{...st.user}:null; S.setLoaded=!!st.ready;
+  if(S.user&&was!==S.user.id){ S.cuEditor=undefined; if(window.__cuEditor) window.__cuEditor().then(v=>{ S.cuEditor=v; render(); }); }
+  if(!S.user) S.cuEditor=undefined;
   if(S.user){ cuMe=S.user.name; if(was!==S.user.id){ S.view="list"; S.loginPick=null; S.loginList=null; setTimeout(refreshPush,500);
     if(window.__push&&window.Notification&&Notification.permission==="granted") window.__push.enable(S.user.id,S.user.name).catch(()=>{}); } }
   else if(S.setLoaded&&!S.loginList) loadLoginList();

@@ -84,3 +84,20 @@ test("an employee's invoice that came without its custody (older app on his phon
   // employee: 500 − 120 = 380; main: 1000 − 500 − 30 (before the change) − 10 (chosen by hand) = 460
   assert.deepEqual(r, { emp: 380, main: 460, db: "أحمد" });
 });
+
+test("a reviewed invoice shows as reviewed to the employee; a full-access user can still edit it", async (t) => {
+  const app = await openApp({ init: () => { setTimeout(() => { const D = window.__mockDB(); const c = (id, d) => { D.custody[id] = { id, created_by: null, data: { id, createdAt: Date.now(), hv: 2, kind: "exp", by: "أحمد", holder: "main", target: "gen", cat: "acc", pay: "cash", ok: true, date: "2026-11-12", ...d } }; };
+    c("r1", { supplier: "Reviewed shop", amount: 50, rev: { by: "هشام", at: "2026-11-12T10:00:00Z" } });
+    c("r2", { supplier: "Open shop", amount: 30 }); }, 0); } });
+  t.after(() => app.close()); const { page } = app;
+  await app.login("أحمد", "5678"); await app.setPin("2468"); await page.waitForTimeout(500);
+  const row = (s) => page.locator(".buyrow", { hasText: s });
+  assert.match(await row("Reviewed shop").textContent(), /رُوجعت/);
+  assert.doesNotMatch(await row("Open shop").textContent(), /رُوجعت/);
+  assert.equal(await page.locator('.buyrow [data-act="cuedit"]').count(), 0, "the employee screen has no editing");
+  // full-access user: still can edit the reviewed one
+  await app.logout(); await app.login("هشام", "1234"); await page.click('[data-act="cuopen"]'); await page.waitForTimeout(400);
+  assert.equal(await page.locator(".cuent", { hasText: "Reviewed shop" }).locator('[data-act="cuedit"]').count(), 1);
+  // the same invoice, seen by a full-access user who did not review it yet, and the lock helper itself
+  assert.equal(await app.eval(() => __T.S.cu.r1.rev.by), "هشام");
+});

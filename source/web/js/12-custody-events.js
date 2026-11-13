@@ -86,7 +86,7 @@ app.addEventListener("click", async e=>{
     else { const cur=cuCredit(); if(!cur.some(c=>c.toLowerCase()===v.toLowerCase())) S.settings[L]=[...cur,v]; }
     settingsSave(); S.cuSetOpen=true; render(); }
   else if(a==="culistdel"){ const L=b.dataset.l; const cur=L==="cuCars"?carList():[...cuCredit()]; const prev=JSON.parse(JSON.stringify(cur)); cur.splice(+b.dataset.i,1); S.settings[L]=cur; settingsSave(); S.cuSetOpen=true; settingsUndo(L, prev, "🗑️ تم الحذف"); render(); }
-  else if(a==="cuedit"&&x){ S.cuEdit=id; render(); setTimeout(()=>{ const el=document.getElementById(`cu-${id}-amount`); el&&el.scrollIntoView({block:"center"}); },40); }
+  else if(a==="cuedit"&&x){ if(cuLocked(x)){ toast("رُوجعت هذه الفاتورة. التعديل بعد المراجعة للمدير العام"); return; } S.cuEdit=id; render(); setTimeout(()=>{ const el=document.getElementById(`cu-${id}-amount`); el&&el.scrollIntoView({block:"center"}); },40); }
   else if(a==="cuok2"&&x){ const miss=isExp(x)?cuMissing(x):[]; if(miss.length){ toast(tr("أكمل أولاً: ")+miss.map(m=>tr(m)).join("، ")); return; } if(!(n(x.amount)>0)){ toast("أدخل المبلغ أولاً"); return; }
     const snap=cuOrig[id]?{[id]:JSON.parse(JSON.stringify(cuOrig[id]))}:cuSnap([id]); x.ok=true; cuPut(x,true); if(S.cuEdit===id) S.cuEdit=null; undoToast("✓ تم الحفظ", snap); render(); }
   else if(a==="cucancel"&&x){ if(cuOrig[id]){ S.cu[id]=cuOrig[id]; delete cuOrig[id]; } if(S.cuEdit===id) S.cuEdit=null; toast(tr("↩️ أُلغي التعديل")); render(); }

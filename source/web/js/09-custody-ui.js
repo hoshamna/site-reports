@@ -14,11 +14,13 @@ function cuCompact(x){
   return `<div class="entry cuent compact ${x.kind==="dep"?"dep":x.kind==="xfer"?"xfer":x.kind==="spay"?"spay":""} ${miss.length||dup?"miss":""} ${x.pay==="credit"?"cred":""}">
     <div class="full row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><b style="min-width:0"><bdi>${esc(title)}</bdi></b><span class="num" style="white-space:nowrap"><b>${money(x.amount)}</b></span></div>
     <div class="full row" style="justify-content:space-between;gap:6px"><span class="small muted" style="min-width:0"><span class="num">${esc(x.date||"")}</span>${sub?" · "+esc(sub):""}</span>
-      <span class="row" style="gap:4px">${miss.length?`<span class="chip bad">${tr("ناقصة")}</span>`:""}${dup?`<span class="chip bad">${tr("مكررة؟")}</span>`:""}${isExp(x)?`<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span>`:""}${needsXfer(x)?`<span class="chip ex">${tr("لم تُحوَّل")}</span>`:""}${revMark(x)}<button class="ghost small" data-act="cuedit" data-id="${x.id}">✏️ تعديل</button></span></div></div>`;
+      <span class="row" style="gap:4px">${miss.length?`<span class="chip bad">${tr("ناقصة")}</span>`:""}${dup?`<span class="chip bad">${tr("مكررة؟")}</span>`:""}${isExp(x)?`<span class="chip ${x.pay==="credit"?"ex":"done"}">${payLbl(x)}</span>`:""}${needsXfer(x)?`<span class="chip ex">${tr("لم تُحوَّل")}</span>`:""}${revMark(x)}${cuLocked(x)?`<span class="chip done">✓ ${tr("رُوجعت")}</span>`:`<button class="ghost small" data-act="cuedit" data-id="${x.id}">✏️ تعديل</button>`}</span></div></div>`;
 }
 const okBtn=x=>`<span class="chip bad cunsaved" ${cuOrig[x.id]?"":"hidden"}>${tr("✏️ لم يُحفظ — اضغط ✓ موافق")}</span><button class="primary" data-act="cuok2" data-id="${x.id}">✓ موافق</button><button class="ghost cucx" data-act="cucancel" data-id="${x.id}" ${cuOrig[x.id]||S.cuEdit===x.id?"":"hidden"}>${tr("إلغاء التعديل")}</button>`;
+// after the general manager's review, only full-access users can change an invoice (also enforced in the database)
+const cuLocked=x=>!isAdmin()&&isExp(x)&&!!x.rev;
 function cuCard(x){
-  if(x.ok&&S.cuEdit!==x.id) return cuCompact(x);
+  if((x.ok&&S.cuEdit!==x.id)||cuLocked(x)) return cuCompact(x);
   if(x.kind==="xfer"){ const back=x.dir==="back"; const invs=(x.inv||[]).map(i=>S.cu[i]).filter(Boolean);
     return `<div class="entry cuent xfer">
     <div class="full row" style="justify-content:space-between"><b>${back?"↩️ إرجاع إلى العهدة الرئيسية من":"↔️ تحويل من العهدة الرئيسية إلى"} <bdi class="u">${esc(x.to||"…")}</bdi></b><span class="num"><b>${money(x.amount)}</b> درهم</span></div>
@@ -48,7 +50,7 @@ function cuCard(x){
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
     ${vatOut(x)?`<div class="full small muted">🧾 ${tr("لا تدخل في تقرير الضريبة")} (${tr(VAT_WHY[vatOut(x)])})</div>`:`${cf(x,"vat","الضريبة VAT (درهم)","number")}${cf(x,"supTrn","TRN المورد","text",'dir="ltr" inputmode="numeric"')}
     ${!vatKnown(x)&&n(x.amount)>0?`<div class="full row"><button class="ghost small" data-act="cuvat5" data-id="${x.id}">${tr("احسب 5%")} = <span class="num">${money(vat5(x.amount))}</span></button></div>`:""}`}
-    ${x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
+    ${isAdmin()&&x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
     ${needsXfer(x)?`<div class="full notice small xferbox"><b>⏳ ${tr("عهدة")} <bdi class="u">${esc(holderOf(x))}</bdi> ${tr("لا تكفي — المستحق له")} <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span></b><button class="primary" data-act="cuxinv" data-id="${x.id}">↔️ تم تحويل <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span> إلى <bdi class="u">${esc(holderOf(x))}</bdi></button></div>`:""}
     ${x.xferId&&S.cu[x.xferId]?`<div class="full small" style="color:var(--ok)">✓ حُوِّلت قيمتها إلى <bdi class="u">${esc(holderOf(x))}</bdi> بتاريخ <span class="num">${esc(S.cu[x.xferId].date||"")}</span></div>`:""}
     <div class="full row">${cuThumb(x)}${x.fileId&&x.fileType==="image"&&!x.reading&&(!n(x.amount)||!x.supplier)?`<button class="primary" data-act="cureread" data-id="${x.id}">🔄 قراءة الفاتورة</button>`:""}${miss.includes("الموقع")&&!x.reading?`<button data-act="cupickopen" data-id="${x.id}">📍 اختر الموقع</button>`:""}${x.reading?"":okBtn(x)}${delBtn(x)}</div></div>`;
@@ -92,7 +94,7 @@ function buyerView(){
   <button class="primary buybig" data-act="cuscan" data-cam="1"><span>📷</span><b>صوّر الفاتورة</b></button>
   <div class="row" style="justify-content:center"><button class="ghost" data-act="cuscan">🖼️ من المعرض</button></div>
   <h2 style="margin-top:14px">آخر فواتيري</h2>
-  ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<span class="chip done">✓</span>`}</div>
+  ${mine.length?`<div class="list">${mine.map(x=>{ const miss=cuMissing(x); return `<div class="entry buyrow"><div class="full row" style="justify-content:space-between"><span><b><bdi>${esc(cuName(x))}</bdi></b> · <span class="num">${money(x.amount)}</span></span>${x.reading?`<span class="chip ex">جارٍ القراءة…</span>`:x.rev?`<span class="chip done">✓ ${tr("رُوجعت")}</span>`:miss.length?`<span class="chip bad">ناقصة</span>`:`<span class="chip done">✓</span>`}</div>
     <div class="full small muted">${esc(cuTargetName(x))} · <span class="num">${esc(x.date||"")}</span>${!x.target?` · <button class="ghost small" data-act="cupickopen" data-id="${x.id}">اختر الموقع</button>`:""}</div></div>`; }).join("")}</div>`:`<div class="empty">لم تصوّر فواتير بعد.</div>`}`;
 }
 function carPanel(){

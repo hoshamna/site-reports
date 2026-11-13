@@ -114,3 +114,30 @@ select pg_temp.expect((select v from r where k = 'b_no') = 'denied' and (select 
 select pg_temp.expect((select v from r where k = 'e_cnt') = '0', 'an engineer cannot see the counters');
 do $$ begin perform public.make_backup('auto'); end $$;
 select pg_temp.expect((select data->'docs' ? 'd1' from backups order by id desc limit 1), 'the daily backup includes the documents');
+
+-- custody guard: employees cannot pick the custody, review, or change a reviewed invoice
+update settings set data = data || '{"cuHolders":["أحمد"]}' where id = 'company';
+set role authenticated; set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+insert into custody (id, data) values ('g1', '{"kind":"exp","by":"محمد","holder":"main","hv":2,"hvm":1,"rev":{"by":"me"},"amount":50}');
+update custody set data = data || '{"holder":"main","rev":{"by":"me"},"amount":60}' where id = 'g1';
+reset role;
+select pg_temp.expect((select data->>'holder' from custody where id = 'g1') = 'أحمد', 'an employee who holds custody: his invoice goes to his own custody, whatever the app sent');
+select pg_temp.expect((select data->>'by' from custody where id = 'g1') = 'أحمد', 'an invoice is recorded in the name of who uploaded it');
+select pg_temp.expect(not (select data ? 'rev' from custody where id = 'g1') and not (select data ? 'hvm' from custody where id = 'g1'), 'an employee cannot mark his invoice reviewed');
+select pg_temp.expect((select (data->>'amount')::int from custody where id = 'g1') = 60, 'an employee can still correct his invoice before review');
+-- the general manager reviews it, and sets the custody by hand
+set role authenticated; set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+update custody set data = data || '{"rev":{"by":"هشام"},"holder":"main","hvm":1}' where id = 'g1';
+reset role;
+select pg_temp.expect((select data->>'holder' from custody where id = 'g1') = 'main' and (select data ? 'rev' from custody where id = 'g1'), 'a full-access user can review and choose the custody');
+set role authenticated; set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+do $$ begin update custody set data = data || '{"amount":999}' where id = 'g1'; insert into r values ('g_upd', 'allowed'); exception when others then insert into r values ('g_upd', 'denied'); end $$;
+do $$ begin delete from custody where id = 'g1'; insert into r values ('g_del', case when found then 'allowed' else 'none' end); exception when others then insert into r values ('g_del', 'denied'); end $$;
+insert into custody (id, data) values ('g2', '{"kind":"exp","amount":5}');
+reset role;
+select pg_temp.expect((select v from r where k = 'g_upd') = 'denied' and (select (data->>'amount')::int from custody where id = 'g1') = 60, 'after review an employee cannot change the invoice');
+select pg_temp.expect((select v from r where k = 'g_del') = 'denied' and exists (select 1 from custody where id = 'g1'), 'after review an employee cannot delete the invoice');
+set role authenticated; set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
+insert into custody (id, data) values ('g3', '{"kind":"exp","holder":"محمد","amount":7}');
+reset role;
+select pg_temp.expect((select data->>'holder' from custody where id = 'g3') = 'main', 'an employee without custody: his invoice stays on the main custody');

@@ -14,7 +14,7 @@
 create table if not exists public.cu_editors (profile_id text primary key);
 alter table public.cu_editors enable row level security;
 revoke all on public.cu_editors from anon, authenticated;
-insert into public.cu_editors (profile_id) select id from public.profiles where name in ('هشام', 'GM') on conflict do nothing;
+insert into public.cu_editors (profile_id) select id from public.profiles where trim(name) in ('Hosham', 'هشام', 'GM') on conflict do nothing;
 
 create or replace function public.is_cu_editor() returns boolean
 language sql stable security definer set search_path = public as

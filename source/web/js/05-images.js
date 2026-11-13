@@ -10,11 +10,13 @@ function compress(file, max=1600, type="image/jpeg"){
     img.src=url;
   });
 }
+// opening a PDF someone sent: never run code from inside the file (scripts, forms, eval)
+async function pdfOpen(file){ let lib=window.pdfjsLib; for(let i=0;i<50&&!lib;i++){ await new Promise(r=>setTimeout(r,100)); lib=window.pdfjsLib; } if(!lib) throw 0;
+  return lib.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false,enableScripting:false,enableXfa:false}).promise; }
 const isPdfFile=f=>!!f&&(f.type==="application/pdf"||/\.pdf$/i.test(f.name||""));
 async function pdfPages(file, max=8){
   try{
-    const lib=window.pdfjsLib; if(!lib) throw 0;
-    const doc=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise; const out=[];
+    const doc=await pdfOpen(file); const out=[];
     for(let i=1;i<=Math.min(doc.numPages,max);i++){
       const page=await doc.getPage(i); const v1=page.getViewport({scale:1}); const k=Math.min(3,1800/Math.max(v1.width,v1.height));
       const vp=page.getViewport({scale:k}); const c=document.createElement("canvas"); c.width=Math.round(vp.width); c.height=Math.round(vp.height);
@@ -26,8 +28,7 @@ async function pdfPages(file, max=8){
 }
 async function pdfToImage(file){
   try{
-    const lib=window.pdfjsLib; if(!lib) throw 0;
-    const doc=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+    const doc=await pdfOpen(file);
     const page=await doc.getPage(1); const v1=page.getViewport({scale:1}); const k=Math.min(4,2600/Math.max(v1.width,v1.height));
     const vp=page.getViewport({scale:k}); const c=document.createElement("canvas"); c.width=Math.round(vp.width); c.height=Math.round(vp.height);
     const ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);

@@ -33,7 +33,7 @@ function serve() {
           let t = d.toString("utf8"); const i = t.lastIndexOf("})();");
           d = Buffer.from(t.slice(0, i) + HOOK + t.slice(i));
         }
-        const type = p.endsWith(".html") ? "text/html; charset=utf-8" : p.endsWith(".js") ? "text/javascript" : p.endsWith(".json") ? "application/json" : "application/octet-stream";
+        const type = p.endsWith(".html") ? "text/html; charset=utf-8" : (p.endsWith(".js") || p.endsWith(".mjs")) ? "text/javascript" : p.endsWith(".json") ? "application/json" : "application/octet-stream";
         res.writeHead(200, { "content-type": type }); res.end(d);
       });
     }).listen(0, "127.0.0.1", () => resolve(srv));
@@ -105,10 +105,10 @@ async function openApp(options = {}) {
 }
 
 // Real libraries from cdnjs for tests that need them (PDF reading, PDF making). Offline: set LIBS_DIR to a folder
-// holding pdf.js, pdf.worker.js and html2canvas.min.js. jsPDF is replaced by a recorder (the page image is what matters).
+// holding html2canvas.min.js. jsPDF is replaced by a recorder (the page image is what matters).
 async function libRoutes(ctx) {
   const dir = process.env.LIBS_DIR;
-  const map = [[/pdf\.js\/3\.11\.174\/pdf\.min\.js$/, "pdf.js"], [/pdf\.js\/3\.11\.174\/pdf\.worker\.min\.js$/, "pdf.worker.js"], [/html2canvas\/1\.4\.1\/html2canvas\.min\.js$/, "html2canvas.min.js"]];
+  const map = [[/html2canvas\/1\.4\.1\/html2canvas\.min\.js$/, "html2canvas.min.js"]]; // pdf.js is served from the app itself
   for (const [re, local] of map)
     await ctx.route(re, (r) => dir ? r.fulfill({ status: 200, contentType: "text/javascript", body: fs.readFileSync(path.join(dir, local)) }) : r.continue());
   await ctx.addInitScript(() => {

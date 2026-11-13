@@ -40,8 +40,12 @@ img{max-width:100%} [hidden]{display:none!important}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- pdf.js served from the app itself (current release, legacy build for older phones); replaces 3.11.174 (CVE-2024-4367) -->
+<script type="module">
+import * as pdfjsLib from "./vendor/pdfjs-6.2.108/pdf.min.mjs";
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("./vendor/pdfjs-6.2.108/pdf.worker.min.mjs", location.href).href;
+window.pdfjsLib = pdfjsLib;
+</script>
 <script>
 (() => {
 {{APP}}})();

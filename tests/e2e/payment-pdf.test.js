@@ -1,5 +1,5 @@
 // A client's bank-transfer advice sent as a PDF must be read like a photo (amount, date, payer).
-// Uses the real pdf.js 3.11.174 the app loads (see libRoutes).
+// Uses the real pdf.js the app serves from app/vendor.
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
@@ -32,7 +32,10 @@ test("client payment: a PDF transfer advice is converted and read", async (t) =>
   t.after(() => app.close());
   const { page } = app;
   await app.login("هشام", "1234");
-  assert.ok(await app.eval(() => !!window.pdfjsLib), "pdf.js loaded");
+  await app.page.waitForFunction(() => !!window.pdfjsLib, null, { timeout: 10000 });
+  // the current pdf.js from the app itself, not 3.11.174 (CVE-2024-4367: a crafted PDF could run code)
+  assert.equal(await app.eval(() => window.pdfjsLib.version), "6.2.108");
+  assert.equal(await app.eval(() => [...document.scripts].some((s) => /pdf\.js\/3\./.test(s.src))), false);
   await app.openSite("s1");
   const before = await app.eval(() => (__T.S.sites.s1.payments || []).length);
   await app.eval(() => { __T.S.payPick = true; __T.S.tab = "money"; __T.render(); });

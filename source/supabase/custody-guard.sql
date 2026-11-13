@@ -10,7 +10,7 @@
 -- =====================================================================
 
 create or replace function public.custody_guard() returns trigger
-language plpgsql set search_path = public as $$
+language plpgsql set search_path = public as $fn$
 declare r text; me text; holds boolean;
 begin
   if auth.uid() is null then return coalesce(new, old); end if;   -- الخادم
@@ -32,11 +32,11 @@ begin
   end if;
 
   -- INSERT: الفاتورة باسمه، وعهدته تحددها قائمة «الموظفون الذين لهم عهدة» في صفحة العهدة
-  select coalesce((data->'cuHolders') ? me, false) into holds from public.settings where id = 'company';
+  holds := coalesce((select (s.data->'cuHolders') ? me from public.settings s where s.id = 'company'), false);
   new.data := (new.data - 'rev' - 'hvm')
     || jsonb_build_object('by', me, 'holder', case when coalesce(holds, false) then me else 'main' end, 'hv', 2);
   return new;
-end $$;
+end $fn$;
 
 drop trigger if exists custody_guard on public.custody;
 create trigger custody_guard before insert or update or delete on public.custody

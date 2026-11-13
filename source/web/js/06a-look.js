@@ -37,9 +37,9 @@ const STLBL={run:"جاري",near:"قارب الانتهاء",done:"منتهي",s
 const SFILT=[["all","الكل"],["run","جاري"],["near","قارب الانتهاء"],["done","منتهي"],["issue","فيه مشكلات"]];
 const fitFilter=(st,k)=>!k||k==="all"||(k==="run"?st==="run"||st==="near"||st==="issue":st===k);
 function emptyHtml(icon,title,text,btn){ return `<div class="empty2">${ico(icon,"art")}<b>${title}</b>${text?`<span class="small muted">${text}</span>`:""}${btn||""}</div>`; }
-function siteCard(s){ const c=calc(s); const st=siteState(s,c); const jt=jobType(s); const open=(s.issues||[]).filter(x=>x.status!=="done").length; const due=!isEng()?dueAlerts(s):[];
+function siteCard(s,i){ i=Math.min(+i||0,10); const c=calc(s); const st=siteState(s,c); const jt=jobType(s); const open=(s.issues||[]).filter(x=>x.status!=="done").length; const due=!isEng()?dueAlerts(s):[];
   const key=[s.name,s.location,s.engineer,s.consultant,s.client].filter(Boolean).join(" ").toLowerCase();
-  return `<button class="scard st-${st}" data-act="open" data-id="${s.id}" data-k="${esc(key)}" data-st="${st}">
+  return `<button class="scard st-${st}" data-act="open" data-id="${s.id}" data-k="${esc(key)}" data-st="${st}" style="--i:${i}">
    <span class="sthumb jt-${jt}">${s.coverId?`<img src="${blobUrl(s.coverId)}" alt="" loading="lazy">`:ico(jt)}</span>
    <span class="sbody"><span class="stop"><b class="sname">${U(s.name)}</b><span class="chip c-${st}">${STLBL[st]}</span></span>
     <span class="small muted sline">${[s.engineer,s.location].filter(Boolean).length?U([s.engineer,s.location].filter(Boolean).join(" · ")):tr(JOBLBL[jt])}</span>
@@ -121,4 +121,18 @@ app.addEventListener("input", e=>{ if(e.target.id==="site-q"){ S.q=e.target.valu
 if(window.matchMedia) try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme); }catch(e){}
 /* greeting by the time of day (Dubai time on the phone): morning 5–12, day 12–17, evening 17–5 */
 function greeting(){ const h=new Date().getHours(); const g=h>=5&&h<12?"صباح الخير":h<17&&h>=12?"نهارك سعيد":"مساء الخير"; return S.user?`${tr(g)}${lang==="en"?",":"،"} <bdi class="u">${esc(S.user.name)}</bdi>`:tr(g); }
+/* ---- motion: a screen glides in when it changes; home numbers count up; nothing moves if the phone asks for less motion ---- */
+const calmMotion=()=>!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+let lastScreen="";
+/* only the parts drawn at the moment the screen changes are marked, so a later redraw of the same screen (typing, saving) never replays the motion */
+function screenEnter(){ const key=S.view+":"+(S.view==="site"?S.cur:"");
+  if(key===lastScreen) return; lastScreen=key;
+  if(calmMotion()) return;
+  [...app.children].forEach(el=>{ if(!el.matches(".bnav,.fab,.sheet")) el.classList.add("enter"); });
+  if(S.view==="list") app.querySelectorAll(".hstats b.num").forEach(countUp); }
+function countUp(el){ const end=parseInt(el.textContent,10); if(!(end>0)||String(end)!==el.textContent.trim()) return;
+  const t0=performance.now(), dur=Math.min(900,350+end*60);
+  const step=t=>{ const p=Math.min(1,(t-t0)/dur); el.textContent=String(Math.round(end*(1-Math.pow(1-p,3)))); if(p<1&&el.isConnected) requestAnimationFrame(step); else el.textContent=String(end); };
+  el.textContent="0"; requestAnimationFrame(step); }
+function savedPop(){ if(calmMotion()) return; document.querySelectorAll(".savenow").forEach(x=>{ x.classList.remove("justsaved"); void x.offsetWidth; x.classList.add("justsaved"); setTimeout(()=>x.classList.remove("justsaved"),1400); }); }
 const TAGLINE=()=>`<p class="tagline"><span class="w1">${tr("أصيل في العمل،")}</span> <span class="w2">${tr("أصيل في الوعد")}</span></p>`;

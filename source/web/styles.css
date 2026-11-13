@@ -614,3 +614,17 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .vatsum tbody th{font-weight:600} .vatsum td{font-variant-numeric:tabular-nums}
 .vatsum tr.diff th,.vatsum tr.diff td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
 .empsum{margin:10px 0 0} .empsum td{text-align:end} .empsum .neg{color:var(--bad)}
+/* ---------- motion (Nov 2026): screens glide in, site cards arrive one after another, progress bars fill, the cover photo settles, Save pops green ---------- */
+@keyframes scrIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes barFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes heroSettle{from{transform:scale(1.08)}to{transform:scale(1)}}
+@keyframes savedPop{0%{transform:scale(1)}35%{transform:scale(1.08)}100%{transform:scale(1)}}
+.enter{animation:scrIn .32s cubic-bezier(.2,.7,.3,1) both}
+.enter .scard{animation:cardIn .4s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i,0) * 45ms + 80ms)}
+.enter .bar>i{animation:barFill .8s cubic-bezier(.3,.8,.3,1) both;animation-delay:.25s;transform-origin:left center}
+[dir=rtl] .enter .bar>i{transform-origin:right center}
+.enter .scard .bar>i{animation-delay:calc(var(--i,0) * 45ms + 300ms)}
+.enter .hero img{animation:heroSettle 1.4s cubic-bezier(.2,.7,.3,1) both}
+.savenow.justsaved{background:var(--good)!important;border-color:var(--good)!important;color:#fff!important;animation:savedPop .45s ease-out}
+@media (prefers-reduced-motion:reduce){.enter,.enter *{animation:none!important}.savenow.justsaved{animation:none}}

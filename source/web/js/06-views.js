@@ -31,6 +31,7 @@ function render(){
   app.querySelectorAll('input:not([type]),input[type="text"],textarea').forEach(i=>{ if(!i.hasAttribute("dir")) i.dir="auto"; });
   app.querySelectorAll('input[type="date"]').forEach(dateShow);
   if(S.view==="list"&&S.q) applySearch();
+  screenEnter();
   if(S.view==="docs"){ fitDocPrev(); if(S.docQ){ const q=document.getElementById("doc-q"); if(q) q.dispatchEvent(new Event("input",{bubbles:true})); } }
   if(S.needSave){ const ns=S.needSave; S.needSave=null; save(ns); }
   const pw2=document.getElementById("planWrap"); if(pw2&&sc){ pw2.scrollLeft=sc[0]; pw2.scrollTop=sc[1]; window.scrollTo(0,wy); }

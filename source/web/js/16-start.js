@@ -10,7 +10,7 @@ async function saveNow(btn){
   await Promise.all(Object.values(chains)).catch(()=>{});
   const failed=!!saveState.err||Object.keys(S.sites).some(id=>dirty[id]);
   document.querySelectorAll(".savenow").forEach(x=>{ x.disabled=false; x.classList.remove("unsaved"); x.textContent=failed?tr("💾 حفظ التعديلات"):tr("✓ تم الحفظ"); });
-  if(!failed) setTimeout(markUnsaved,2500);
+  if(!failed){ savedPop(); setTimeout(markUnsaved,2500); }
   toast(failed?"لم يُحفظ — تحقق من الاتصال ثم اضغط «حفظ» مرة أخرى":"✓ تم حفظ كل البيانات");
 }
 app.addEventListener("click",e=>{ const b=e.target.closest('[data-act="savenow"]'); if(!b) return; e.preventDefault(); e.stopImmediatePropagation(); saveNow(b); }, true);

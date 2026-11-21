@@ -14,7 +14,7 @@ const MOCK = fs.readFileSync(path.join(__dirname, "mock-supabase.js"), "utf8")
   .replace("__H2__", sha("aseel|u2|5678"));
 
 // internals the tests may call; the list is checked so a rename fails loudly
-const HOOK = `window.__T={get S(){return S},get cuMe(){return cuMe},render,save,cuPut,users,calc,schedule,costs,laborAmt,supKey,supMatch,supCanon,cuCats,cuGuessCat,cuMissing,cuName,prevMonthOf,salaryDesc,salaryDue,aiWhy,needsXfer,holderShort,carSpend,cuCalc,holderBal,delta,isExp,money,vatData,vatQuarters,vatOut};\n`;
+const HOOK = `window.__T={get S(){return S},get cuMe(){return cuMe},render,save,cuPut,users,calc,schedule,costs,laborAmt,supKey,supMatch,supCanon,cuCats,cuGuessCat,cuMissing,cuName,prevMonthOf,salaryDesc,salaryDue,aiWhy,needsXfer,holderShort,carSpend,cuCalc,holderBal,delta,isExp,money,vatData,vatQuarters,vatOut,makeCustPdf};\n`;
 
 function serve() {
   return new Promise((resolve) => {
@@ -112,7 +112,9 @@ async function libRoutes(ctx) {
   for (const [re, local] of map)
     await ctx.route(re, (r) => dir ? r.fulfill({ status: 200, contentType: "text/javascript", body: fs.readFileSync(path.join(dir, local)) }) : r.continue());
   await ctx.addInitScript(() => {
-    window.jspdf = { jsPDF: function (o) { this.o = o; this.addImage = (...a) => { (window.__pdfPages = window.__pdfPages || []).push({ o, w: a[4], h: a[5], len: String(a[0]).length }); };
+    window.jspdf = { jsPDF: function (o) { this.o = o; let pages = 1, cur = 1; this.addImage = (...a) => { (window.__pdfPages = window.__pdfPages || []).push({ o, page: cur, x: a[2], y: a[3], w: a[4], h: a[5], len: String(a[0]).length }); };
+      this.addPage = () => { pages++; cur = pages; }; this.setPage = (p) => { cur = p; }; this.getNumberOfPages = () => pages;
+      this.setFontSize = () => {}; this.setTextColor = () => {}; this.text = () => {};
       this.output = () => new Blob(["%PDF-1.4 test"], { type: "application/pdf" }); } };
   });
 }

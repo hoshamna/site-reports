@@ -9,7 +9,7 @@ async function cuPdf(title, blocks, fname, tag){
   rep.innerHTML=blocks.join(""); translate(rep);
   await Promise.all([...rep.querySelectorAll("img")].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;})));
   try{ await document.fonts.ready; }catch(e){}
-  const { jsPDF }=window.jspdf; const pdf=new jsPDF({unit:"mm",format:"a4"}); const W=210,H=297,bottom=18; let y=0;
+  const { jsPDF }=window.jspdf; const pdf=new jsPDF({unit:"mm",format:"a4"}); const W=210,H=297,bottom=18; let y=0; splitTallBlocks(rep,H-bottom-6,W);
   for(const el of rep.children){ const cv=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",useCORS:true,logging:false});
     let w=W,h=cv.height*w/cv.width; if(h>H-bottom){ h=H-bottom; w=cv.width*h/cv.height; } if(y+h>H-bottom&&y>0){ pdf.addPage(); y=6; }
     pdf.addImage(cv.toDataURL("image/jpeg",0.86),"JPEG",(W-w)/2,y,w,h); y+=h; }

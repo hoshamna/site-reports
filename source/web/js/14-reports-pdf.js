@@ -1,3 +1,19 @@
+// a block taller than a page is cut between table rows into several blocks (title and column headings repeated),
+// so a long table runs over several pages at full size instead of being shrunk onto one unreadable page
+function splitTallBlocks(rep,pageMm,Wmm){ const maxPx=pageMm*rep.offsetWidth/Wmm;
+  [...rep.children].forEach(el=>{ if(el.offsetHeight<=maxPx) return; const t=el.querySelector(":scope > table"); if(!t) return;
+    const rows=[...t.rows]; if(rows.length<3) return; const head=rows[0], kids=[...el.children], ti=kids.indexOf(t);
+    const fixed=el.offsetHeight-t.offsetHeight+head.offsetHeight; const chunks=[]; let cur=[], h=fixed;
+    rows.slice(1).forEach(r=>{ const rh=r.offsetHeight; if(cur.length&&h+rh>maxPx){ chunks.push(cur); cur=[]; h=fixed; } cur.push(r); h+=rh; });
+    if(cur.length) chunks.push(cur); if(chunks.length<2) return;
+    const frag=document.createDocumentFragment();
+    chunks.forEach((rs,i)=>{ const b=el.cloneNode(false), last=i===chunks.length-1;
+      kids.forEach((c,ci)=>{
+        if(c===t){ const nt=t.cloneNode(false), tb=document.createElement("tbody"); tb.appendChild(head.cloneNode(true)); rs.forEach(r=>tb.appendChild(r.cloneNode(true))); nt.appendChild(tb); b.appendChild(nt); }
+        else if(c.tagName==="H2"&&ci<ti){ const cc=c.cloneNode(true); if(i>0) cc.textContent+=" "+tr("(تابع)"); b.appendChild(cc); }
+        else if((ci<ti&&i===0)||(ci>ti&&last)) b.appendChild(c.cloneNode(true)); });
+      frag.appendChild(b); });
+    el.replaceWith(frag); }); }
 /* ---------- PDF ---------- */
 function numWords(n){ n=Math.floor(n); if(n===0) return "Zero";
   const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"], t=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
@@ -181,7 +197,7 @@ async function makePdf(s, kind){
   await Promise.all([...rep.querySelectorAll("img")].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;})));
   try{ await document.fonts.ready; }catch(e){}
   const { jsPDF } = window.jspdf; const pdf=new jsPDF({unit:"mm",format:"a4"});
-  const W=210, H=297, M=0, bottom=18; let y=0;
+  const W=210, H=297, M=0, bottom=18; let y=0; splitTallBlocks(rep,H-bottom-6,W);
   for(const el of rep.children){
     const cv=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",useCORS:true,logging:false});
     let w=W-2*M, h=cv.height*w/cv.width;

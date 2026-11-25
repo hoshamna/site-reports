@@ -45,7 +45,7 @@ function cuCard(x){
     <div class="full small muted">${esc(cuTargetName(x))}${x.autoCar&&x.target==="car:"+x.autoCar?" ("+tr("من رقم اللوحة")+")":""}${c?" · "+esc(c.l):""}${x.by?` · صوّرها: <b>${esc(x.by)}</b>`:""}${x.plate&&!String(x.target||"").startsWith("car:")?` · 🚗 لوحة <bdi dir="ltr">${esc(x.plate)}</bdi> غير مسجّلة في السيارات`:""}</div>
     ${dup?`<div class="full notice small dupbox"><b>⚠️ قد تكون مكررة</b><span>تشبه فاتورة <bdi class="u">${esc(dup.supplier||"")}</bdi> بمبلغ <span class="num">${money(dup.amount)}</span> بتاريخ <span class="num">${esc(dup.date||"")}</span>${dup.by?" — "+tr("صوّرها: ")+esc(dup.by):""}.</span><div class="row">${delBtn(x)}<button class="ghost" data-act="cudupok" data-id="${x.id}">ليست مكررة</button></div></div>`:""}
     ${csel(x,"target","على حساب",targetOpts(x))}${csel(x,"cat","البند",catOpts())}
-    ${cf(x,"supplier","المورد")}${csel(x,"pay","الدفع",[["cash","💵 نقداً (من العهدة)"],["credit","🤝 آجل (على حساب المورد)"],["gm","🏦 تحويل مباشر من المدير العام (لا يُخصم من العهدة)"]])}
+    ${cf(x,"supplier","المورد")}${csel(x,"pay","الدفع",[["cash","💵 نقداً (من العهدة)"],["credit","🤝 آجل (على حساب المورد)"],["gm","🏦 تحويل مباشر من المدير العام (لا يُخصم من العهدة)"],...(x.pay==="bank"?[["bank","🏦 تحويل بنكي من العهدة"]]:[])])}
     ${cf(x,"amount","المبلغ شامل الضريبة (درهم)","number")}${cf(x,"date","التاريخ","date")}
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
     ${vatOut(x)?`<div class="full small muted">🧾 ${tr("لا تدخل في تقرير الضريبة")} (${tr(VAT_WHY[vatOut(x)])})</div>`:`${cf(x,"vat","الضريبة VAT (درهم)","number")}${cf(x,"supTrn","TRN المورد","text",'dir="ltr" inputmode="numeric"')}

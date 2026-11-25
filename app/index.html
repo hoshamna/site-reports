@@ -692,6 +692,7 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .psbox tr.sub th,.psbox tr.sub td{background:#f0e4d6}.psbox tr.tot th,.psbox tr.tot td{background:#5a3a1e;color:#fff;font-size:15px}
 .psnote{font-size:11.5px;color:#444;margin:10px 0 0}.pssig{display:flex;justify-content:space-between;margin-top:40px;text-align:center;font-size:13px}.pssig>div{width:28%;border-top:1.5px solid #b07a3c;padding-top:6px;position:relative}
 .psok{position:absolute;top:-30px;inset-inline:0;color:#0d7a3a;font-weight:700;font-size:12px}
+.payrcpt{display:flex;flex-direction:column;gap:4px;margin:6px 0}
 </style>
 </head>
 <body>
@@ -2391,7 +2392,7 @@ function cuCard(x){
     <div class="full small muted">${esc(cuTargetName(x))}${x.autoCar&&x.target==="car:"+x.autoCar?" ("+tr("من رقم اللوحة")+")":""}${c?" · "+esc(c.l):""}${x.by?` · صوّرها: <b>${esc(x.by)}</b>`:""}${x.plate&&!String(x.target||"").startsWith("car:")?` · 🚗 لوحة <bdi dir="ltr">${esc(x.plate)}</bdi> غير مسجّلة في السيارات`:""}</div>
     ${dup?`<div class="full notice small dupbox"><b>⚠️ قد تكون مكررة</b><span>تشبه فاتورة <bdi class="u">${esc(dup.supplier||"")}</bdi> بمبلغ <span class="num">${money(dup.amount)}</span> بتاريخ <span class="num">${esc(dup.date||"")}</span>${dup.by?" — "+tr("صوّرها: ")+esc(dup.by):""}.</span><div class="row">${delBtn(x)}<button class="ghost" data-act="cudupok" data-id="${x.id}">ليست مكررة</button></div></div>`:""}
     ${csel(x,"target","على حساب",targetOpts(x))}${csel(x,"cat","البند",catOpts())}
-    ${cf(x,"supplier","المورد")}${csel(x,"pay","الدفع",[["cash","💵 نقداً (من العهدة)"],["credit","🤝 آجل (على حساب المورد)"],["gm","🏦 تحويل مباشر من المدير العام (لا يُخصم من العهدة)"]])}
+    ${cf(x,"supplier","المورد")}${csel(x,"pay","الدفع",[["cash","💵 نقداً (من العهدة)"],["credit","🤝 آجل (على حساب المورد)"],["gm","🏦 تحويل مباشر من المدير العام (لا يُخصم من العهدة)"],...(x.pay==="bank"?[["bank","🏦 تحويل بنكي من العهدة"]]:[])])}
     ${cf(x,"amount","المبلغ شامل الضريبة (درهم)","number")}${cf(x,"date","التاريخ","date")}
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
     ${vatOut(x)?`<div class="full small muted">🧾 ${tr("لا تدخل في تقرير الضريبة")} (${tr(VAT_WHY[vatOut(x)])})</div>`:`${cf(x,"vat","الضريبة VAT (درهم)","number")}${cf(x,"supTrn","TRN المورد","text",'dir="ltr" inputmode="numeric"')}
@@ -2968,6 +2969,7 @@ app.addEventListener("click", async e=>{
 });
 
 /* ---------- المرتبات (26 Nov 2026, laid out like the company's own payroll sheet) ----------
+   Paid as two movements: all bank salaries in one (with Hosham's bank receipt), all cash salaries in one.
    Bank salaries are transferred by Hosham from the main custody, so bank and cash both come out of it (26 Nov 2026).
    Its own section (bottom bar), for Hosham and GM only. GM approves the month's sheet before it can be paid;
    any change after approval needs a new approval. Advances can be split over several months, starting the month after.
@@ -2988,7 +2990,9 @@ const staffMode=e=>e&&e.mode==="bank"?"bank":"cash";
 const r2p=v=>Math.round(n(v)*100)/100;
 const PAYMODES=[["bank","تحويل بنكي — BANK"],["cash","نقداً — CASH"]];
 // entries of one employee: salaries paid and advances given
-const salEntries=id=>Object.values(S.cu).filter(x=>isExp(x)&&x.cat==="salary"&&x.salEmp===id);
+// a month is paid as two custody movements, «رواتب البنك» (with the bank receipt) and «رواتب الكاش»; each keeps every
+// employee's line in salRows, read back here as that employee's own entry for his statement
+const salEntries=id=>Object.values(S.cu).flatMap(x=>!isExp(x)||x.cat!=="salary"?[]:x.salRows?x.salRows.filter(r=>r.salEmp===id).map(r=>({...r,id:x.id+":"+id,date:x.date,salMonth:x.salMonth,pay:x.pay,salMode:x.salBatch,batch:x.id})):x.salEmp===id?[x]:[]);
 const salPaid=(id,m)=>salEntries(id).find(x=>!x.salAdv&&x.salMonth===m);
 const carryEntry=m=>Object.values(S.cu).find(x=>x.kind==="dep"&&x.salCarry&&x.salMonth===m);
 // months between two "YYYY-MM" keys
@@ -3069,6 +3073,7 @@ function payrollPanel(m,T,A,lock,apprBox){
     <tr><th>− ${tr("مرحّل من راتب")} ${esc((staffById(T.carryEmp)||{}).name||"")}</th><td class="num" data-tot="carry">${money(T.carry)}</td></tr>
     <tr class="diff"><th>${tr("المرتبات")}</th><td class="num" data-tot="total">${money(T.total)}</td></tr></tbody></table>
    <p class="small muted" style="margin:0">${tr("يُخصم من العهدة الرئيسية عند الصرف")}: <b class="num" data-tot="fromcu">${money(T.fromCu)}</b> (${tr("البنك + الكاش − المرحّل")})</p>
+   ${unpaid.some(r=>r.mode==="bank")&&A&&A.ok?`<label class="payrcpt">📎 ${tr("إيصال تحويل رواتب البنك")} (<span class="num">${money(T.sum(unpaid.filter(r=>r.mode==="bank"),"net"))}</span>)<input type="file" id="pay-rcpt" accept="image/*,application/pdf"></label>${S.payRcpt?`<span class="chip done">✓ ${esc(S.payRcpt.name||tr("الإيصال"))}</span>`:""}`:""}
    <div class="row">${unpaid.length?(A&&A.ok?`<button class="primary ${S.armed==="paygo"?"armed":""}" data-act="paygo">${S.armed==="paygo"?tr("اضغط مرة أخرى للتأكيد"):`✓ ${tr("صرف مرتبات")} ${esc(monthName(m))}`}</button>`:`<button class="primary" disabled>🔒 ${tr("الصرف بعد اعتماد المدير العام")}</button>`):`<span class="chip done">✓ ${tr("صُرفت مرتبات الشهر")}</span>`}
     <button data-act="paypdf">📄 PDF</button><button data-act="payxlsx">📊 Excel</button></div>
    <p class="small muted" style="margin:0">${tr("رواتب البنك والكاش تُخصم من العهدة الرئيسية عند الصرف، والمرحّل يُسجَّل توريداً إليها.")}</p>`:`<p class="small muted" style="margin:0">${tr("أضف الموظفين ومرتباتهم أولاً.")}</p>`}
@@ -3098,15 +3103,20 @@ function advPanel(){ const m=S.payM||prevMonthOf(today());
        <span class="muted">${Object.entries(sc).map(([k,v])=>`${esc(monthName(k))}: <span class="num">${money(v)}</span>`).join(" · ")}</span>
        ${(due||skipped)&&!salPaid(x.salEmp,m)?`<button class="xs ghost" data-act="payskip" data-id="${esc(x.id)}" data-m="${m}">${skipped?tr("إلغاء التأجيل"):`${tr("تأجيل قسط")} ${esc(monthName(m))}`}</button>`:""}</div>`; }).join("")}</div>`).join("")}</div>`; }
 function staffSave(){ settingsSave(); }
-async function payGo(m){ const T=payTotals(m); const rows=T.rows.filter(r=>!r.paid&&r.net>0); let k=0;
-  for(const r of rows){ const x={id:uid(),kind:"exp",by:cuMe,holder:"main",hv:2,target:"gen",cat:"salary",pay:r.mode==="bank"?"bank":"cash",salMode:r.mode,supplier:r.e.name,amount:r.net,date:today(),
-      desc:`${lang==="en"?"Salary":"راتب"} ${monthName(m)} — ${r.e.name}`,salEmp:r.e.id,salMonth:m,salGross:r.base,salAllow:r.allow,salAdvDed:r.adv,salAbs:n(r.days)||0,salAbsDed:r.absDed,salOther:r.other,salNote:r.note,ok:true,fileId:null,fileType:null,createdAt:Date.now()+(k++)};
+async function payGo(m){ const T=payTotals(m); const rows=T.rows.filter(r=>!r.paid&&r.net>0); let k=0, rc=null;
+  if(rows.some(r=>r.mode==="bank")){ if(!S.payRcpt){ toast(tr("أرفق إيصال تحويل البنك أولاً")); return false; }
+    const u=await cuUpload(S.payRcpt); if(!u){ toast(tr("تعذر رفع الإيصال")); return false; } rc=u.r; }
+  for(const mode of ["bank","cash"]){ const L=rows.filter(r=>r.mode===mode); if(!L.length) continue;
+    const lbl=mode==="bank"?tr("رواتب البنك"):tr("رواتب الكاش");
+    const x={id:uid(),kind:"exp",by:cuMe,holder:"main",hv:2,target:"gen",cat:"salary",pay:mode,salBatch:mode,supplier:`${lbl} ${monthName(m)}`,amount:r2p(L.reduce((a,r)=>a+r.net,0)),date:today(),
+      desc:`${lbl} ${monthName(m)} — ${L.length} ${tr("موظف")}`,salMonth:m,ok:true,fileId:mode==="bank"&&rc?rc.id:null,fileType:mode==="bank"&&rc?rc.type:null,createdAt:Date.now()+(k++),
+      salRows:L.map(r=>({salEmp:r.e.id,supplier:r.e.name,amount:r.net,salGross:r.base,salAllow:r.allow,salAdvDed:r.adv,salAbs:n(r.days)||0,salAbsDed:r.absDed,salOther:r.other,salNote:r.note}))};
     S.cu[x.id]=x; cuPut(x,true); }
   if(T.carry>0&&!T.carryDone){ const e=staffById(T.carryEmp);
     const x={id:uid(),kind:"dep",by:cuMe,amount:T.carry,date:today(),desc:`${tr("مرحّل من راتب")} ${e?e.name:""} ${tr("لمرتبات")} ${monthName(m)}`,salCarry:1,salMonth:m,salEmp:T.carryEmp||"",fileId:null,fileType:null,createdAt:Date.now()+(k++)};
     S.cu[x.id]=x; cuPut(x,true);
     S.settings.payCarry={emp:T.carryEmp,amount:T.carry}; staffSave(); }
-  delete payDrafts()[m]; staffSave(); toast(`✓ ${tr("صُرفت مرتبات")} ${monthName(m)} · ${rows.length} ${tr("موظف")}`); }
+  delete payDrafts()[m]; staffSave(); S.payRcpt=null; toast(`✓ ${tr("صُرفت مرتبات")} ${monthName(m)} · ${rows.length} ${tr("موظف")}`); return true; }
 // the sheet as the company's paper: logo, brown title, BANK and CASH tables, totals box, notes, signatures
 const PAYHEAD=["رقم الموظف","اسم الموظف","الراتب الأساسي","البدلات","السلفيات","عدد أيام الغياب","خصم الغياب","أخرى","النوع","صافي الراتب"];
 function paySheetData(m){ const T=payTotals(m), ce=staffById(T.carryEmp), A=payAppr(m); const notes=T.rows.filter(r=>r.note).map(r=>[r.e.name,r.note]);
@@ -3206,7 +3216,7 @@ app.addEventListener("input",e=>{ const t=e.target; const m=S.payM||prevMonthOf(
   else if(t.dataset.paycarry){ const D=payDrafts()[m]||(payDrafts()[m]={}); const c=D._carry||(D._carry={...(S.settings.payCarry||{})}); c[t.dataset.paycarry]=t.dataset.paycarry==="amount"?n(t.value):t.value; payLive(m); clearTimeout(S._pdT); S._pdT=setTimeout(staffSave,800); }
   else if(t.dataset.staff){ const L=staffList(); const s=L.find(x=>x.id===t.dataset.staff); if(!s) return; const k=t.dataset.sk;
     s[k]=(k==="salary"||k==="allow")?(t.value===""?"":n(t.value)):t.value; S.settings.staff=L; clearTimeout(S._stT); S._stT=setTimeout(staffSave,700); } });
-app.addEventListener("change",e=>{ const t=e.target; if(t.dataset.paym){ S.payM=t.value; S.payOpen=true; render(); }
+app.addEventListener("change",e=>{ const t=e.target; if(t.id==="pay-rcpt"){ S.payRcpt=t.files&&t.files[0]||null; render(); return; } if(t.dataset.paym){ S.payM=t.value; S.payOpen=true; render(); }
   else if(t.dataset.staff&&t.dataset.sk==="mode"){ clearTimeout(S._stT); staffSave(); S.payOpen=true; S.staffOpen=true; render(); } });
 app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act; if(!/^(pay|staff)/.test(a)) return;
   if(a==="payopen"||a==="paygoto"){ e.preventDefault(); if(S.view!=="pay") S.payFrom=S.view; S.view="pay"; S.pick=null; if(b.dataset.m) S.payM=b.dataset.m; render(); window.scrollTo(0,0); return; }
@@ -3229,7 +3239,7 @@ app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); 
     S.armed=null; const ap=S.settings.payAppr||(S.settings.payAppr={}); ap[m]={by:S.user.name,date:today(),at:Date.now(),total:payTotals(m).total,sig:paySig(m)}; staffSave(); toast(`✓ ${tr("اعتُمد كشف")} ${monthName(m)}`); render(); }
   else if(a==="payunappr"){ if(!isGM()) return; const ap=S.settings.payAppr||{}; delete ap[m]; S.settings.payAppr=ap; staffSave(); render(); }
   else if(a==="paygo"){ const A=payAppr(m); if(!A||!A.ok){ toast(tr("الكشف يحتاج اعتماد المدير العام أولاً")); return; } if(!cuMe){ toast(tr("اكتب اسمك أولاً")); return; } if(S.armed!=="paygo"){ S.armed="paygo"; render(); setTimeout(()=>{ if(S.armed==="paygo"){ S.armed=null; render(); } },5000); return; }
-    S.armed=null; await payGo(m); render(); }
+    S.armed=null; b.classList.add("busy"); try{ await payGo(m); }catch(err){ toast((err&&err.message)||tr("تعذر الصرف")); } render(); }
   else if(a==="paypdf"||a==="payemp"||a==="payxlsx"){ if(S.busy) return; S.busy=true; b.classList.add("busy");
     try{ if(a==="paypdf") await makePayPdf(m); else if(a==="payxlsx") await makePayXlsx(m); else await makeEmpPdf(b.dataset.id); }catch(err){ toast((err&&err.message)||tr("تعذر الحفظ")); } S.busy=false; render(); } });
 /* ---------- users & roles ---------- */

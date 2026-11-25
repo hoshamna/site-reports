@@ -666,3 +666,4 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .psbox tr.sub th,.psbox tr.sub td{background:#f0e4d6}.psbox tr.tot th,.psbox tr.tot td{background:#5a3a1e;color:#fff;font-size:15px}
 .psnote{font-size:11.5px;color:#444;margin:10px 0 0}.pssig{display:flex;justify-content:space-between;margin-top:40px;text-align:center;font-size:13px}.pssig>div{width:28%;border-top:1.5px solid #b07a3c;padding-top:6px;position:relative}
 .psok{position:absolute;top:-30px;inset-inline:0;color:#0d7a3a;font-weight:700;font-size:12px}
+.payrcpt{display:flex;flex-direction:column;gap:4px;margin:6px 0}

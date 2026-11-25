@@ -35,9 +35,17 @@ test("payroll: bank and cash groups, advances, absence, carried amount, statemen
   await page.click('[data-act="payappr"]'); await page.click('[data-act="payappr"]'); await page.waitForTimeout(200);
   assert.match(await app.text(), /اعتمد المدير العام كشف/);
   await app.eval(() => { __T.S.user.name = "هشام"; __T.render(); });
-  await page.click('[data-act="paygo"]'); await page.click('[data-act="paygo"]'); await page.waitForTimeout(500);
-  const paid = await app.eval(() => Object.values(__T.S.cu).filter((x) => x.cat === "salary" && !x.salAdv).map((x) => [x.supplier, x.amount, x.pay, x.salAdvDed, x.salAbsDed, x.salOther]).sort());
-  assert.deepEqual(paid, [["HESHAM", 6000, "bank", 0, 0, 0], ["abd alla jad", 900, "cash", 0, 800, 0], ["mohamed suliman", 1350, "cash", 300, 0, -50]]);
+  // the bank salaries need the bank receipt
+  await page.click('[data-act="paygo"]'); await page.click('[data-act="paygo"]'); await page.waitForTimeout(300);
+  assert.equal(await app.eval(() => Object.values(__T.S.cu).filter((x) => x.cat === "salary" && !x.salAdv).length), 0);
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+  await page.setInputFiles("#pay-rcpt", { name: "bank.png", mimeType: "image/png", buffer: png }); await page.waitForTimeout(200);
+  await page.click('[data-act="paygo"]'); await page.click('[data-act="paygo"]'); await page.waitForTimeout(800);
+  // two movements: all bank salaries in one (with the receipt), all cash salaries in one
+  const mv = await app.eval(() => Object.values(__T.S.cu).filter((x) => x.cat === "salary" && !x.salAdv).map((x) => [x.salBatch, x.amount, x.pay, !!x.fileId, x.salRows.length]).sort());
+  assert.deepEqual(mv, [["bank", 6000, "bank", true, 1], ["cash", 2250, "cash", false, 2]]);
+  const rowsOf = await app.eval(() => Object.values(__T.S.cu).filter((x) => x.salRows).flatMap((x) => x.salRows.map((r) => [r.supplier, r.amount, r.salAdvDed, r.salAbsDed, r.salOther])).sort());
+  assert.deepEqual(rowsOf, [["HESHAM", 6000, 0, 0, 0], ["abd alla jad", 900, 0, 800, 0], ["mohamed suliman", 1350, 300, 0, -50]]);
   // custody: advance 300 + cash 2250 + bank 6000 out (Hosham transfers the bank salaries himself), carried 400 in
   assert.equal(await app.eval(() => __T.holderBal("main")), -300 - 2250 - 6000 + 400);
   assert.deepEqual(await app.eval(() => __T.S.settings.payCarry), { emp: hes, amount: 400 });

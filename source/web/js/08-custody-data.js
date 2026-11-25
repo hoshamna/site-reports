@@ -155,7 +155,7 @@ function salaryDesc(k){ return (lang==="en"?"Salaries ":"مرتبات ")+monthNa
 const salMonthOf=x=>x.salMonth||prevMonthOf(x.date);
 function salaryDue(){ const t=today(), [y,m,dd]=t.split("-").map(Number);
   const k=dd>=25?ym(y,m):(dd<=10?prevMonthOf(t):null); if(!k) return null;
-  const done=Object.values(S.cu).some(x=>isExp(x)&&x.cat==="salary"&&salMonthOf(x)===k); return done?null:k; }
+  const done=Object.values(S.cu).some(x=>isExp(x)&&x.cat==="salary"&&!x.salAdv&&salMonthOf(x)===k); return done?null:k; }
 // what an expense is called in lists and statements: supplier, else its description, else its category; "فاتورة" only when there is a document
 function cuName(x){ const sup=String(x.supplier||"").trim(); if(sup) return sup; const ds=String(x.desc||"").trim(); if(ds) return ds;
   const c=x.cat&&cuCat(x.cat); if(c) return c.l.replace(/^\S+\s/,""); return x.fileId?tr("فاتورة"):tr("مصروف"); }

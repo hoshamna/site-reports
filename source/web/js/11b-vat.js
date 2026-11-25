@@ -9,6 +9,16 @@ function vatOut(x){ const t=`${x.supplier||""} ${x.desc||""}`;
   if(x.cat==="gov"||VAT_GOVRE.test(t)) return "gov";
   return ""; }
 const VAT_WHY={fuel:"وقود",salary:"مرتبات",gov:"رسوم حكومية"};
+// purchase VAT counts only on invoices made out to the company (its name or TRN as the buyer), 26 Nov 2026
+const coKey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9\u0621-\u064a]+/g,"").replace(/[أإآ]/g,"ا");
+function coMatch(buyer,buyerTrn){ const b=coKey(buyer), trn=String(S.settings.trn||"").replace(/\D/g,""), bt=String(buyerTrn||"").replace(/\D/g,"");
+  if(trn&&bt&&bt===trn) return true; if(!b) return false;
+  if(/aseel|اصيل/.test(b)) return true;
+  return [S.settings.company,S.settings.companyEn,S.settings.legalName].map(coKey).some(k=>k.length>=4&&b.includes(k.slice(0,Math.min(k.length,12)))); }
+// from a reading: who the invoice is made out to; a choice made by hand (vatCoHand) is kept
+function vatBuyerFrom(x,d){ if(!d||typeof d!=="object"||!("buyer" in d)) return;
+  x.buyer=String(d.buyer||"").slice(0,120); const bt=String(d.buyerTrn||"").replace(/\D/g,""); if(bt) x.buyerTrn=bt.slice(0,15); if(d.taxInvoice!==undefined) x.taxInv=!!d.taxInvoice;
+  if(!x.vatCoHand) x.vatCo=coMatch(x.buyer,x.buyerTrn)?"yes":"no"; }
 const vatKnown=x=>x.vat!==undefined&&x.vat!==null&&String(x.vat).trim()!=="";
 const vat5=a=>Math.round(n(a)*5/105*100)/100;
 function vatQuarters(count){ const t=today(); let y=+t.slice(0,4), q=Math.floor((+t.slice(5,7)-1)/3); const out=[];
@@ -21,14 +31,17 @@ function vatData(P){ const inR=d=>d>=P.from&&d<=P.to;
     sales.push({date:x.invoiceDate,no:x.no||"",to:x.to||"",site:(S.sites[x.siteId]||{}).name||x.project||"",net:c.sub,vat:c.vat,gross:c.total}); });
   Object.values(S.sites).forEach(s=>(s.payments||[]).forEach(p=>{ const v=p.invoice; if(!v||v.docId) return; const d=/^\d{4}-\d{2}-\d{2}$/.test(v.date||"")?v.date:(p.date||""); if(!inR(d)) return;
     const sp=vatSplit(v.gross,n(v.rate)); sales.push({date:d,no:v.no||"",to:v.to||"",site:s.name||"",net:sp.net,vat:sp.vat,gross:sp.gross}); }));
-  const pur=[], out=[], miss=[];
-  Object.values(S.cu).filter(x=>isExp(x)&&inR(dateOf(x))).forEach(x=>{ const why=vatOut(x); const row={id:x.id,date:dateOf(x),supplier:cuName(x),invNo:x.invNo||"",trn:x.supTrn||"",gross:n(x.amount),why};
+  const pur=[], out=[], miss=[], notCo=[], unchk=[];
+  Object.values(S.cu).filter(x=>isExp(x)&&inR(dateOf(x))).forEach(x=>{ const why=vatOut(x); const row={id:x.id,date:dateOf(x),supplier:cuName(x),invNo:x.invNo||"",trn:x.supTrn||"",buyer:x.buyer||"",gross:n(x.amount),why};
     if(why){ out.push(row); return; }
+    if(x.vatCo==="no"){ notCo.push(row); return; }
+    if(x.vatCo!=="yes"){ unchk.push(row); return; }
     if(!vatKnown(x)){ miss.push(row); row.vat=0; row.net=row.gross; pur.push(row); return; }
     row.vat=n(x.vat); row.net=Math.round((row.gross-row.vat)*100)/100; pur.push(row); });
   const S_=k=>a=>Math.round(a.reduce((t,r)=>t+n(r[k]),0)*100)/100;
   sales.sort((a,b)=>a.date.localeCompare(b.date)); pur.sort((a,b)=>a.date.localeCompare(b.date)); out.sort((a,b)=>a.date.localeCompare(b.date));
-  const r={sales,pur,out,miss,sNet:S_("net")(sales),sVat:S_("vat")(sales),sGross:S_("gross")(sales),pNet:S_("net")(pur),pVat:S_("vat")(pur),pGross:S_("gross")(pur),oGross:S_("gross")(out)};
+  notCo.sort((a,b)=>a.date.localeCompare(b.date)); unchk.sort((a,b)=>a.date.localeCompare(b.date));
+  const r={sales,pur,out,miss,notCo,unchk,ncGross:S_("gross")(notCo),ucGross:S_("gross")(unchk),sNet:S_("net")(sales),sVat:S_("vat")(sales),sGross:S_("gross")(sales),pNet:S_("net")(pur),pVat:S_("vat")(pur),pGross:S_("gross")(pur),oGross:S_("gross")(out)};
   r.due=Math.round((r.sVat-r.pVat)*100)/100; r.dNet=Math.round((r.sNet-r.pNet)*100)/100; r.dGross=Math.round((r.sGross-r.pGross)*100)/100; return r; }
 // sales, purchases and the difference: before VAT, VAT, total
 const vatSumRows=d=>[["المبيعات",d.sNet,d.sVat,d.sGross,""],["المشتريات",d.pNet,d.pVat,d.pGross,""],["الفرق",d.dNet,d.due,d.dGross,"diff"]];
@@ -43,6 +56,9 @@ function vatPanel(){ if(!isAdmin()) return ""; const Q=vatQuarters(6); const P=Q
     <div class="stat ${d.due>=0?"hl":"good"}" style="grid-column:1/-1"><span class="small">${d.due>=0?"المستحق للهيئة":"المسترد من الهيئة"}</span><b class="num">${money(Math.abs(d.due))} <small>درهم</small></b></div></div>
    ${vatSumTable(d)}
    <p class="small muted" style="margin:0">لا تدخل في المشتريات: الوقود، والمرتبات، والرسوم الحكومية (تجديد الإقامة وبطاقة العمل وغيرها) — <span class="num">${d.out.length}</span> فاتورة بقيمة <span class="num">${money(d.oGross)}</span> درهم.</p>
+   <p class="small muted" style="margin:0">${tr("ضريبة المشتريات تُحسب فقط على الفواتير الصادرة باسم الشركة.")}${d.notCo.length?` ${tr("ليست باسم الشركة")}: <span class="num">${d.notCo.length}</span> ${tr("فاتورة بقيمة")} <span class="num">${money(d.ncGross)}</span> ${tr("درهم")}.`:""}</p>
+   ${d.unchk.length?`<div class="notice small dupbox"><b>🔎 <span class="num">${d.unchk.length}</span> ${tr("فاتورة لم يُعرف بعد إن كانت باسم الشركة")} (<span class="num">${money(d.ucGross)}</span> ${tr("درهم")})</b><span>${tr("لا تُحسب ضريبتها حتى يُعرف ذلك. يقرأ التطبيق اسم المشتري والضريبة من صورها، أو حدّد ذلك في كل فاتورة من «فاتورة باسم الشركة؟».")}</span>
+     <div class="row">${cuEditor()?`<button class="primary ${S.vatReading?"busy":""}" data-act="vatread" data-q="${P.key}">${S.vatReading?`${tr("جارٍ القراءة")} <span class="num">${S.vatReading}</span>`:"🔄 "+tr("قراءتها من الصور")}</button>`:""}<button class="ghost" data-act="vatunchk" data-q="${P.key}">${tr("عرضها")}</button></div></div>`:""}
    ${d.miss.length?`<div class="notice small dupbox"><b>⚠️ <span class="num">${d.miss.length}</span> فاتورة لم تُسجَّل ضريبتها</b><span>تُحسب ضريبتها صفراً حتى تُدخلها. افتح الفاتورة واكتب مبلغ الضريبة كما هو مكتوب فيها، أو احسب 5% للكل إذا كانت كلها من موردين مسجّلين في الضريبة.</span>
      <div class="row"><button class="${S.armed==="vat5"?"danger armed":""}" data-act="vat5" data-q="${P.key}">${S.armed==="vat5"?"اضغط مرة أخرى للتأكيد":"احسب 5% لهذه الفواتير"}</button><button class="ghost" data-act="vatmiss" data-q="${P.key}">عرضها</button></div></div>`:""}
    <div class="row"><button class="primary" data-act="vatpdf" data-q="${P.key}">📄 PDF</button><button data-act="vatxls" data-q="${P.key}">📊 Excel</button></div>
@@ -59,6 +75,9 @@ async function makeVatPdf(P){ const d=vatData(P); const co=S.settings; const m=v
     d.pur.map(r=>`<tr><td class="num">${fmtD(r.date)}</td><td class="u">${esc(r.supplier)}${d.miss.includes(r)?" ⚠️":""}</td><td class="num">${esc(r.invNo)}</td><td class="num">${esc(r.trn)}</td>${m(r.net)}${m(r.vat)}${m(r.gross)}</tr>`),
     `<tr><th colspan="4">${tr("الإجمالي")}</th><th class="num">${money(d.pNet)}</th><th class="num">${money(d.pVat)}</th><th class="num">${money(d.pGross)}</th></tr>`):`<p>${tr("لا توجد مشتريات في هذه الفترة.")}</p>`}
    ${d.miss.length?`<p style="font-size:12px;color:#a86a12">⚠️ ${tr("فواتير لم تُسجَّل ضريبتها، وحُسبت ضريبتها صفراً")}: <b class="num">${d.miss.length}</b></p>`:""}</div>`);
+  if(d.notCo.length||d.unchk.length) blocks.push(`<div class="rb"><h2>${tr("مشتريات لا تُحسب ضريبتها")}</h2>${tbl([tr("التاريخ"),tr("المورد"),tr("المشتري في الفاتورة"),tr("السبب"),tr("المبلغ")],
+    [...d.notCo.map(r=>[r,tr("ليست باسم الشركة")]),...d.unchk.map(r=>[r,tr("لم يُتحقق من اسم المشتري")])].map(([r,why])=>`<tr><td class="num">${fmtD(r.date)}</td><td class="u">${esc(r.supplier)}</td><td class="u">${esc(r.buyer||"—")}</td><td>${why}</td>${m(r.gross)}</tr>`),
+    `<tr><th colspan="4">${tr("الإجمالي")}</th><th class="num">${money(d.ncGross+d.ucGross)}</th></tr>`)}</div>`);
   if(d.out.length) blocks.push(`<div class="rb"><h2>${tr("لا تدخل في الضريبة")}</h2>${tbl([tr("التاريخ"),tr("المورد"),tr("السبب"),tr("المبلغ")],
     d.out.map(r=>`<tr><td class="num">${fmtD(r.date)}</td><td class="u">${esc(r.supplier)}</td><td>${tr(VAT_WHY[r.why])}</td>${m(r.gross)}</tr>`),`<tr><th colspan="3">${tr("الإجمالي")}</th><th class="num">${money(d.oGross)}</th></tr>`)}</div>`);
   await cuPdf(`${tr("تقرير الضريبة")} — ${esc(P.label)}`,blocks,`${tr("تقرير الضريبة")} ${P.key}.pdf`,"vat"); }
@@ -71,16 +90,34 @@ async function makeVatXls(P){ const d=vatData(P); const q=v=>{ const s=String(v?
   d.sales.forEach(r=>row(r.date,r.no,r.to,r.site,r.net,r.vat,r.gross)); row(tr("الإجمالي"),"","","",d.sNet,d.sVat,d.sGross); row("");
   row(tr("المشتريات")); row(tr("التاريخ"),tr("المورد"),tr("رقم الفاتورة"),"TRN",tr("المبلغ قبل الضريبة"),tr("الضريبة"),tr("الإجمالي"),tr("ملاحظة"));
   d.pur.forEach(r=>row(r.date,r.supplier,r.invNo,r.trn,r.net,r.vat,r.gross,d.miss.includes(r)?tr("لم تُسجَّل الضريبة"):"")); row(tr("الإجمالي"),"","","",d.pNet,d.pVat,d.pGross); row("");
+  row(tr("مشتريات لا تُحسب ضريبتها")); row(tr("التاريخ"),tr("المورد"),tr("المشتري في الفاتورة"),tr("السبب"),tr("المبلغ"));
+  d.notCo.forEach(r=>row(r.date,r.supplier,r.buyer,tr("ليست باسم الشركة"),r.gross)); d.unchk.forEach(r=>row(r.date,r.supplier,r.buyer,tr("لم يُتحقق من اسم المشتري"),r.gross)); row("");
   row(tr("لا تدخل في الضريبة")); row(tr("التاريخ"),tr("المورد"),tr("السبب"),tr("المبلغ")); d.out.forEach(r=>row(r.date,r.supplier,tr(VAT_WHY[r.why]),r.gross)); row(tr("الإجمالي"),"","",d.oGross);
   if(!downloads) throw new Error(tr("الحفظ غير متاح في هذا العرض"));
   const blob=new Blob(["﻿"+L.join("\r\n")],{type:"text/csv;charset=utf-8"});
   await downloads.save({filename:`${tr("تقرير الضريبة")} ${P.key}.csv`.replace(/[\\/:*?"<>|]/g,"-"),data:blob}); S.lastPdf="vat"; }
+// read again only who the invoice is made out to, its VAT and the supplier TRN (amount, date and supplier are left as they are)
+async function vatReadOne(x){ if(!x||!x.fileId||!canRead||!sample||!window.__mediaBlob) return null;
+  const blob=await window.__mediaBlob(x.fileId); const img=await compress(new File([blob],"inv.jpg",{type:blob.type||"image/jpeg"}),1400);
+  const d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، ومبلغ ضريبة القيمة المضافة VAT المكتوب في الفاتورة كرقم فقط (0 إن لم تُذكر ضريبة)، والرقم الضريبي للمورد TRN إن وُجد، واسم المشتري المكتوب في الفاتورة (العميل: Bill To / Customer / Sold To / اسم العميل) كما هو مكتوب، والرقم الضريبي للمشتري إن وُجد، وهل عنوان المستند «فاتورة ضريبية / Tax Invoice»، وتاريخ الفاتورة بصيغة YYYY-MM-DD. أجب بـ JSON فقط بهذا الشكل: {"vat":0,"trn":"","buyer":"","buyerTrn":"","taxInvoice":false,"supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. اترك أي حقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
+  const y=S.cu[x.id]; if(!y||!d||typeof d!=="object") return null;
+  if(!("buyer" in d)) throw new Error(tr("دالة القراءة على الخادم قديمة: انشر read-doc من جديد"));
+  if(d.vat!==undefined&&d.vat!==null&&d.vat!==""&&!vatKnown(y)&&n(d.vat)>=0&&n(d.vat)<n(y.amount||Infinity)) y.vat=Math.round(n(d.vat)*100)/100;
+  if(d.trn&&!y.supTrn){ const tn=String(d.trn).replace(/\D/g,""); if(tn.length>=15) y.supTrn=tn.slice(0,15); }
+  vatBuyerFrom(y,d); cuPut(y,true); return d; }
 app.addEventListener("change",e=>{ const t=e.target; if(t.dataset&&t.dataset.vatq){ S.vatQ=t.value; S.vatOpen=true; render(); } });
 app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act; if(!/^vat/.test(a)) return;
   const P=vatQuarters(6).find(q=>q.key===b.dataset.q);
   if(a==="vatopen"){ S.vatOpen=!S.vatOpen; return; }
   if(!P||!isAdmin()) return;
   if(a==="vatmiss"){ const ids=new Set(vatData(P).miss.map(r=>r.id)); S.cuF="all"; S.vatShow=ids; render(); const el=document.querySelector(".cuent"); el&&el.scrollIntoView({block:"start",behavior:"smooth"}); return; }
+  if(a==="vatunchk"){ const ids=new Set(vatData(P).unchk.map(r=>r.id)); S.cuF="all"; S.vatShow=ids; render(); const el=document.querySelector(".cuent"); el&&el.scrollIntoView({block:"start",behavior:"smooth"}); return; }
+  if(a==="vatread"){ if(S.vatReading||!cuEditor()) return; const rows=vatData(P).unchk.filter(r=>{ const x=S.cu[r.id]; return x&&x.fileId&&x.fileType==="image"; });
+    if(!rows.length){ toast(tr("لا توجد صور لهذه الفواتير، حدّدها يدوياً")); return; }
+    let ok=0, fail=0, i=0; S.vatReading=`0/${rows.length}`; render();
+    for(const r of rows){ i++; S.vatReading=`${i}/${rows.length}`; const btn=document.querySelector('[data-act="vatread"]'); if(btn) btn.innerHTML=`${tr("جارٍ القراءة")} <span class="num">${S.vatReading}</span>`;
+      try{ const d=await vatReadOne(S.cu[r.id]); if(d) ok++; else fail++; }catch(err){ fail++; console.warn("vat read",err); } }
+    S.vatReading=null; toast(`✓ ${tr("قُرئت")} ${ok}${fail?` · ${tr("تعذرت")} ${fail}`:""}`); render(); return; }
   if(a==="vat5"){ if(S.armed!=="vat5"){ S.armed="vat5"; setTimeout(()=>{ if(S.armed==="vat5"){ S.armed=null; render(); } },4000); render(); return; }
     S.armed=null; const miss=vatData(P).miss; miss.forEach(r=>{ const x=S.cu[r.id]; if(x){ x.vat=vat5(x.amount); cuPut(x,true); } }); toast("✓ "+tr("حُسبت ضريبة 5% لـ ")+miss.length+tr(" فاتورة")); render(); return; }
   if(a==="vatpdf"||a==="vatxls"){ if(S.busy) return; S.busy=true; b.classList.add("busy");

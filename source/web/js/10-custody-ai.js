@@ -16,7 +16,7 @@ async function cuRead(id, file){
   x0.reading=true; render();
   let d=null;
   try{ const img=await compress(file,1400);
-    d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، ومبلغ ضريبة القيمة المضافة VAT المكتوب في الفاتورة كرقم فقط (0 إن لم تُذكر ضريبة)، والرقم الضريبي للمورد TRN إن وُجد، وتاريخ الفاتورة بصيغة YYYY-MM-DD، ووصفاً مختصراً للمشتريات ${lang==="en"?"باللغة الإنجليزية":"بالعربية الفصحى"} في بضع كلمات. أجب بـ JSON فقط بهذا الشكل: {"vat":0,"trn":"","supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. invoiceNo هو رقم الفاتورة أو الإيصال. plate هو رقم لوحة السيارة إن كان مكتوباً في الفاتورة (شائع في فواتير الوقود والصيانة). payment هو "cash" إذا كُتب أن الدفع نقدي، أو "credit" إذا كُتب آجل/Credit، وإلا اتركه فارغاً. اترك الحقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
+    d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، ومبلغ ضريبة القيمة المضافة VAT المكتوب في الفاتورة كرقم فقط (0 إن لم تُذكر ضريبة)، والرقم الضريبي للمورد TRN إن وُجد، واسم المشتري المكتوب في الفاتورة (العميل: Bill To / Customer / Sold To / اسم العميل) كما هو مكتوب، والرقم الضريبي للمشتري إن وُجد، وهل عنوان المستند «فاتورة ضريبية / Tax Invoice»، وتاريخ الفاتورة بصيغة YYYY-MM-DD، ووصفاً مختصراً للمشتريات ${lang==="en"?"باللغة الإنجليزية":"بالعربية الفصحى"} في بضع كلمات. أجب بـ JSON فقط بهذا الشكل: {"vat":0,"trn":"","buyer":"","buyerTrn":"","taxInvoice":false,"supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. invoiceNo هو رقم الفاتورة أو الإيصال. plate هو رقم لوحة السيارة إن كان مكتوباً في الفاتورة (شائع في فواتير الوقود والصيانة). payment هو "cash" إذا كُتب أن الدفع نقدي، أو "credit" إذا كُتب آجل/Credit، وإلا اتركه فارغاً. اترك الحقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
   }catch(e){ console.warn("cu read",e); toast(tr("تعذرت قراءة الفاتورة، أكمل البيانات يدوياً")+aiWhy(e)); }
   const x=S.cu[id]; if(!x) return; delete x.reading;
   if(d&&typeof d==="object"){
@@ -29,6 +29,7 @@ async function cuRead(id, file){
     if(d.invoiceNo&&!x.invNo) x.invNo=String(d.invoiceNo).slice(0,40);
     if(d.vat!==undefined&&d.vat!==null&&d.vat!==""&&!vatKnown(x)&&n(d.vat)>=0&&n(d.vat)<n(x.amount||d.amount||Infinity)) x.vat=Math.round(n(d.vat)*100)/100;
     if(d.trn&&!x.supTrn){ const tn=String(d.trn).replace(/\D/g,""); if(tn.length>=15) x.supTrn=tn.slice(0,15); }
+    vatBuyerFrom(x,d);
     if(d.payment==="credit") x.pay="credit";
     if(isCreditSup(x.supplier)){ x.pay="credit"; x.supplier=supCanon(x.supplier); }
     const car=carFromText(d.plate,d.desc,x.desc,x.invNo&&"");

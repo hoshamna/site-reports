@@ -8,6 +8,7 @@ app.addEventListener("input", e=>{ const t=e.target;
   if(!cuOrig[id]) cuOrig[id]=JSON.parse(JSON.stringify(x));
   x[k]=t.type==="number"?(t.value===""?0:n(t.value)):t.value;
   if(k==="holder"||k==="to") x.hv=2;
+  if(k==="vatCo") x.vatCoHand=1;
   if(k==="pay"&&x.pay==="credit"&&x.supplier&&!isCreditSup(x.supplier)){ S.settings.cuCredit=[...cuCredit(),x.supplier.trim()]; settingsSave(); }
   if(k==="supplier"&&isCreditSup(x.supplier)) x.pay="credit";
   if(k==="target"&&String(x.target).startsWith("car:")&&(cuCat(x.cat)||{}).t!=="car") x.cat="fuel";

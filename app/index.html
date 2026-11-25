@@ -654,6 +654,17 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .enter .hero img{animation:heroSettle 1.4s cubic-bezier(.2,.7,.3,1) both}
 .savenow.justsaved{background:var(--good)!important;border-color:var(--good)!important;color:#fff!important;animation:savedPop .45s ease-out}
 @media (prefers-reduced-motion:reduce){.enter,.enter *{animation:none!important}.savenow.justsaved{animation:none}}
+/* payroll */
+.paylist{display:flex;flex-direction:column;gap:10px;margin:8px 0}
+.payrow{border:1px solid var(--line);border-radius:var(--r-s);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.payrow.paid{opacity:.75}
+.payhd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.paygrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:end}
+.paygrid input{min-width:0}
+.payv{display:flex;flex-direction:column;gap:2px}.payv.hl b{color:var(--bronze)}
+@media (max-width:520px){.paygrid{grid-template-columns:1fr 1fr}}
+.staffrow{display:grid;grid-template-columns:1fr 110px;gap:8px;border-bottom:1px solid var(--line);padding:8px 0}
+.staffrow .row{grid-column:1/-1}.staffrow.off{opacity:.5}
 </style>
 </head>
 <body>
@@ -919,6 +930,17 @@ Object.entries({"عهدة":"Custody of","مجموع ما مع الموظفين":
 Object.entries({"رُوجعت هذه الفاتورة. التعديل بعد المراجعة للمدير العام":"This invoice was reviewed. After review only the general manager can change it"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"محفوظة":"Saved","مقفلة":"Locked","حفظ":"Save","✓ حُفظت الفاتورة":"✓ Invoice saved","هذه الفاتورة محفوظة. تعديلها لهشام وGM فقط":"This invoice is saved. Only Hesham and GM can change it","حذف الفواتير لهشام وGM فقط":"Only Hesham and GM can delete invoices"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 Object.entries({"(تابع)":"(continued)"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"ضريبة المشتريات تُحسب فقط على الفواتير الصادرة باسم الشركة.":"Purchase VAT counts only on invoices made out to the company.","ليست باسم الشركة":"Not in the company's name","فاتورة بقيمة":"invoices worth",
+ "فاتورة لم يُعرف بعد إن كانت باسم الشركة":"invoices not yet known to be in the company's name","لا تُحسب ضريبتها حتى يُعرف ذلك. يقرأ التطبيق اسم المشتري والضريبة من صورها، أو حدّد ذلك في كل فاتورة من «فاتورة باسم الشركة؟».":"Their VAT is not counted until this is known. The app can read the buyer and VAT from their photos, or set it on each invoice under «Invoice in the company's name?».",
+ "جارٍ القراءة":"Reading","قراءتها من الصور":"Read them from the photos","عرضها":"Show them","مشتريات لا تُحسب ضريبتها":"Purchases whose VAT is not counted","المشتري في الفاتورة":"Buyer on the invoice","لم يُتحقق من اسم المشتري":"Buyer not checked",
+ "لا توجد صور لهذه الفواتير، حدّدها يدوياً":"These invoices have no photos; set them by hand","قُرئت":"Read","تعذرت":"failed","دالة القراءة على الخادم قديمة: انشر read-doc من جديد":"The reading function on the server is old: deploy read-doc again",
+ "فاتورة باسم الشركة؟ (للضريبة)":"Invoice in the company's name? (for VAT)","— لم يُحدد —":"— Not set —","✓ نعم، باسم الشركة":"✓ Yes, in the company's name","✗ لا، ليست باسم الشركة":"✗ No, not in the company's name","المشتري المكتوب في الفاتورة":"Buyer written on the invoice"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
+Object.entries({"المرتبات":"Salaries","الشهر":"Month","صُرف":"Paid","المرتب":"Salary","إضافي":"Extra","خصم":"Deduction","سلف الشهر":"Advances this month","الصافي":"Net","السلف أكبر من المرتب، لن يُصرف له شيء هذا الشهر":"Advances exceed the salary; nothing is paid this month",
+ "سلف":"Advances","طريقة الصرف":"Paid from","من العهدة (نقداً أو تحويل من حسابك)":"The custody (cash or a transfer from your account)","من الشركة مباشرة / WPS (لا تُخصم من العهدة)":"The company directly / WPS (not from the custody)","اضغط مرة أخرى للتأكيد":"Press again to confirm",
+ "صرف مرتبات":"Pay salaries of","صُرفت مرتبات الشهر":"This month's salaries are paid","كشف المرتبات":"Payroll","أضف الموظفين ومرتباتهم أولاً.":"Add the employees and their salaries first.","الموظفون والمرتبات":"Employees and salaries","الاسم":"Name","المرتب الشهري":"Monthly salary",
+ "سلفة":"Advance","كشفه":"Statement","إعادة تفعيل":"Reactivate","إيقاف":"Stop","مبلغ السلفة":"Advance amount","تسجيل":"Record","تُخصم من العهدة الآن، ومن مرتب شهر":"Comes off the custody now, and off the salary of","موظف جديد":"New employee","إضافة":"Add",
+ "اكتب اسم الموظف":"Enter the employee's name","الاسم موجود":"This name exists","اكتب مبلغ السلفة":"Enter the advance amount","سُجّلت سلفة":"Advance recorded","صُرفت مرتبات":"Salaries paid for","موظف":"employees","الموظف":"Employee","الحالة":"Status","من الشركة":"from the company","لم يُصرف":"Not paid",
+ "كشف الموظف":"Employee statement","البيان":"Description","راتب":"Salary","مجموع ما استلمه":"Total received"}).forEach(([k,v])=>{ if(EN[k]===undefined) EN[k]=v; });
 /* English for the Nov 2026 look refresh (added before the phrase list is built in 03-calc) */
 Object.assign(EN, {"واجهات ونوافذ": "Facades & windows", "أبواب فقط": "Doors only", "هندريل فقط": "Handrail only", "قارب الانتهاء": "Nearly done", "فيه مشكلة": "Has an issue", "الكل": "All", "فيه مشكلات": "With issues", "مشكلة": "issue", "💰 دفعة مستحقة": "💰 Payment due", "بيانات مثال": "Sample data", "رصيد العهدة منخفض:": "Custody balance is low:", "فاتورة للمراجعة": "invoices to review", "ابدأ بأول موقع": "Start with your first site", "أضف اسم الموقع وقيمة المشروع وعدد الشبابيك والأبواب، ثم تابع الإنجاز والصور من هنا.": "Add the site name, project value and the number of windows and doors, then follow progress and photos from here.", "+ موقع جديد": "+ New site", "ابحث عن موقع أو مهندس": "Search for a site or engineer", "تصفية المواقع": "Filter sites", "لا توجد مواقع هنا": "No sites here", "جرّب تصفية أخرى.": "Try another filter.", "لا يوجد موقع بهذا الاسم": "No site matches that name", "إضافة سريعة": "Quick add", "الأقسام": "Sections", "العهدة": "Custody", "الإعدادات": "Settings", "🔑 تغيير رمز الدخول": "🔑 Change PIN", "🚪 تسجيل الخروج": "🚪 Sign out", "المظهر": "Appearance", "اللغة": "Language", "الوضع": "Mode", "تلقائي": "Automatic", "فاتح": "Light", "داكن": "Dark", "«تلقائي» يتبع إعداد الهاتف: داكن في الليل إذا كان الهاتف داكناً.": "“Automatic” follows the phone setting: dark at night if the phone is dark.", "📲 أضف التطبيق إلى الشاشة الرئيسية": "📲 Add the app to your home screen", "مواقع جارية": "Active sites", "مشكلات مفتوحة": "Open issues", "مشكلة مفتوحة": "open issue", "الاستشاري: ": "Consultant: ", "الفريم": "Frame", "الزجاج": "Glass", "لتثبيت التطبيق:": "To install the app:", "لتثبيت التطبيق على الآيفون:": "To install the app on iPhone:", "من قائمة Chrome ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».": "From the Chrome ⋮ menu choose “Install app” or “Add to Home screen”.", "افتح الصفحة في Safari، ثم زر المشاركة ⬆️، ثم «إضافة إلى الشاشة الرئيسية».": "Open the page in Safari, tap Share ⬆️, then “Add to Home Screen”.", "📲 تثبيت التطبيق على الجوال": "📲 Install the app on your phone", "تحويلات عُهد قديمة": "Old custody transfers", "لم تعد هناك عهدة خاصة بأي شخص، وكل الفواتير تُخصم من العهدة الرئيسية. هذه التحويلات لا تؤثر على الرصيد، ويمكنك حذفها نهائياً.": "There is no personal custody any more; every invoice comes off the main custody. These transfers no longer affect the balance, and you can delete them for good.", "اضغط مرة أخرى لتأكيد الحذف": "Tap again to confirm deleting", "حذف التحويلات القديمة": "Delete old transfers", "حُذفت التحويلات القديمة": "Old transfers deleted", "وقود": "Fuel", "مرتبات": "Salaries", "رسوم حكومية": "Government fees", "الربع": "Quarter", "🧾 تقرير الضريبة (كل 3 أشهر)": "🧾 VAT report (every 3 months)", "الفترة": "Period", "ضريبة المبيعات": "Output VAT (sales)", "ضريبة المشتريات": "Input VAT (purchases)", "المستحق للهيئة": "Payable to the FTA", "المسترد من الهيئة": "Refundable from the FTA", "لا تدخل في المشتريات: الوقود، والمرتبات، والرسوم الحكومية (تجديد الإقامة وبطاقة العمل وغيرها) —": "Not counted in purchases: fuel, salaries and government fees (residence and labour card renewals, etc.) —", "فاتورة بقيمة": "invoices worth", "فاتورة لم تُسجَّل ضريبتها": "invoices with no VAT entered", "تُحسب ضريبتها صفراً حتى تُدخلها. افتح الفاتورة واكتب مبلغ الضريبة كما هو مكتوب فيها، أو احسب 5% للكل إذا كانت كلها من موردين مسجّلين في الضريبة.": "Their VAT counts as zero until you enter it. Open the invoice and type the VAT shown on it, or work out 5% for all of them if they are all from VAT-registered suppliers.", "اضغط مرة أخرى للتأكيد": "Tap again to confirm", "احسب 5% لهذه الفواتير": "Work out 5% for these invoices", "عرضها": "Show them", "ملخص الضريبة": "VAT summary", "المبيعات (الفواتير الضريبية)": "Sales (tax invoices)", "لا توجد فواتير ضريبية في هذه الفترة.": "No tax invoices in this period.", "لا توجد مشتريات في هذه الفترة.": "No purchases in this period.", "فواتير لم تُسجَّل ضريبتها، وحُسبت ضريبتها صفراً": "Invoices with no VAT entered, counted as zero", "لا تدخل في الضريبة": "Not counted for VAT", "السبب": "Reason", "تقرير الضريبة": "VAT report", "لم تُسجَّل الضريبة": "VAT not entered", "ملاحظة": "Note", "حُسبت ضريبة 5% لـ ": "5% VAT worked out for ", " فاتورة": " invoices", "عرض الفواتير التي لم تُسجَّل ضريبتها": "Showing invoices with no VAT entered", "✕ إلغاء التصفية": "✕ Clear filter", "لا تدخل في تقرير الضريبة": "Not counted in the VAT report", "الضريبة VAT (درهم)": "VAT (AED)", "TRN المورد": "Supplier TRN", "احسب 5%": "Work out 5%", "🧾 يستقبل تنبيهاً بكل فاتورة جديدة": "🧾 Gets an alert for every new invoice", "سيصله تنبيه بكل فاتورة جديدة": "will get an alert for every new invoice", "لن يصله تنبيه الفواتير": "Won't get invoice alerts", "رُوجعت": "Reviewed", "راجعتها": "Reviewed it", "لم أراجعها": "Not reviewed", "الفواتير الجديدة التي لم تراجعها بعد. المراجعة للتأكيد فقط، والفواتير مخصومة من العهدة.": "New invoices you haven't reviewed yet. Reviewing is only a confirmation; the invoices are already deducted from custody.", "راجعت الكل": "Reviewed all", "راجعت كل الفواتير": "All invoices reviewed", "فاتورة جديدة لم تراجعها": "new invoice not reviewed", "فواتير جديدة لم تراجعها": "new invoices not reviewed", "فواتير جديدة لم تراجعها:": "New invoices not reviewed:", "صباح الخير": "Good morning", "نهارك سعيد": "Good afternoon", "مساء الخير": "Good evening", "أصيل في العمل،": "Genuine in work,", "أصيل في الوعد": "genuine in promise"});
 const PH = Object.keys(EN).sort((a,b)=>b.length-a.length);
@@ -2229,7 +2251,7 @@ function salaryDesc(k){ return (lang==="en"?"Salaries ":"مرتبات ")+monthNa
 const salMonthOf=x=>x.salMonth||prevMonthOf(x.date);
 function salaryDue(){ const t=today(), [y,m,dd]=t.split("-").map(Number);
   const k=dd>=25?ym(y,m):(dd<=10?prevMonthOf(t):null); if(!k) return null;
-  const done=Object.values(S.cu).some(x=>isExp(x)&&x.cat==="salary"&&salMonthOf(x)===k); return done?null:k; }
+  const done=Object.values(S.cu).some(x=>isExp(x)&&x.cat==="salary"&&!x.salAdv&&salMonthOf(x)===k); return done?null:k; }
 // what an expense is called in lists and statements: supplier, else its description, else its category; "فاتورة" only when there is a document
 function cuName(x){ const sup=String(x.supplier||"").trim(); if(sup) return sup; const ds=String(x.desc||"").trim(); if(ds) return ds;
   const c=x.cat&&cuCat(x.cat); if(c) return c.l.replace(/^\S+\s/,""); return x.fileId?tr("فاتورة"):tr("مصروف"); }
@@ -2345,6 +2367,7 @@ function cuCard(x){
     ${cf(x,"invNo","رقم الفاتورة","text",'dir="ltr"')}${cf(x,"desc","البيان")}
     ${vatOut(x)?`<div class="full small muted">🧾 ${tr("لا تدخل في تقرير الضريبة")} (${tr(VAT_WHY[vatOut(x)])})</div>`:`${cf(x,"vat","الضريبة VAT (درهم)","number")}${cf(x,"supTrn","TRN المورد","text",'dir="ltr" inputmode="numeric"')}
     ${!vatKnown(x)&&n(x.amount)>0?`<div class="full row"><button class="ghost small" data-act="cuvat5" data-id="${x.id}">${tr("احسب 5%")} = <span class="num">${money(vat5(x.amount))}</span></button></div>`:""}`}
+    ${isAdmin()&&!vatOut(x)?`${csel(x,"vatCo",tr("فاتورة باسم الشركة؟ (للضريبة)"),[["","— لم يُحدد —"],["yes","✓ نعم، باسم الشركة"],["no","✗ لا، ليست باسم الشركة"]])}${x.buyer?`<span class="small muted full">${tr("المشتري المكتوب في الفاتورة")}: <bdi>${esc(x.buyer)}</bdi></span>`:""}`:""}
     ${cuEditor()&&x.pay!=="credit"&&x.pay!=="gm"&&(holders().length||holderOf(x)!=="main")?csel(x,"holder","دُفعت من",[["main","💼 العهدة الرئيسية"],...holders().map(h=>[h,"🧾 "+tr("عهدة ")+h])]):""}
     ${needsXfer(x)?`<div class="full notice small xferbox"><b>⏳ ${tr("عهدة")} <bdi class="u">${esc(holderOf(x))}</bdi> ${tr("لا تكفي — المستحق له")} <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span></b><button class="primary" data-act="cuxinv" data-id="${x.id}">↔️ تم تحويل <span class="num">${money(Math.min(n(x.amount),holderShort(holderOf(x))))}</span> إلى <bdi class="u">${esc(holderOf(x))}</bdi></button></div>`:""}
     ${x.xferId&&S.cu[x.xferId]?`<div class="full small" style="color:var(--ok)">✓ حُوِّلت قيمتها إلى <bdi class="u">${esc(holderOf(x))}</bdi> بتاريخ <span class="num">${esc(S.cu[x.xferId].date||"")}</span></div>`:""}
@@ -2367,7 +2390,7 @@ function cuPickHtml(){
 }
 function salaryBanner(){ if(!isAdmin()||!S.cuLoaded) return ""; const k=salaryDue(); if(!k) return "";
   return `<div class="panel salbox"><div class="row" style="justify-content:space-between;align-items:center"><span><b>👔 ${tr("تذكير: مرتبات")} ${esc(monthName(k))}</b><br><span class="small muted">${tr("لم تُسجَّل بعد في العهدة.")}</span></span>
-    <button class="primary" data-act="cusalary" data-m="${k}">✍️ ${tr("سجّل المرتبات")}</button></div></div>`; }
+    ${staffActive().length?`<button class="primary" data-act="paygoto" data-m="${k}">👔 ${tr("كشف المرتبات")}</button>`:`<button class="primary" data-act="cusalary" data-m="${k}">✍️ ${tr("سجّل المرتبات")}</button>`}</div></div>`; }
 function cuHome(){
   const c=cuCalc();
   return salaryBanner()+`<button class="cuhome" data-act="cuopen"><span class="qic">💼</span><span class="cuh-t"><b>العهدة والموردون</b><span class="small muted">${c.isLow?`<span class="chip bad">⚠️ رصيد العهدة منخفض</span> `:""}${c.miss?`<span class="chip bad">🔎 <span class="num">${c.miss}</span> للمراجعة</span>`:c.isLow?"":tr("الفواتير والتوريدات وحسابات الموردين")}</span></span>
@@ -2442,6 +2465,7 @@ function cuView(){
      <span>${tr("تحويلات من قبل نظام عهد الموظفين الحالي. لا تؤثر على أي رصيد، ويمكنك حذفها نهائياً.")}</span>
      <div class="row"><button class="danger ${S.armed==="cuxferdel"?"armed":""}" data-act="cuxferdel">${S.armed==="cuxferdel"?tr("اضغط مرة أخرى لتأكيد الحذف"):"🗑️ "+tr("حذف التحويلات القديمة")}</button></div></div>`; })()}
   ${vatPanel()}
+  ${payrollPanel()}
   ${carPanel()}
   <div class="panel"><h2>${tr("عهد الموظفين")}</h2>${HS.length?`<div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
       return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):h==="main"?tr("رصيدك"):tr("معه بدون فواتير")}</span>${h!=="main"&&bal>0&&holderIdle(h)>0?`<span class="small ${holderIdle(h)>=idleDays()?"neg":"muted"}">${tr("منذ")} <span class="num">${daysTxt(holderIdle(h))}</span></span>`:""}</button>
@@ -2535,7 +2559,7 @@ async function cuRead(id, file){
   x0.reading=true; render();
   let d=null;
   try{ const img=await compress(file,1400);
-    d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، ومبلغ ضريبة القيمة المضافة VAT المكتوب في الفاتورة كرقم فقط (0 إن لم تُذكر ضريبة)، والرقم الضريبي للمورد TRN إن وُجد، وتاريخ الفاتورة بصيغة YYYY-MM-DD، ووصفاً مختصراً للمشتريات ${lang==="en"?"باللغة الإنجليزية":"بالعربية الفصحى"} في بضع كلمات. أجب بـ JSON فقط بهذا الشكل: {"vat":0,"trn":"","supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. invoiceNo هو رقم الفاتورة أو الإيصال. plate هو رقم لوحة السيارة إن كان مكتوباً في الفاتورة (شائع في فواتير الوقود والصيانة). payment هو "cash" إذا كُتب أن الدفع نقدي، أو "credit" إذا كُتب آجل/Credit، وإلا اتركه فارغاً. اترك الحقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
+    d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، ومبلغ ضريبة القيمة المضافة VAT المكتوب في الفاتورة كرقم فقط (0 إن لم تُذكر ضريبة)، والرقم الضريبي للمورد TRN إن وُجد، واسم المشتري المكتوب في الفاتورة (العميل: Bill To / Customer / Sold To / اسم العميل) كما هو مكتوب، والرقم الضريبي للمشتري إن وُجد، وهل عنوان المستند «فاتورة ضريبية / Tax Invoice»، وتاريخ الفاتورة بصيغة YYYY-MM-DD، ووصفاً مختصراً للمشتريات ${lang==="en"?"باللغة الإنجليزية":"بالعربية الفصحى"} في بضع كلمات. أجب بـ JSON فقط بهذا الشكل: {"vat":0,"trn":"","buyer":"","buyerTrn":"","taxInvoice":false,"supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. invoiceNo هو رقم الفاتورة أو الإيصال. plate هو رقم لوحة السيارة إن كان مكتوباً في الفاتورة (شائع في فواتير الوقود والصيانة). payment هو "cash" إذا كُتب أن الدفع نقدي، أو "credit" إذا كُتب آجل/Credit، وإلا اتركه فارغاً. اترك الحقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
   }catch(e){ console.warn("cu read",e); toast(tr("تعذرت قراءة الفاتورة، أكمل البيانات يدوياً")+aiWhy(e)); }
   const x=S.cu[id]; if(!x) return; delete x.reading;
   if(d&&typeof d==="object"){
@@ -2548,6 +2572,7 @@ async function cuRead(id, file){
     if(d.invoiceNo&&!x.invNo) x.invNo=String(d.invoiceNo).slice(0,40);
     if(d.vat!==undefined&&d.vat!==null&&d.vat!==""&&!vatKnown(x)&&n(d.vat)>=0&&n(d.vat)<n(x.amount||d.amount||Infinity)) x.vat=Math.round(n(d.vat)*100)/100;
     if(d.trn&&!x.supTrn){ const tn=String(d.trn).replace(/\D/g,""); if(tn.length>=15) x.supTrn=tn.slice(0,15); }
+    vatBuyerFrom(x,d);
     if(d.payment==="credit") x.pay="credit";
     if(isCreditSup(x.supplier)){ x.pay="credit"; x.supplier=supCanon(x.supplier); }
     const car=carFromText(d.plate,d.desc,x.desc,x.invNo&&"");
@@ -2680,6 +2705,16 @@ function vatOut(x){ const t=`${x.supplier||""} ${x.desc||""}`;
   if(x.cat==="gov"||VAT_GOVRE.test(t)) return "gov";
   return ""; }
 const VAT_WHY={fuel:"وقود",salary:"مرتبات",gov:"رسوم حكومية"};
+// purchase VAT counts only on invoices made out to the company (its name or TRN as the buyer), 26 Nov 2026
+const coKey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9\u0621-\u064a]+/g,"").replace(/[أإآ]/g,"ا");
+function coMatch(buyer,buyerTrn){ const b=coKey(buyer), trn=String(S.settings.trn||"").replace(/\D/g,""), bt=String(buyerTrn||"").replace(/\D/g,"");
+  if(trn&&bt&&bt===trn) return true; if(!b) return false;
+  if(/aseel|اصيل/.test(b)) return true;
+  return [S.settings.company,S.settings.companyEn,S.settings.legalName].map(coKey).some(k=>k.length>=4&&b.includes(k.slice(0,Math.min(k.length,12)))); }
+// from a reading: who the invoice is made out to; a choice made by hand (vatCoHand) is kept
+function vatBuyerFrom(x,d){ if(!d||typeof d!=="object"||!("buyer" in d)) return;
+  x.buyer=String(d.buyer||"").slice(0,120); const bt=String(d.buyerTrn||"").replace(/\D/g,""); if(bt) x.buyerTrn=bt.slice(0,15); if(d.taxInvoice!==undefined) x.taxInv=!!d.taxInvoice;
+  if(!x.vatCoHand) x.vatCo=coMatch(x.buyer,x.buyerTrn)?"yes":"no"; }
 const vatKnown=x=>x.vat!==undefined&&x.vat!==null&&String(x.vat).trim()!=="";
 const vat5=a=>Math.round(n(a)*5/105*100)/100;
 function vatQuarters(count){ const t=today(); let y=+t.slice(0,4), q=Math.floor((+t.slice(5,7)-1)/3); const out=[];
@@ -2692,14 +2727,17 @@ function vatData(P){ const inR=d=>d>=P.from&&d<=P.to;
     sales.push({date:x.invoiceDate,no:x.no||"",to:x.to||"",site:(S.sites[x.siteId]||{}).name||x.project||"",net:c.sub,vat:c.vat,gross:c.total}); });
   Object.values(S.sites).forEach(s=>(s.payments||[]).forEach(p=>{ const v=p.invoice; if(!v||v.docId) return; const d=/^\d{4}-\d{2}-\d{2}$/.test(v.date||"")?v.date:(p.date||""); if(!inR(d)) return;
     const sp=vatSplit(v.gross,n(v.rate)); sales.push({date:d,no:v.no||"",to:v.to||"",site:s.name||"",net:sp.net,vat:sp.vat,gross:sp.gross}); }));
-  const pur=[], out=[], miss=[];
-  Object.values(S.cu).filter(x=>isExp(x)&&inR(dateOf(x))).forEach(x=>{ const why=vatOut(x); const row={id:x.id,date:dateOf(x),supplier:cuName(x),invNo:x.invNo||"",trn:x.supTrn||"",gross:n(x.amount),why};
+  const pur=[], out=[], miss=[], notCo=[], unchk=[];
+  Object.values(S.cu).filter(x=>isExp(x)&&inR(dateOf(x))).forEach(x=>{ const why=vatOut(x); const row={id:x.id,date:dateOf(x),supplier:cuName(x),invNo:x.invNo||"",trn:x.supTrn||"",buyer:x.buyer||"",gross:n(x.amount),why};
     if(why){ out.push(row); return; }
+    if(x.vatCo==="no"){ notCo.push(row); return; }
+    if(x.vatCo!=="yes"){ unchk.push(row); return; }
     if(!vatKnown(x)){ miss.push(row); row.vat=0; row.net=row.gross; pur.push(row); return; }
     row.vat=n(x.vat); row.net=Math.round((row.gross-row.vat)*100)/100; pur.push(row); });
   const S_=k=>a=>Math.round(a.reduce((t,r)=>t+n(r[k]),0)*100)/100;
   sales.sort((a,b)=>a.date.localeCompare(b.date)); pur.sort((a,b)=>a.date.localeCompare(b.date)); out.sort((a,b)=>a.date.localeCompare(b.date));
-  const r={sales,pur,out,miss,sNet:S_("net")(sales),sVat:S_("vat")(sales),sGross:S_("gross")(sales),pNet:S_("net")(pur),pVat:S_("vat")(pur),pGross:S_("gross")(pur),oGross:S_("gross")(out)};
+  notCo.sort((a,b)=>a.date.localeCompare(b.date)); unchk.sort((a,b)=>a.date.localeCompare(b.date));
+  const r={sales,pur,out,miss,notCo,unchk,ncGross:S_("gross")(notCo),ucGross:S_("gross")(unchk),sNet:S_("net")(sales),sVat:S_("vat")(sales),sGross:S_("gross")(sales),pNet:S_("net")(pur),pVat:S_("vat")(pur),pGross:S_("gross")(pur),oGross:S_("gross")(out)};
   r.due=Math.round((r.sVat-r.pVat)*100)/100; r.dNet=Math.round((r.sNet-r.pNet)*100)/100; r.dGross=Math.round((r.sGross-r.pGross)*100)/100; return r; }
 // sales, purchases and the difference: before VAT, VAT, total
 const vatSumRows=d=>[["المبيعات",d.sNet,d.sVat,d.sGross,""],["المشتريات",d.pNet,d.pVat,d.pGross,""],["الفرق",d.dNet,d.due,d.dGross,"diff"]];
@@ -2714,6 +2752,9 @@ function vatPanel(){ if(!isAdmin()) return ""; const Q=vatQuarters(6); const P=Q
     <div class="stat ${d.due>=0?"hl":"good"}" style="grid-column:1/-1"><span class="small">${d.due>=0?"المستحق للهيئة":"المسترد من الهيئة"}</span><b class="num">${money(Math.abs(d.due))} <small>درهم</small></b></div></div>
    ${vatSumTable(d)}
    <p class="small muted" style="margin:0">لا تدخل في المشتريات: الوقود، والمرتبات، والرسوم الحكومية (تجديد الإقامة وبطاقة العمل وغيرها) — <span class="num">${d.out.length}</span> فاتورة بقيمة <span class="num">${money(d.oGross)}</span> درهم.</p>
+   <p class="small muted" style="margin:0">${tr("ضريبة المشتريات تُحسب فقط على الفواتير الصادرة باسم الشركة.")}${d.notCo.length?` ${tr("ليست باسم الشركة")}: <span class="num">${d.notCo.length}</span> ${tr("فاتورة بقيمة")} <span class="num">${money(d.ncGross)}</span> ${tr("درهم")}.`:""}</p>
+   ${d.unchk.length?`<div class="notice small dupbox"><b>🔎 <span class="num">${d.unchk.length}</span> ${tr("فاتورة لم يُعرف بعد إن كانت باسم الشركة")} (<span class="num">${money(d.ucGross)}</span> ${tr("درهم")})</b><span>${tr("لا تُحسب ضريبتها حتى يُعرف ذلك. يقرأ التطبيق اسم المشتري والضريبة من صورها، أو حدّد ذلك في كل فاتورة من «فاتورة باسم الشركة؟».")}</span>
+     <div class="row">${cuEditor()?`<button class="primary ${S.vatReading?"busy":""}" data-act="vatread" data-q="${P.key}">${S.vatReading?`${tr("جارٍ القراءة")} <span class="num">${S.vatReading}</span>`:"🔄 "+tr("قراءتها من الصور")}</button>`:""}<button class="ghost" data-act="vatunchk" data-q="${P.key}">${tr("عرضها")}</button></div></div>`:""}
    ${d.miss.length?`<div class="notice small dupbox"><b>⚠️ <span class="num">${d.miss.length}</span> فاتورة لم تُسجَّل ضريبتها</b><span>تُحسب ضريبتها صفراً حتى تُدخلها. افتح الفاتورة واكتب مبلغ الضريبة كما هو مكتوب فيها، أو احسب 5% للكل إذا كانت كلها من موردين مسجّلين في الضريبة.</span>
      <div class="row"><button class="${S.armed==="vat5"?"danger armed":""}" data-act="vat5" data-q="${P.key}">${S.armed==="vat5"?"اضغط مرة أخرى للتأكيد":"احسب 5% لهذه الفواتير"}</button><button class="ghost" data-act="vatmiss" data-q="${P.key}">عرضها</button></div></div>`:""}
    <div class="row"><button class="primary" data-act="vatpdf" data-q="${P.key}">📄 PDF</button><button data-act="vatxls" data-q="${P.key}">📊 Excel</button></div>
@@ -2730,6 +2771,9 @@ async function makeVatPdf(P){ const d=vatData(P); const co=S.settings; const m=v
     d.pur.map(r=>`<tr><td class="num">${fmtD(r.date)}</td><td class="u">${esc(r.supplier)}${d.miss.includes(r)?" ⚠️":""}</td><td class="num">${esc(r.invNo)}</td><td class="num">${esc(r.trn)}</td>${m(r.net)}${m(r.vat)}${m(r.gross)}</tr>`),
     `<tr><th colspan="4">${tr("الإجمالي")}</th><th class="num">${money(d.pNet)}</th><th class="num">${money(d.pVat)}</th><th class="num">${money(d.pGross)}</th></tr>`):`<p>${tr("لا توجد مشتريات في هذه الفترة.")}</p>`}
    ${d.miss.length?`<p style="font-size:12px;color:#a86a12">⚠️ ${tr("فواتير لم تُسجَّل ضريبتها، وحُسبت ضريبتها صفراً")}: <b class="num">${d.miss.length}</b></p>`:""}</div>`);
+  if(d.notCo.length||d.unchk.length) blocks.push(`<div class="rb"><h2>${tr("مشتريات لا تُحسب ضريبتها")}</h2>${tbl([tr("التاريخ"),tr("المورد"),tr("المشتري في الفاتورة"),tr("السبب"),tr("المبلغ")],
+    [...d.notCo.map(r=>[r,tr("ليست باسم الشركة")]),...d.unchk.map(r=>[r,tr("لم يُتحقق من اسم المشتري")])].map(([r,why])=>`<tr><td class="num">${fmtD(r.date)}</td><td class="u">${esc(r.supplier)}</td><td class="u">${esc(r.buyer||"—")}</td><td>${why}</td>${m(r.gross)}</tr>`),
+    `<tr><th colspan="4">${tr("الإجمالي")}</th><th class="num">${money(d.ncGross+d.ucGross)}</th></tr>`)}</div>`);
   if(d.out.length) blocks.push(`<div class="rb"><h2>${tr("لا تدخل في الضريبة")}</h2>${tbl([tr("التاريخ"),tr("المورد"),tr("السبب"),tr("المبلغ")],
     d.out.map(r=>`<tr><td class="num">${fmtD(r.date)}</td><td class="u">${esc(r.supplier)}</td><td>${tr(VAT_WHY[r.why])}</td>${m(r.gross)}</tr>`),`<tr><th colspan="3">${tr("الإجمالي")}</th><th class="num">${money(d.oGross)}</th></tr>`)}</div>`);
   await cuPdf(`${tr("تقرير الضريبة")} — ${esc(P.label)}`,blocks,`${tr("تقرير الضريبة")} ${P.key}.pdf`,"vat"); }
@@ -2742,16 +2786,34 @@ async function makeVatXls(P){ const d=vatData(P); const q=v=>{ const s=String(v?
   d.sales.forEach(r=>row(r.date,r.no,r.to,r.site,r.net,r.vat,r.gross)); row(tr("الإجمالي"),"","","",d.sNet,d.sVat,d.sGross); row("");
   row(tr("المشتريات")); row(tr("التاريخ"),tr("المورد"),tr("رقم الفاتورة"),"TRN",tr("المبلغ قبل الضريبة"),tr("الضريبة"),tr("الإجمالي"),tr("ملاحظة"));
   d.pur.forEach(r=>row(r.date,r.supplier,r.invNo,r.trn,r.net,r.vat,r.gross,d.miss.includes(r)?tr("لم تُسجَّل الضريبة"):"")); row(tr("الإجمالي"),"","","",d.pNet,d.pVat,d.pGross); row("");
+  row(tr("مشتريات لا تُحسب ضريبتها")); row(tr("التاريخ"),tr("المورد"),tr("المشتري في الفاتورة"),tr("السبب"),tr("المبلغ"));
+  d.notCo.forEach(r=>row(r.date,r.supplier,r.buyer,tr("ليست باسم الشركة"),r.gross)); d.unchk.forEach(r=>row(r.date,r.supplier,r.buyer,tr("لم يُتحقق من اسم المشتري"),r.gross)); row("");
   row(tr("لا تدخل في الضريبة")); row(tr("التاريخ"),tr("المورد"),tr("السبب"),tr("المبلغ")); d.out.forEach(r=>row(r.date,r.supplier,tr(VAT_WHY[r.why]),r.gross)); row(tr("الإجمالي"),"","",d.oGross);
   if(!downloads) throw new Error(tr("الحفظ غير متاح في هذا العرض"));
   const blob=new Blob(["﻿"+L.join("\r\n")],{type:"text/csv;charset=utf-8"});
   await downloads.save({filename:`${tr("تقرير الضريبة")} ${P.key}.csv`.replace(/[\\/:*?"<>|]/g,"-"),data:blob}); S.lastPdf="vat"; }
+// read again only who the invoice is made out to, its VAT and the supplier TRN (amount, date and supplier are left as they are)
+async function vatReadOne(x){ if(!x||!x.fileId||!canRead||!sample||!window.__mediaBlob) return null;
+  const blob=await window.__mediaBlob(x.fileId); const img=await compress(new File([blob],"inv.jpg",{type:blob.type||"image/jpeg"}),1400);
+  const d=await sample.json(`هذه صورة فاتورة مشتريات (ألمنيوم/زجاج/سيليكون/مواد/وقود). استخرج منها: اسم المورد (البائع الذي أصدر الفاتورة، وليس المشتري)، والمبلغ الإجمالي النهائي شامل الضريبة كرقم فقط، ومبلغ ضريبة القيمة المضافة VAT المكتوب في الفاتورة كرقم فقط (0 إن لم تُذكر ضريبة)، والرقم الضريبي للمورد TRN إن وُجد، واسم المشتري المكتوب في الفاتورة (العميل: Bill To / Customer / Sold To / اسم العميل) كما هو مكتوب، والرقم الضريبي للمشتري إن وُجد، وهل عنوان المستند «فاتورة ضريبية / Tax Invoice»، وتاريخ الفاتورة بصيغة YYYY-MM-DD. أجب بـ JSON فقط بهذا الشكل: {"vat":0,"trn":"","buyer":"","buyerTrn":"","taxInvoice":false,"supplier":"","amount":0,"date":"","desc":"","invoiceNo":"","plate":"","payment":""}. اترك أي حقل فارغاً إذا لم يكن واضحاً.`,{images:[img],cache:false});
+  const y=S.cu[x.id]; if(!y||!d||typeof d!=="object") return null;
+  if(!("buyer" in d)) throw new Error(tr("دالة القراءة على الخادم قديمة: انشر read-doc من جديد"));
+  if(d.vat!==undefined&&d.vat!==null&&d.vat!==""&&!vatKnown(y)&&n(d.vat)>=0&&n(d.vat)<n(y.amount||Infinity)) y.vat=Math.round(n(d.vat)*100)/100;
+  if(d.trn&&!y.supTrn){ const tn=String(d.trn).replace(/\D/g,""); if(tn.length>=15) y.supTrn=tn.slice(0,15); }
+  vatBuyerFrom(y,d); cuPut(y,true); return d; }
 app.addEventListener("change",e=>{ const t=e.target; if(t.dataset&&t.dataset.vatq){ S.vatQ=t.value; S.vatOpen=true; render(); } });
 app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act; if(!/^vat/.test(a)) return;
   const P=vatQuarters(6).find(q=>q.key===b.dataset.q);
   if(a==="vatopen"){ S.vatOpen=!S.vatOpen; return; }
   if(!P||!isAdmin()) return;
   if(a==="vatmiss"){ const ids=new Set(vatData(P).miss.map(r=>r.id)); S.cuF="all"; S.vatShow=ids; render(); const el=document.querySelector(".cuent"); el&&el.scrollIntoView({block:"start",behavior:"smooth"}); return; }
+  if(a==="vatunchk"){ const ids=new Set(vatData(P).unchk.map(r=>r.id)); S.cuF="all"; S.vatShow=ids; render(); const el=document.querySelector(".cuent"); el&&el.scrollIntoView({block:"start",behavior:"smooth"}); return; }
+  if(a==="vatread"){ if(S.vatReading||!cuEditor()) return; const rows=vatData(P).unchk.filter(r=>{ const x=S.cu[r.id]; return x&&x.fileId&&x.fileType==="image"; });
+    if(!rows.length){ toast(tr("لا توجد صور لهذه الفواتير، حدّدها يدوياً")); return; }
+    let ok=0, fail=0, i=0; S.vatReading=`0/${rows.length}`; render();
+    for(const r of rows){ i++; S.vatReading=`${i}/${rows.length}`; const btn=document.querySelector('[data-act="vatread"]'); if(btn) btn.innerHTML=`${tr("جارٍ القراءة")} <span class="num">${S.vatReading}</span>`;
+      try{ const d=await vatReadOne(S.cu[r.id]); if(d) ok++; else fail++; }catch(err){ fail++; console.warn("vat read",err); } }
+    S.vatReading=null; toast(`✓ ${tr("قُرئت")} ${ok}${fail?` · ${tr("تعذرت")} ${fail}`:""}`); render(); return; }
   if(a==="vat5"){ if(S.armed!=="vat5"){ S.armed="vat5"; setTimeout(()=>{ if(S.armed==="vat5"){ S.armed=null; render(); } },4000); render(); return; }
     S.armed=null; const miss=vatData(P).miss; miss.forEach(r=>{ const x=S.cu[r.id]; if(x){ x.vat=vat5(x.amount); cuPut(x,true); } }); toast("✓ "+tr("حُسبت ضريبة 5% لـ ")+miss.length+tr(" فاتورة")); render(); return; }
   if(a==="vatpdf"||a==="vatxls"){ if(S.busy) return; S.busy=true; b.classList.add("busy");
@@ -2767,6 +2829,7 @@ app.addEventListener("input", e=>{ const t=e.target;
   if(!cuOrig[id]) cuOrig[id]=JSON.parse(JSON.stringify(x));
   x[k]=t.type==="number"?(t.value===""?0:n(t.value)):t.value;
   if(k==="holder"||k==="to") x.hv=2;
+  if(k==="vatCo") x.vatCoHand=1;
   if(k==="pay"&&x.pay==="credit"&&x.supplier&&!isCreditSup(x.supplier)){ S.settings.cuCredit=[...cuCredit(),x.supplier.trim()]; settingsSave(); }
   if(k==="supplier"&&isCreditSup(x.supplier)) x.pay="credit";
   if(k==="target"&&String(x.target).startsWith("car:")&&(cuCat(x.cat)||{}).t!=="car") x.cat="fuel";
@@ -2875,6 +2938,94 @@ app.addEventListener("click", async e=>{
   else if(a==="cucatreset"){ S.settings.cuCatHide=[]; settingsSave(); S.cuSetOpen=true; render(); }
 });
 
+/* ---------- المرتبات (26 Nov 2026) ----------
+   A list of employees with their monthly salary. Each month the payroll sheet opens ready with every active employee:
+   salary + extra − deduction − advances given in that month = net. «صرف» records one custody entry per employee
+   (category salary, the employee and the month), so each one has his own history. Advances (سلفة) are custody entries
+   too, and come off the salary of the month they were given in. */
+S.payM=null; S.payDraft={}; S.payOpen=false; S.staffOpen=false;
+const staffList=()=>(S.settings.staff||[]).filter(e=>e&&e.id);
+const staffActive=()=>staffList().filter(e=>e.active!==false);
+const staffById=id=>staffList().find(e=>e.id===id);
+const r2p=v=>Math.round(n(v)*100)/100;
+// entries of one employee: salaries paid and advances given
+const salEntries=id=>Object.values(S.cu).filter(x=>isExp(x)&&x.cat==="salary"&&x.salEmp===id);
+const salPaid=(id,m)=>salEntries(id).find(x=>!x.salAdv&&x.salMonth===m);
+const salAdvances=(id,m)=>salEntries(id).filter(x=>x.salAdv&&x.salMonth===m);
+function payRow(e,m){ const d=(S.payDraft[m]||{})[e.id]||{}; const paid=salPaid(e.id,m);
+  const base=paid?n(paid.salGross):n(e.salary), add=paid?n(paid.salAdd):n(d.add), ded=paid?n(paid.salDed):n(d.ded);
+  const adv=r2p(salAdvances(e.id,m).reduce((a,x)=>a+n(x.amount),0));
+  return {e,paid,base,add,ded,adv,net:paid?n(paid.amount):r2p(base+add-ded-adv),note:paid?(paid.salNote||""):(d.note||"")}; }
+function payMonths(){ const out=[]; let k=ym(+today().slice(0,4),+today().slice(5,7)); for(let i=0;i<7;i++){ out.push(k); k=prevMonthOf(k+"-15"); } return out; }
+function payrollPanel(){ if(!isAdmin()) return ""; const m=S.payM||prevMonthOf(today()); const rows=staffActive().map(e=>payRow(e,m));
+  const unpaid=rows.filter(r=>!r.paid&&r.net>0), tot=k=>r2p(rows.reduce((a,r)=>a+n(r[k]),0));
+  const num=(id,k,v,dis)=>`<input type="number" inputmode="decimal" dir="ltr" data-pay="${esc(id)}" data-pk="${k}" value="${v?esc(v):""}" placeholder="0" ${dis?"disabled":""} aria-label="${k==="add"?tr("إضافي"):tr("خصم")}">`;
+  return `<details class="panel paybox" ${S.payOpen?"open":""}><summary style="cursor:pointer;font-weight:600" data-act="payopen">👔 ${tr("المرتبات")}</summary>
+   ${staffActive().length?`<label>${tr("الشهر")}<select data-paym="1">${payMonths().map(k=>`<option value="${k}" ${k===m?"selected":""}>${esc(monthName(k))}</option>`).join("")}</select></label>
+   <div class="paylist">${rows.map(r=>`<div class="payrow ${r.paid?"paid":""}">
+     <div class="payhd"><b><bdi>${esc(r.e.name)}</bdi></b>${r.paid?`<span class="chip done">✓ ${tr("صُرف")} <span class="num">${esc(r.paid.date||"")}</span></span>`:`<span class="small muted">${tr("المرتب")} <span class="num">${money(r.base)}</span></span>`}</div>
+     <div class="paygrid"><label>${tr("إضافي")}${num(r.e.id,"add",r.add,r.paid)}</label><label>${tr("خصم")}${num(r.e.id,"ded",r.ded,r.paid)}</label>
+      <div class="payv"><span class="small muted">${tr("سلف الشهر")}</span><b class="num">${money(r.adv)}</b></div><div class="payv hl"><span class="small">${tr("الصافي")}</span><b class="num">${money(r.net)}</b></div></div>
+     ${r.net<0&&!r.paid?`<span class="small neg">${tr("السلف أكبر من المرتب، لن يُصرف له شيء هذا الشهر")}</span>`:""}</div>`).join("")}</div>
+   <table class="vatsum"><tbody><tr><th>${tr("المرتبات")}</th><td class="num" data-tot="base">${money(tot("base"))}</td></tr><tr><th>${tr("إضافي")}</th><td class="num" data-tot="add">${money(tot("add"))}</td></tr><tr><th>${tr("خصم")}</th><td class="num" data-tot="ded">${money(tot("ded"))}</td></tr><tr><th>${tr("سلف")}</th><td class="num" data-tot="adv">${money(tot("adv"))}</td></tr><tr class="diff"><th>${tr("الصافي")}</th><td class="num" data-tot="net">${money(tot("net"))}</td></tr></tbody></table>
+   <label>${tr("طريقة الصرف")}<select data-paypay="1"><option value="cash" ${S.payPay!=="gm"?"selected":""}>${tr("من العهدة (نقداً أو تحويل من حسابك)")}</option><option value="gm" ${S.payPay==="gm"?"selected":""}>${tr("من الشركة مباشرة / WPS (لا تُخصم من العهدة)")}</option></select></label>
+   <div class="row">${unpaid.length?`<button class="primary ${S.armed==="paygo"?"armed":""}" data-act="paygo">${S.armed==="paygo"?tr("اضغط مرة أخرى للتأكيد"):`✓ ${tr("صرف مرتبات")} ${esc(monthName(m))} · <span class="num" data-tot="unpaid">${money(r2p(unpaid.reduce((a,r)=>a+r.net,0)))}</span>`}</button>`:`<span class="chip done">✓ ${tr("صُرفت مرتبات الشهر")}</span>`}
+    <button data-act="paypdf">📄 ${tr("كشف المرتبات")}</button></div>`:`<p class="small muted" style="margin:0">${tr("أضف الموظفين ومرتباتهم أولاً.")}</p>`}
+   <details ${S.staffOpen||!staffList().length?"open":""}><summary style="cursor:pointer" data-act="staffopen">👥 ${tr("الموظفون والمرتبات")} <span class="num">${staffActive().length}</span></summary>
+    <div class="list">${staffList().map(e=>`<div class="staffrow ${e.active===false?"off":""}">
+      <input data-staff="${esc(e.id)}" data-sk="name" value="${esc(e.name||"")}" placeholder="${tr("الاسم")}" aria-label="${tr("الاسم")}">
+      <input type="number" inputmode="decimal" dir="ltr" data-staff="${esc(e.id)}" data-sk="salary" value="${esc(e.salary??"")}" placeholder="${tr("المرتب")}" aria-label="${tr("المرتب الشهري")}">
+      <div class="row"><button class="xs" data-act="payadv" data-id="${esc(e.id)}">💵 ${tr("سلفة")}</button><button class="xs ghost" data-act="payemp" data-id="${esc(e.id)}">📄 ${tr("كشفه")}</button>
+       <button class="xs ghost" data-act="staffoff" data-id="${esc(e.id)}">${e.active===false?tr("إعادة تفعيل"):tr("إيقاف")}</button></div>
+      ${S.payAdv===e.id?`<div class="row" style="align-items:end"><label style="flex:1">${tr("مبلغ السلفة")}<input id="pay-adv" type="number" inputmode="decimal" dir="ltr" placeholder="0"></label><button class="primary" data-act="payadvok" data-id="${esc(e.id)}">✓ ${tr("تسجيل")}</button></div><span class="small muted">${tr("تُخصم من العهدة الآن، ومن مرتب شهر")} ${esc(monthName(ym(+today().slice(0,4),+today().slice(5,7))))}.</span>`:""}
+     </div>`).join("")}</div>
+    <div class="row" style="align-items:end"><label style="flex:1">${tr("موظف جديد")}<input id="staff-new" placeholder="${tr("الاسم")}"></label><label style="width:120px">${tr("المرتب")}<input id="staff-sal" type="number" inputmode="decimal" dir="ltr" placeholder="0"></label><button data-act="staffadd">+ ${tr("إضافة")}</button></div>
+   </details></details>`; }
+
+function staffSave(){ settingsSave(); }
+async function payGo(m){ const rows=staffActive().map(e=>payRow(e,m)).filter(r=>!r.paid&&r.net>0); const pay=S.payPay==="gm"?"gm":"cash"; let k=0;
+  for(const r of rows){ const x={id:uid(),kind:"exp",by:cuMe,holder:"main",hv:2,target:"gen",cat:"salary",pay,supplier:r.e.name,amount:r.net,date:today(),
+      desc:`${lang==="en"?"Salary":"راتب"} ${monthName(m)} — ${r.e.name}`,salEmp:r.e.id,salMonth:m,salGross:r.base,salAdd:r.add,salDed:r.ded,salAdvDed:r.adv,salNote:r.note,ok:true,fileId:null,fileType:null,createdAt:Date.now()+(k++)};
+    S.cu[x.id]=x; cuPut(x,true); }
+  delete S.payDraft[m]; toast(`✓ ${tr("صُرفت مرتبات")} ${monthName(m)} · ${rows.length} ${tr("موظف")}`); }
+async function makePayPdf(m){ const rows=staffActive().map(e=>payRow(e,m)).concat(staffList().filter(e=>e.active===false&&salPaid(e.id,m)).map(e=>payRow(e,m)));
+  const t=k=>money(r2p(rows.reduce((a,r)=>a+n(r[k]),0)));
+  const blocks=[`<div class="rb"><h2>${tr("كشف المرتبات")} — ${esc(monthName(m))}</h2>${tbl(["#",tr("الموظف"),tr("المرتب"),tr("إضافي"),tr("خصم"),tr("سلف"),tr("الصافي"),tr("الحالة")],
+    rows.map((r,i)=>`<tr><td class="num">${i+1}</td><td>${esc(r.e.name)}</td><td class="num">${money(r.base)}</td><td class="num">${money(r.add)}</td><td class="num">${money(r.ded)}</td><td class="num">${money(r.adv)}</td><td class="num"><b>${money(r.net)}</b></td><td>${r.paid?tr("صُرف")+" "+esc(r.paid.date||"")+(r.paid.pay==="gm"?" — "+tr("من الشركة"):""):tr("لم يُصرف")}</td></tr>`),
+    `<tr><th colspan="2">${tr("الإجمالي")}</th><th class="num">${t("base")}</th><th class="num">${t("add")}</th><th class="num">${t("ded")}</th><th class="num">${t("adv")}</th><th class="num">${t("net")}</th><th></th></tr>`)}</div>`];
+  await cuPdf(`${tr("كشف المرتبات")} — ${esc(monthName(m))}`,blocks,`${tr("كشف المرتبات")} ${m}.pdf`,"pay"); }
+async function makeEmpPdf(id){ const e=staffById(id); if(!e) return; const L=salEntries(id).sort((a,b)=>(a.salMonth||"").localeCompare(b.salMonth||"")||String(a.date).localeCompare(String(b.date)));
+  const blocks=[`<div class="rb"><h2>${tr("كشف الموظف")}: ${esc(e.name)}</h2><p style="margin:0 0 8px">${tr("المرتب الشهري")}: <b class="num">${money(e.salary)}</b></p>${tbl([tr("الشهر"),tr("التاريخ"),tr("البيان"),tr("المرتب"),tr("إضافي"),tr("خصم"),tr("سلف"),tr("المبلغ")],
+    L.map(x=>`<tr><td>${esc(monthName(x.salMonth||prevMonthOf(x.date)))}</td><td class="num">${esc(x.date||"")}</td><td>${x.salAdv?tr("سلفة"):tr("راتب")}</td><td class="num">${x.salAdv?"":money(x.salGross)}</td><td class="num">${x.salAdv?"":money(x.salAdd)}</td><td class="num">${x.salAdv?"":money(x.salDed)}</td><td class="num">${x.salAdv?"":money(x.salAdvDed)}</td><td class="num"><b>${money(x.amount)}</b></td></tr>`),
+    `<tr><th colspan="7">${tr("مجموع ما استلمه")}</th><th class="num">${money(r2p(L.reduce((a,x)=>a+n(x.amount),0)))}</th></tr>`)}</div>`];
+  await cuPdf(`${tr("كشف الموظف")} — ${esc(e.name)}`,blocks,`${tr("كشف الموظف")} ${e.name}.pdf`,"pay"); }
+
+app.addEventListener("input",e=>{ const t=e.target;
+  if(t.dataset.pay){ const m=S.payM||prevMonthOf(today()); const D=S.payDraft[m]||(S.payDraft[m]={}); const d=D[t.dataset.pay]||(D[t.dataset.pay]={}); d[t.dataset.pk]=t.value;
+    const e2=staffById(t.dataset.pay); const box=t.closest(".payrow"); if(e2&&box){ const r=payRow(e2,m); const v=box.querySelector(".payv.hl b"); if(v) v.textContent=money(r.net); }
+    const rows=staffActive().map(x=>payRow(x,m));
+    ["base","add","ded","adv","net"].forEach(k=>{ const el=document.querySelector(`[data-tot="${k}"]`); if(el) el.textContent=money(r2p(rows.reduce((a,r)=>a+n(r[k]),0))); });
+    const u=document.querySelector('[data-tot="unpaid"]'); if(u) u.textContent=money(r2p(rows.filter(r=>!r.paid&&r.net>0).reduce((a,r)=>a+r.net,0))); }
+  else if(t.dataset.staff){ const L=staffList(); const s=L.find(x=>x.id===t.dataset.staff); if(!s) return; s[t.dataset.sk]=t.dataset.sk==="salary"?(t.value===""?"":n(t.value)):t.value; S.settings.staff=L; clearTimeout(S._stT); S._stT=setTimeout(staffSave,700); } });
+app.addEventListener("change",e=>{ const t=e.target; if(t.dataset.paym){ S.payM=t.value; S.payOpen=true; render(); } else if(t.dataset.paypay){ S.payPay=t.value; } });
+app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act; if(!/^(pay|staff)/.test(a)) return;
+  if(a==="payopen"){ e.preventDefault(); S.payOpen=!S.payOpen; if(b.dataset.m) S.payM=b.dataset.m; render(); return; }
+  if(a==="paygoto"){ S.view="cust"; S.payOpen=true; S.payM=b.dataset.m||null; render(); setTimeout(()=>{ const el=document.querySelector(".paybox"); el&&el.scrollIntoView({block:"start",behavior:"smooth"}); },60); return; }
+  if(a==="staffopen"){ e.preventDefault(); S.staffOpen=!S.staffOpen; render(); return; }
+  if(!isAdmin()) return; const m=S.payM||prevMonthOf(today());
+  if(a==="staffadd"){ const nm=String((document.getElementById("staff-new")||{}).value||"").trim(), sal=n((document.getElementById("staff-sal")||{}).value);
+    if(!nm){ toast(tr("اكتب اسم الموظف")); return; } if(staffList().some(x=>String(x.name).trim()===nm)){ toast(tr("الاسم موجود")); return; }
+    S.settings.staff=[...staffList(),{id:uid(),name:nm,salary:sal,active:true}]; staffSave(); S.staffOpen=true; render(); }
+  else if(a==="staffoff"){ const s=staffById(b.dataset.id); if(!s) return; s.active=s.active===false; S.settings.staff=staffList(); staffSave(); render(); }
+  else if(a==="payadv"){ S.payAdv=S.payAdv===b.dataset.id?null:b.dataset.id; S.staffOpen=true; render(); setTimeout(()=>{ const i=document.getElementById("pay-adv"); i&&i.focus(); },50); }
+  else if(a==="payadvok"){ const s=staffById(b.dataset.id), v=r2p((document.getElementById("pay-adv")||{}).value); if(!s||!(v>0)){ toast(tr("اكتب مبلغ السلفة")); return; } if(!cuMe){ toast(tr("اكتب اسمك أولاً")); return; }
+    const k=ym(+today().slice(0,4),+today().slice(5,7));
+    const x={id:uid(),kind:"exp",by:cuMe,holder:"main",hv:2,target:"gen",cat:"salary",pay:"cash",supplier:s.name,amount:v,date:today(),desc:`${tr("سلفة")} — ${s.name}`,salEmp:s.id,salMonth:k,salAdv:1,ok:true,fileId:null,fileType:null,createdAt:Date.now()};
+    S.cu[x.id]=x; cuPut(x,true); S.payAdv=null; toast(`✓ ${tr("سُجّلت سلفة")} ${money(v)} — ${s.name}`); render(); }
+  else if(a==="paygo"){ if(!cuMe){ toast(tr("اكتب اسمك أولاً")); return; } if(S.armed!=="paygo"){ S.armed="paygo"; render(); setTimeout(()=>{ if(S.armed==="paygo"){ S.armed=null; render(); } },5000); return; }
+    S.armed=null; await payGo(m); render(); }
+  else if(a==="paypdf"||a==="payemp"){ if(S.busy) return; S.busy=true; b.classList.add("busy");
+    try{ if(a==="paypdf") await makePayPdf(m); else await makeEmpPdf(b.dataset.id); }catch(err){ toast((err&&err.message)||tr("تعذر الحفظ")); } S.busy=false; render(); } });
 /* ---------- users & roles ---------- */
 const ROLES = {admin:["👑 صلاحيات كاملة","كل شيء"], eng:["👷 مهندس","الأعمال وتصوير الفواتير"], buyer:["🧾 مسؤول المشتريات","تصوير الفواتير فقط"]};
 S.user=null; S.setLoaded=false; S.profiles=[]; S.loginList=null;

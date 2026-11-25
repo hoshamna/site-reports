@@ -1,4 +1,4 @@
-const C="aseel-ccfd7a1e32";
+const C="aseel-0c03d4eb69";
 const SHELL=["./","./index.html","./manifest.json","./logo.png","./mark.png","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{ e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())); });
 self.addEventListener("activate",e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });

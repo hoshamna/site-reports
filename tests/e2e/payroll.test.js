@@ -27,12 +27,17 @@ test("payroll: bank and cash groups, advances, absence, carried amount, statemen
   await page.fill(`[data-pay="${abd}"][data-pk="note"]`, "توقف عن العمل");
   await page.fill(`[data-pay="${moh}"][data-pk="other"]`, "-50");
   await page.selectOption('[data-paycarry="emp"]', hes); await page.fill('[data-paycarry="amount"]', "400");
+  // the GM's transfer for salaries, recorded as an ordinary deposit, linked here
+  await app.eval(() => { const x = { id: "gmdep", kind: "dep", by: "هشام", amount: 1500, date: "2026-10-30", createdAt: 2 }; __T.S.cu[x.id] = x; __T.cuPut(x, true); __T.render(); });
+  await page.selectOption("select[data-payfund]", "gmdep"); await page.waitForTimeout(200);
+  assert.equal(await app.eval(() => __T.S.cu.gmdep.salFund), "2026-10");
+  assert.equal((await page.textContent('[data-tot="fromcu"]')).replace(/[^\d.-]/g, ""), String(900 + 1350 - 400 - 1500));
   assert.equal((await page.textContent('[data-tot="total"]')).replace(/[^\d.]/g, ""), String(6000 + 900 + 1350 - 400));
   await page.click('[data-act="paygo"]'); await page.click('[data-act="paygo"]'); await page.waitForTimeout(500);
   const paid = await app.eval(() => Object.values(__T.S.cu).filter((x) => x.cat === "salary" && !x.salAdv).map((x) => [x.supplier, x.amount, x.pay, x.salAdvDed, x.salAbsDed, x.salOther]).sort());
   assert.deepEqual(paid, [["HESHAM", 6000, "gm", 0, 0, 0], ["abd alla jad", 900, "cash", 0, 800, 0], ["mohamed suliman", 1350, "cash", 300, 0, -50]]);
   // custody: advance 300 + cash 2250 out, carried 400 in; the bank salary does not touch it
-  assert.equal(await app.eval(() => __T.holderBal("main")), -300 - 2250 + 400);
+  assert.equal(await app.eval(() => __T.holderBal("main")), -300 - 2250 + 400 + 1500);
   assert.deepEqual(await app.eval(() => __T.S.settings.payCarry), { emp: hes, amount: 400 });
   assert.notEqual(await app.eval(() => __T.salaryDue()), "2026-10");
   assert.match(await app.text(), /صُرفت مرتبات الشهر/);

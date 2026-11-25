@@ -18,6 +18,9 @@ const salEntries=id=>Object.values(S.cu).filter(x=>isExp(x)&&x.cat==="salary"&&x
 const salPaid=(id,m)=>salEntries(id).find(x=>!x.salAdv&&x.salMonth===m);
 const salAdvances=(id,m)=>salEntries(id).filter(x=>x.salAdv&&x.salMonth===m);
 const carryEntry=m=>Object.values(S.cu).find(x=>x.kind==="dep"&&x.salCarry&&x.salMonth===m);
+// the GM's transfer for the salaries is recorded as an ordinary deposit (توريد); here it is only linked to the month
+const fundDeps=m=>Object.values(S.cu).filter(x=>x.kind==="dep"&&!x.salCarry&&x.salFund===m);
+const fundChoices=m=>Object.values(S.cu).filter(x=>x.kind==="dep"&&!x.salCarry&&(!x.salFund||x.salFund===m)).sort((a,b)=>String(dateOf(b)).localeCompare(String(dateOf(a)))||(b.createdAt||0)-(a.createdAt||0)).slice(0,12);
 const absAuto=(base,allow,days)=>Math.round((n(base)+n(allow))/30*n(days));
 function payRow(e,m){ const d=(S.payDraft[m]||{})[e.id]||{}; const p=salPaid(e.id,m);
   const adv=r2p(salAdvances(e.id,m).reduce((a,x)=>a+n(x.amount),0));
@@ -31,8 +34,8 @@ function payCarry(m){ const c=carryEntry(m); if(c) return {amount:n(c.amount),em
   return {amount:n(d&&d.amount!=null?d.amount:s.amount),emp:(d&&d.emp)||s.emp||"",done:false}; }
 function payTotals(m){ const rows=staffActive().map(e=>payRow(e,m)).concat(staffList().filter(e=>e.active===false&&salPaid(e.id,m)).map(e=>payRow(e,m)));
   const sum=(L,k)=>r2p(L.reduce((a,r)=>a+n(r[k]),0)); const bank=rows.filter(r=>r.mode==="bank"), cash=rows.filter(r=>r.mode==="cash");
-  const c=payCarry(m), carry=c.amount;
-  return {rows,bank,cash,sum,carry,carryEmp:c.emp,carryDone:c.done,bankT:sum(bank,"net"),cashT:sum(cash,"net"),fromCu:r2p(sum(cash,"net")-carry),total:r2p(sum(bank,"net")+sum(cash,"net")-carry)}; }
+  const c=payCarry(m), carry=c.amount, funds=fundDeps(m), fund=r2p(funds.reduce((a,x)=>a+n(x.amount),0));
+  return {rows,bank,cash,sum,carry,funds,fund,carryEmp:c.emp,carryDone:c.done,bankT:sum(bank,"net"),cashT:sum(cash,"net"),fromCu:r2p(sum(cash,"net")-carry-fund),total:r2p(sum(bank,"net")+sum(cash,"net")-carry)}; }
 function payMonths(){ const out=[]; let k=ym(+today().slice(0,4),+today().slice(5,7)); for(let i=0;i<7;i++){ out.push(k); k=prevMonthOf(k+"-15"); } return out; }
 const empLbl=e=>`${e.no?`<span class="num muted">${esc(e.no)}</span> `:""}<bdi>${esc(e.name)}</bdi>`;
 function payRowHtml(r){ const id=r.e.id, dis=r.paid?"disabled":"";
@@ -55,11 +58,15 @@ function payrollPanel(){ if(!isAdmin()) return ""; const m=S.payM||prevMonthOf(t
     <select data-paycarry="emp" ${T.carryDone?"disabled":""}><option value="">—</option>${bankEmps.map(e=>`<option value="${esc(e.id)}" ${e.id===T.carryEmp?"selected":""}>${esc(e.name)}</option>`).join("")}</select>
     <input type="number" inputmode="decimal" dir="ltr" data-paycarry="amount" value="${T.carry||""}" placeholder="0" ${T.carryDone?"disabled":""} aria-label="${tr("المبلغ المرحّل")}">
     <span class="small muted">${tr("جزء من راتب بنكي يُصرف للشباب نقداً")}</span></div>
+   <div class="paycarry"><b>${tr("تحويل المدير العام للمرتبات")}</b>
+    <select data-payfund="1"><option value="">${tr("— اختر التوريد —")}</option>${fundChoices(m).map(x=>`<option value="${esc(x.id)}" ${x.salFund===m?"selected":""}>${esc(dateOf(x))} · ${money(x.amount)}${x.desc?" · "+esc(String(x.desc).slice(0,30)):""}</option>`).join("")}</select>
+    <span class="small muted">${tr("سجّله توريداً عادياً كالمعتاد، ثم اختره هنا ليُحسب للمرتبات")}</span></div>
    <table class="vatsum"><tbody>
     <tr><th>${tr("إجمالي التحويل البنكي")}</th><td class="num" data-tot="bank">${money(T.bankT)}</td></tr>
     <tr><th>${tr("إجمالي الكاش")}</th><td class="num" data-tot="cash">${money(T.cashT)}</td></tr>
     <tr><th>− ${tr("مرحّل")}</th><td class="num" data-tot="carry">${money(T.carry)}</td></tr>
-    <tr><th>${tr("الكاش من العهدة")}</th><td class="num" data-tot="fromcu">${money(T.fromCu)}</td></tr>
+    <tr><th>− ${tr("تحويل المدير العام")}</th><td class="num" data-tot="fund">${money(T.fund)}</td></tr>
+    <tr><th>${tr("يُخصم من العهدة الرئيسية")}</th><td class="num" data-tot="fromcu">${money(T.fromCu)}</td></tr>
     <tr class="diff"><th>${tr("المبلغ الكلي للمرتبات")}</th><td class="num" data-tot="total">${money(T.total)}</td></tr></tbody></table>
    <div class="row">${unpaid.length?`<button class="primary ${S.armed==="paygo"?"armed":""}" data-act="paygo">${S.armed==="paygo"?tr("اضغط مرة أخرى للتأكيد"):`✓ ${tr("صرف مرتبات")} ${esc(monthName(m))}`}</button>`:`<span class="chip done">✓ ${tr("صُرفت مرتبات الشهر")}</span>`}
     <button data-act="paypdf">📄 ${tr("كشف المرتبات")}</button></div>
@@ -98,7 +105,7 @@ async function makePayPdf(m){ const T=payTotals(m); let notes=[];
   const ce=staffById(T.carryEmp);
   const blocks=[grp(T.bank,"تحويل بنكي — BANK"),grp(T.cash,"نقداً — CASH"),
     `<div class="rb"><table class="vatsum"><tbody><tr><th>${tr("إجمالي التحويل البنكي")}</th><td class="num">${money(T.bankT)}</td></tr><tr><th>${tr("إجمالي الكاش")}</th><td class="num">${money(T.cashT)}</td></tr>
-     ${T.carry?`<tr><th>− ${tr("مرحّل من راتب")} ${esc(ce?ce.name:"")}</th><td class="num">${money(T.carry)}</td></tr><tr><th>${tr("الكاش من العهدة")}</th><td class="num">${money(T.fromCu)}</td></tr>`:""}
+     ${T.carry?`<tr><th>− ${tr("مرحّل من راتب")} ${esc(ce?ce.name:"")}</th><td class="num">${money(T.carry)}</td></tr>`:""}${T.fund?`<tr><th>− ${tr("تحويل المدير العام")}</th><td class="num">${money(T.fund)}</td></tr>`:""}${T.carry||T.fund?`<tr><th>${tr("يُخصم من العهدة الرئيسية")}</th><td class="num">${money(T.fromCu)}</td></tr>`:""}
      <tr class="diff"><th>${tr("المبلغ الكلي للمرتبات")}</th><td class="num">${money(T.total)}</td></tr></tbody></table>
      ${notes.length?`<p class="small" style="margin:8px 0 0">* ${notes.join(" &nbsp;|&nbsp; ")}</p>`:""}
      <div class="paysig"><div>${tr("المحاسب")}</div><div>${tr("المدير العام")}</div><div>${tr("الختم")}</div></div></div>`].filter(Boolean);
@@ -114,13 +121,16 @@ function payLive(m){ const T=payTotals(m);
   T.rows.forEach(r=>{ if(r.paid) return; const box=document.querySelector(`.payrow [data-pay="${CSS.escape(r.e.id)}"]`); const row=box&&box.closest(".payrow"); if(!row) return;
     const nb=row.querySelector("[data-net]"); if(nb) nb.textContent=money(r.net); const ad=row.querySelector('[data-pk="absDed"]'); if(ad) ad.placeholder=String(r.absDed); });
   const set=(k,v)=>{ const el=document.querySelector(`[data-tot="${k}"]`); if(el) el.textContent=money(v); };
-  set("bank",T.bankT); set("cash",T.cashT); set("carry",T.carry); set("fromcu",T.fromCu); set("total",T.total); }
+  set("bank",T.bankT); set("cash",T.cashT); set("carry",T.carry); set("fund",T.fund); set("fromcu",T.fromCu); set("total",T.total); }
 app.addEventListener("input",e=>{ const t=e.target; const m=S.payM||prevMonthOf(today());
   if(t.dataset.pay){ const D=S.payDraft[m]||(S.payDraft[m]={}); const d=D[t.dataset.pay]||(D[t.dataset.pay]={}); d[t.dataset.pk]=t.value; payLive(m); }
   else if(t.dataset.paycarry){ const D=S.payDraft[m]||(S.payDraft[m]={}); const c=D._carry||(D._carry={...(S.settings.payCarry||{})}); c[t.dataset.paycarry]=t.dataset.paycarry==="amount"?n(t.value):t.value; payLive(m); }
   else if(t.dataset.staff){ const L=staffList(); const s=L.find(x=>x.id===t.dataset.staff); if(!s) return; const k=t.dataset.sk;
     s[k]=(k==="salary"||k==="allow")?(t.value===""?"":n(t.value)):t.value; S.settings.staff=L; clearTimeout(S._stT); S._stT=setTimeout(staffSave,700); } });
 app.addEventListener("change",e=>{ const t=e.target; if(t.dataset.paym){ S.payM=t.value; S.payOpen=true; render(); }
+  else if(t.dataset.payfund){ if(!isAdmin()) return; const m=S.payM||prevMonthOf(today());
+    fundDeps(m).forEach(x=>{ if(x.id!==t.value){ delete x.salFund; cuPut(x,true); } });
+    const x=S.cu[t.value]; if(x&&x.kind==="dep"){ x.salFund=m; cuPut(x,true); } S.payOpen=true; render(); }
   else if(t.dataset.staff&&t.dataset.sk==="mode"){ clearTimeout(S._stT); staffSave(); S.payOpen=true; S.staffOpen=true; render(); } });
 app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act; if(!/^(pay|staff)/.test(a)) return;
   if(a==="payopen"){ e.preventDefault(); S.payOpen=!S.payOpen; if(b.dataset.m) S.payM=b.dataset.m; render(); return; }

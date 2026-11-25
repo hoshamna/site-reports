@@ -40,3 +40,23 @@ test("payroll: bank and cash groups, advances, absence, carried amount, statemen
   assert.ok((await app.eval(() => window.__pdfPages.length)) >= 2);
   assert.deepEqual(app.errors, []);
 });
+
+test("payroll: the company's October sheet is adopted in one tap, figures match the paper", async (t) => {
+  const app = await openApp({ routes: libRoutes, init: () => { setTimeout(() => { window.__mockDB().custody = {}; }, 0); } });
+  t.after(() => app.close()); const { page } = app;
+  await page.clock.setFixedTime(new Date("2026-11-26T10:00:00+04:00"));
+  await app.login("هشام", "1234");
+  await page.click('[data-act="cuopen"]'); await page.waitForTimeout(300);
+  await page.click('[data-act="payopen"]');
+  await page.click('[data-act="paysheet"]'); await page.waitForTimeout(300);
+  assert.equal(await app.eval(() => __T.S.settings.staff.length), 9);
+  const num = async (k) => Number((await page.textContent(`[data-tot="${k}"]`)).replace(/[^\d.-]/g, ""));
+  assert.equal(await num("gbank"), 7400); assert.equal(await num("gcash"), 10150);
+  assert.equal(await num("total"), 7400 + 10150 - 4000);
+  assert.equal(await page.locator('[data-act="paysheet"]').count(), 0);
+  assert.equal(await page.locator("table.paytbl tbody tr").count(), 9);
+  // the month's figures survive closing the app (kept in settings)
+  assert.equal(await app.eval(() => __T.S.settings.payDraft["2026-10"] && Object.keys(__T.S.settings.payDraft["2026-10"]).length), 4);
+  await app.eval(() => __T.makePayPdf("2026-10"));
+  assert.deepEqual(app.errors, []);
+});

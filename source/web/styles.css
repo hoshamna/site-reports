@@ -645,3 +645,11 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .staffrow{display:grid;grid-template-columns:64px 1fr 1fr 1fr 1.4fr;gap:8px;border-bottom:1px solid var(--line);padding:8px 0;align-items:end}
 @media (max-width:620px){.staffrow{grid-template-columns:64px 1fr}.staffrow label{grid-column:span 1}}
 .staffrow .row{grid-column:1/-1}.staffrow.off{opacity:.5}
+.paytbl{width:100%;border-collapse:collapse;font-size:13px;min-width:860px}
+.paytbl th{background:#5a3a1e;color:#fff;font-weight:600;padding:6px 5px;font-size:12px;white-space:nowrap}
+.paytbl td{border:1px solid var(--line);padding:4px 5px;white-space:nowrap}
+.paytbl tbody tr:nth-child(even) td{background:rgba(160,110,60,.07)}
+.paytbl .pname{font-weight:700}.paytbl .pnet{font-weight:700;background:rgba(160,110,60,.16)!important}
+.paytbl tfoot th{background:#b07a3c}.paytbl tr.paid td{opacity:.75}
+.paytbl input{padding:4px 6px;min-height:0;font-size:13px}.paytbl .pin{width:72px}.paytbl .pnote{width:170px}
+.paytbl tr.payrow{display:table-row;padding:0;border:0}.paytbl tr.payrow.paid{opacity:1}.paytbl td{display:table-cell}

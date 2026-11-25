@@ -31,6 +31,12 @@ test("payroll: bank and cash groups, advances, absence, carried amount, statemen
   // paying waits for GM's approval
   assert.equal(await page.locator('[data-act="paygo"]').count(), 0);
   assert.match(await app.text(), /بانتظار اعتماد المدير العام/);
+  // Hosham sends GM a notification to approve
+  await app.eval(() => { __T.S.profiles = [...(__T.S.profiles || []), { id: "gm-1", name: "GM", role: "admin" }]; window.__sent = []; window.__push = { ...(window.__push || {}), notify: async (ids, title) => { window.__sent.push([ids, title]); } }; });
+  await page.click('[data-act="payask"]'); await page.waitForTimeout(100);
+  const sent = await app.eval(() => window.__sent);
+  assert.equal(sent.length, 1); assert.match(sent[0][1], /بانتظار اعتمادك/);
+  assert.match(await app.text(), /أُرسل للمدير العام/);
   await app.eval(() => { __T.S.user.name = "GM"; __T.render(); });
   await page.click('[data-act="payappr"]'); await page.click('[data-act="payappr"]'); await page.waitForTimeout(200);
   assert.match(await app.text(), /اعتمد المدير العام كشف/);

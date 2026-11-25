@@ -53,6 +53,9 @@ function payTotals(m){ const byNo=(a,b)=>(parseFloat(a.e.no)||1e9)-(parseFloat(b
 // GM's approval of a month: kept with a fingerprint of the sheet, so any later change needs a new approval
 const isGM=()=>!!S.user&&/^(gm|المدير العام)$/i.test(String(S.user.name||"").trim());
 const payCan=()=>typeof cuEditor==="function"?cuEditor():isAdmin();
+// notifications: Hosham asks GM to approve; GM's approval goes back to whoever asked
+const gmIds=()=>(typeof users==="function"?users():[]).filter(u=>/^(gm|المدير العام)$/i.test(String(u.name||"").trim())).map(u=>u.id);
+function payNotify(ids,title,body,tag){ if(!ids.length||!window.__push||!window.__push.notify) return false; Promise.resolve(window.__push.notify(ids,title,body,tag)).catch(e=>console.warn("push",e)); return true; }
 function paySig(m){ const T=payTotals(m); return JSON.stringify([T.rows.map(r=>[r.e.id,r.e.name,r.base,r.allow,r.adv,n(r.days),r.absDed,r.other,r.mode,r.net]),T.carry,T.carryEmp]); }
 function payAppr(m){ const a=(S.settings.payAppr||{})[m]; if(!a) return null; return {...a,ok:a.sig===paySig(m)}; }
 function payMonths(){ const out=[]; let k=ym(+today().slice(0,4),+today().slice(5,7)); for(let i=0;i<7;i++){ out.push(k); k=prevMonthOf(k+"-15"); } return out; }
@@ -80,7 +83,8 @@ function paySheetApply(){ const L=staffList(), D=payDrafts()[PAY_SHEET.month]||(
 function payView(){ if(!payCan()) return header("👔 "+tr("المرتبات"))+`<div class="panel"><p class="small muted" style="margin:0">${tr("قسم المرتبات لـ Hosham والمدير العام فقط.")}</p></div>`;
   const m=S.payM||prevMonthOf(today()); const T=payTotals(m), A=payAppr(m), allPaid=T.rows.length&&T.rows.every(r=>r.paid||r.net<=0), lock=!!(A&&A.ok)||allPaid;
   const apprBox=!staffActive().length?"":allPaid?"":A&&A.ok?`<div class="panel payappr ok"><b>✓ ${tr("اعتمد المدير العام كشف")} ${esc(monthName(m))}</b><span class="small muted">${esc(A.by)} · <span class="num">${esc(A.date)}</span></span>${isGM()?`<button class="xs ghost" data-act="payunappr">${tr("إلغاء الاعتماد للتعديل")}</button>`:""}</div>`
-    :`<div class="panel payappr"><b>${A?`⚠️ ${tr("تغيّر الكشف بعد اعتماده، يحتاج اعتماداً جديداً")}`:`⏳ ${tr("بانتظار اعتماد المدير العام")}`}</b>${isGM()?`<button class="primary ${S.armed==="payappr"?"armed":""}" data-act="payappr">${S.armed==="payappr"?tr("اضغط مرة أخرى للتأكيد"):`✓ ${tr("اعتماد الكشف")} — ${money(T.total)}`}</button>`:`<span class="small muted">${tr("يعتمده المدير العام من حسابه، ثم يُفتح زر الصرف.")}</span>`}</div>`;
+    :`<div class="panel payappr"><b>${A?`⚠️ ${tr("تغيّر الكشف بعد اعتماده، يحتاج اعتماداً جديداً")}`:`⏳ ${tr("بانتظار اعتماد المدير العام")}`}</b>${isGM()?`<button class="primary ${S.armed==="payappr"?"armed":""}" data-act="payappr">${S.armed==="payappr"?tr("اضغط مرة أخرى للتأكيد"):`✓ ${tr("اعتماد الكشف")} — ${money(T.total)}`}</button>`:`<span class="small muted">${tr("يعتمده المدير العام من حسابه، ثم يُفتح زر الصرف.")}</span>${(()=>{ const q=(S.settings.payAsk||{})[m], sent=q&&q.sig===paySig(m);
+      return `<button class="${sent?"ghost":"primary"}" data-act="payask">🔔 ${sent?`${tr("أُرسل للمدير العام")} <span class="num">${esc(q.time)}</span> · ${tr("إرسال مرة أخرى")}`:tr("إرسال تنبيه للمدير العام للاعتماد")}</button>`; })()}`}</div>`;
   return `<div class="top top-site"><div class="brand"><button class="backbtn" data-act="payback" aria-label="${tr("رجوع")}">${lang==="en"?"←":"→"}</button><span class="eyebrow u">${esc(coName())}</span><h1>👔 ${tr("المرتبات")}</h1></div><div class="row">${userChip()}</div></div>
   ${pdfNotice("pay")}${payrollPanel(m,T,A,lock,apprBox)}`; }
 function payrollPanel(m,T,A,lock,apprBox){
@@ -266,7 +270,13 @@ app.addEventListener("click",async e=>{ const b=e.target.closest("[data-act]"); 
     S.cu[x.id]=x; cuPut(x,true); S.payAdv=null; toast(`✓ ${tr("سُجّلت سلفة")} ${money(v)} — ${s.name}${N>1?` · ${N} × ${money(advSched(x)[k2])}`:""}`); render(); }
   else if(a==="payskip"){ const x=S.cu[b.dataset.id]; if(!x) return; const k=b.dataset.m; const sk=new Set(x.salSkip||[]); sk.has(k)?sk.delete(k):sk.add(k); x.salSkip=[...sk]; cuPut(x,true); render(); }
   else if(a==="payappr"){ if(!isGM()) return; if(S.armed!=="payappr"){ S.armed="payappr"; render(); setTimeout(()=>{ if(S.armed==="payappr"){ S.armed=null; render(); } },5000); return; }
-    S.armed=null; const ap=S.settings.payAppr||(S.settings.payAppr={}); ap[m]={by:S.user.name,date:today(),at:Date.now(),total:payTotals(m).total,sig:paySig(m)}; staffSave(); toast(`✓ ${tr("اعتُمد كشف")} ${monthName(m)}`); render(); }
+    S.armed=null; const ap=S.settings.payAppr||(S.settings.payAppr={}); ap[m]={by:S.user.name,date:today(),at:Date.now(),total:payTotals(m).total,sig:paySig(m)}; staffSave(); toast(`✓ ${tr("اعتُمد كشف")} ${monthName(m)}`);
+    const q=(S.settings.payAsk||{})[m], back=[...new Set([q&&q.uid].concat((typeof users==="function"?users():[]).filter(u=>/^(hosham|هشام)$/i.test(String(u.name||"").trim())).map(u=>u.id)).filter(x=>x&&x!==(S.user&&S.user.id)))];
+    payNotify(back,`✓ ${tr("اعتمد المدير العام كشف")} ${monthName(m)}`,`${tr("المرتبات")} ${money(payTotals(m).total)} ${tr("درهم")}. ${tr("يمكنك الصرف الآن.")}`,"payok-"+m); render(); }
+  else if(a==="payask"){ const T=payTotals(m), ids=gmIds();
+    if(!ids.length){ toast(tr("لا يوجد حساب باسم GM في المستخدمين")); return; }
+    if(!payNotify(ids,`👔 ${tr("كشف مرتبات")} ${monthName(m)} ${tr("بانتظار اعتمادك")}`,`${tr("المرتبات")} ${money(T.total)} ${tr("درهم")} · ${T.rows.length} ${tr("موظف")} — ${tr("من")} ${cuMe||""}. ${tr("افتح التطبيق ← المرتبات ← اعتماد الكشف.")}`,"payask-"+m)){ toast(tr("الإشعارات غير متاحة الآن")); return; }
+    const ak=S.settings.payAsk||(S.settings.payAsk={}); ak[m]={by:cuMe||"",uid:S.user&&S.user.id,time:new Date().toTimeString().slice(0,5)+" "+today(),sig:paySig(m)}; staffSave(); toast(`✓ ${tr("أُرسل التنبيه للمدير العام")}`); render(); }
   else if(a==="payunappr"){ if(!isGM()) return; const ap=S.settings.payAppr||{}; delete ap[m]; S.settings.payAppr=ap; staffSave(); render(); }
   else if(a==="paygo"){ const A=payAppr(m); if(!A||!A.ok){ toast(tr("الكشف يحتاج اعتماد المدير العام أولاً")); return; } if(!cuMe){ toast(tr("اكتب اسمك أولاً")); return; } if(S.armed!=="paygo"){ S.armed="paygo"; render(); setTimeout(()=>{ if(S.armed==="paygo"){ S.armed=null; render(); } },5000); return; }
     S.armed=null; b.classList.add("busy"); try{ await payGo(m); }catch(err){ toast((err&&err.message)||tr("تعذر الصرف")); } render(); }

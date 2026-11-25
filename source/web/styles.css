@@ -633,9 +633,15 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .payrow{border:1px solid var(--line);border-radius:var(--r-s);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .payrow.paid{opacity:.75}
 .payhd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.paygrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:end}
+.paygrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.paygh{margin:6px 0 0;font-size:.9rem;color:var(--bronze)}
+.paycarry{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}.paycarry select{flex:1;min-width:120px}.paycarry input{width:110px}.paycarry .small{flex-basis:100%}
+.staffnew{display:grid;grid-template-columns:2fr 70px 1fr 1fr 1.4fr auto;gap:8px;align-items:end;margin-top:8px}
+@media (max-width:620px){.staffnew{grid-template-columns:1fr 1fr}}
+.paysig{display:flex;justify-content:space-around;margin-top:46px;text-align:center}.paysig div{width:28%;border-top:1px solid #999;padding-top:6px;font-weight:600}
 .paygrid input{min-width:0}
 .payv{display:flex;flex-direction:column;gap:2px}.payv.hl b{color:var(--bronze)}
-@media (max-width:520px){.paygrid{grid-template-columns:1fr 1fr}}
-.staffrow{display:grid;grid-template-columns:1fr 110px;gap:8px;border-bottom:1px solid var(--line);padding:8px 0}
+@media (max-width:520px){.paygrid{grid-template-columns:1fr 1fr 1fr}}
+.staffrow{display:grid;grid-template-columns:64px 1fr 1fr 1fr 1.4fr;gap:8px;border-bottom:1px solid var(--line);padding:8px 0;align-items:end}
+@media (max-width:620px){.staffrow{grid-template-columns:64px 1fr}.staffrow label{grid-column:span 1}}
 .staffrow .row{grid-column:1/-1}.staffrow.off{opacity:.5}

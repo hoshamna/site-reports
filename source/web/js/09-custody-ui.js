@@ -148,7 +148,7 @@ function cuView(){
      <span>${tr("تحويلات من قبل نظام عهد الموظفين الحالي. لا تؤثر على أي رصيد، ويمكنك حذفها نهائياً.")}</span>
      <div class="row"><button class="danger ${S.armed==="cuxferdel"?"armed":""}" data-act="cuxferdel">${S.armed==="cuxferdel"?tr("اضغط مرة أخرى لتأكيد الحذف"):"🗑️ "+tr("حذف التحويلات القديمة")}</button></div></div>`; })()}
   ${vatPanel()}
-  ${payrollPanel()}
+  ${payCan()?`<button class="cuhome" data-act="payopen"><span class="qic">👔</span><span class="cuh-t"><b>${tr("المرتبات")}</b><span class="small muted">${tr("كشف الشهر، السلف والأقساط، الاعتماد والصرف")}</span></span></button>`:""}
   ${carPanel()}
   <div class="panel"><h2>${tr("عهد الموظفين")}</h2>${HS.length?`<div class="holders">${["main",...HS].map(h=>{ const bal=holderBal(h), owe=h!=="main"&&bal<0; const pend=Object.values(S.cu).filter(x=>needsXfer(x)&&holderOf(x)===h);
       return `<div class="hold ${S.cuH===h?"on":""}"><button class="holdbtn" data-act="cuhold" data-h="${esc(h)}"><span>${esc(hName(h))}</span><b class="num ${owe?"neg":""}">${money(owe?-bal:bal)}</b><span class="small muted">${owe?tr("مستحق له"):h==="main"?tr("رصيدك"):tr("معه بدون فواتير")}</span>${h!=="main"&&bal>0&&holderIdle(h)>0?`<span class="small ${holderIdle(h)>=idleDays()?"neg":"muted"}">${tr("منذ")} <span class="num">${daysTxt(holderIdle(h))}</span></span>`:""}</button>

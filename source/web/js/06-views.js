@@ -15,6 +15,7 @@ function render(){
   else if(S.view==="site" && site()){ attachMarks(site()); app.innerHTML = siteView(site()); }
   else if(S.view==="cust" && isAdmin()){ app.innerHTML = cuView(); }
   else if(S.view==="docs" && isAdmin()){ app.innerHTML = docsView(); }
+  else if(S.view==="pay" && isAdmin()){ app.innerHTML = payView(); }
   else if(S.view==="settings"){ app.innerHTML = settingsView(); }
   else { S.view="list"; app.innerHTML = listView(); }
   if(S.view!=="site") app.insertAdjacentHTML("beforeend", bottomNav());

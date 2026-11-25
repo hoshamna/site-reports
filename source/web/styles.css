@@ -653,3 +653,16 @@ body.with-nav .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))!importa
 .paytbl tfoot th{background:#b07a3c}.paytbl tr.paid td{opacity:.75}
 .paytbl input{padding:4px 6px;min-height:0;font-size:13px}.paytbl .pin{width:72px}.paytbl .pnote{width:170px}
 .paytbl tr.payrow{display:table-row;padding:0;border:0}.paytbl tr.payrow.paid{opacity:1}.paytbl td{display:table-cell}
+.payappr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-inline-start:4px solid var(--gold,#c9a227)}.payappr.ok{border-inline-start-color:#2f9e55}
+.advemp{border-top:1px solid var(--line);padding:8px 0;display:flex;flex-direction:column;gap:4px}.advline{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.psheet{width:1120px;padding:26px 34px 30px;background:#fff;color:#222;font-family:Arimo,"Noto Naskh Arabic",Arial,sans-serif;box-sizing:border-box}
+.pshead{text-align:center}.pshead img{height:72px}.psline{height:4px;background:#0d7a3a;margin:8px 0 14px}
+.pstitle{width:max-content;margin:0 auto 12px;background:#5a3a1e;color:#fff;font-weight:700;font-size:17px;padding:6px 26px;border-radius:6px}
+.psg{margin:12px 0 5px;font-size:14px;color:#5a3a1e;border-inline-start:4px solid #b07a3c;padding-inline-start:8px}
+.pst{width:100%;border-collapse:collapse;font-size:12.5px}.pst th{background:#5a3a1e;color:#fff;padding:6px 4px;font-weight:700}
+.pst td{border:1px solid #d9c7b0;padding:4px 6px;text-align:center}.pst td.nm{text-align:start;font-weight:700}.pst tbody tr:nth-child(even) td{background:#f7efe6}
+.pst td.net{background:#f0e4d6!important;font-weight:700}.pst tfoot td.blank{border:0;background:none}.pst tfoot td.gt{background:#b07a3c;color:#fff;font-weight:700}
+.psbox{margin:14px 0 0;margin-inline-start:auto;border-collapse:collapse;width:360px!important;font-size:13px}.psbox th,.psbox td{border:1px solid #d9c7b0;padding:6px 12px}.psbox th{background:#f7f0e8;text-align:start}.psbox td{text-align:center;font-weight:700}
+.psbox tr.sub th,.psbox tr.sub td{background:#f0e4d6}.psbox tr.tot th,.psbox tr.tot td{background:#5a3a1e;color:#fff;font-size:15px}
+.psnote{font-size:11.5px;color:#444;margin:10px 0 0}.pssig{display:flex;justify-content:space-between;margin-top:40px;text-align:center;font-size:13px}.pssig>div{width:28%;border-top:1.5px solid #b07a3c;padding-top:6px;position:relative}
+.psok{position:absolute;top:-30px;inset-inline:0;color:#0d7a3a;font-weight:700;font-size:12px}

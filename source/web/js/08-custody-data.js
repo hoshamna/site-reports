@@ -189,7 +189,7 @@ function delta(x,h){ const a=n(x.amount);
   if(x.kind==="xfer"){ if(!personOn(x)||h==="all"||!x.to) return 0; const out=x.dir!=="back"; if(h==="main") return out?-a:a; if(h===x.to) return out?a:-a; }
   return 0; }
 const holderBal=h=>Object.values(S.cu).filter(x=>x.kind!=="close").reduce((a,x)=>a+delta(x,h),0);
-const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):tr("نقداً");
+const payLbl=x=>x.pay==="credit"?tr("آجل"):x.pay==="gm"?tr("تحويل مباشر"):x.pay==="bank"?tr("تحويل بنكي من العهدة"):tr("نقداً");
 const isCashX=x=>isExp(x)&&x.pay!=="credit"&&x.pay!=="gm";
 const holderShort=h=>Math.round(Math.max(0,-holderBal(h))*100)/100;
 // a person's invoices come off his custody; the transfer question appears only when his balance does not cover them (kept as is, 4 Nov 2026)

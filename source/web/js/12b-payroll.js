@@ -1,4 +1,5 @@
 /* ---------- المرتبات (26 Nov 2026, laid out like the company's own payroll sheet) ----------
+   Bank salaries are transferred by Hosham from the main custody, so bank and cash both come out of it (26 Nov 2026).
    Its own section (bottom bar), for Hosham and GM only. GM approves the month's sheet before it can be paid;
    any change after approval needs a new approval. Advances can be split over several months, starting the month after.
    Each employee: number, name, basic salary, allowances, and how he is paid (bank transfer or cash).
@@ -35,7 +36,7 @@ const absAuto=(base,allow,days)=>Math.round((n(base)+n(allow))/30*n(days));
 function payRow(e,m){ const d=(payDrafts()[m]||{})[e.id]||{}; const p=salPaid(e.id,m);
   const adv=r2p(salEntries(e.id).filter(x=>x.salAdv).reduce((a,x)=>a+advDue(x,m),0));
   if(p){ const other=p.salOther!=null?n(p.salOther):r2p(n(p.salAdd)-(p.salAbsDed!=null?0:n(p.salDed)));
-    return {e,paid:p,mode:p.pay==="gm"?"bank":"cash",base:n(p.salGross),allow:n(p.salAllow),adv:n(p.salAdvDed),days:p.salAbs||"",absDed:n(p.salAbsDed),other,net:n(p.amount),note:p.salNote||""}; }
+    return {e,paid:p,mode:p.salMode||(p.pay==="gm"||p.pay==="bank"?"bank":"cash"),base:n(p.salGross),allow:n(p.salAllow),adv:n(p.salAdvDed),days:p.salAbs||"",absDed:n(p.salAbsDed),other,net:n(p.amount),note:p.salNote||""}; }
   const base=n(e.salary), allow=n(e.allow), days=d.days||"", absDed=d.absDed!=null&&d.absDed!==""?n(d.absDed):absAuto(base,allow,days), other=n(d.other);
   return {e,paid:null,mode:staffMode(e),base,allow,adv,days,absDed,other,net:r2p(base+allow-adv-absDed+other),note:d.note||""}; }
 // the carried amount of a month: what was recorded, else the month's draft, else the standing one
@@ -45,7 +46,7 @@ function payCarry(m){ const c=carryEntry(m); if(c) return {amount:n(c.amount),em
 function payTotals(m){ const byNo=(a,b)=>(parseFloat(a.e.no)||1e9)-(parseFloat(b.e.no)||1e9); const rows=staffActive().map(e=>payRow(e,m)).concat(staffList().filter(e=>e.active===false&&salPaid(e.id,m)).map(e=>payRow(e,m))).sort(byNo);
   const sum=(L,k)=>r2p(L.reduce((a,r)=>a+n(r[k]),0)); const bank=rows.filter(r=>r.mode==="bank"), cash=rows.filter(r=>r.mode==="cash");
   const c=payCarry(m), carry=c.amount;
-  return {rows,bank,cash,sum,carry,carryEmp:c.emp,carryDone:c.done,bankT:sum(bank,"net"),cashT:sum(cash,"net"),allT:r2p(sum(bank,"net")+sum(cash,"net")),fromCu:r2p(sum(cash,"net")-carry),total:r2p(sum(bank,"net")+sum(cash,"net")-carry)}; }
+  return {rows,bank,cash,sum,carry,carryEmp:c.emp,carryDone:c.done,bankT:sum(bank,"net"),cashT:sum(cash,"net"),allT:r2p(sum(bank,"net")+sum(cash,"net")),fromCu:r2p(sum(bank,"net")+sum(cash,"net")-carry),total:r2p(sum(bank,"net")+sum(cash,"net")-carry)}; }
 // GM's approval of a month: kept with a fingerprint of the sheet, so any later change needs a new approval
 const isGM=()=>!!S.user&&/^(gm|المدير العام)$/i.test(String(S.user.name||"").trim());
 const payCan=()=>typeof cuEditor==="function"?cuEditor():isAdmin();
@@ -98,10 +99,10 @@ function payrollPanel(m,T,A,lock,apprBox){
     <tr><th>${tr("المجموع")}</th><td class="num" data-tot="all">${money(T.allT)}</td></tr>
     <tr><th>− ${tr("مرحّل من راتب")} ${esc((staffById(T.carryEmp)||{}).name||"")}</th><td class="num" data-tot="carry">${money(T.carry)}</td></tr>
     <tr class="diff"><th>${tr("المرتبات")}</th><td class="num" data-tot="total">${money(T.total)}</td></tr></tbody></table>
-   <p class="small muted" style="margin:0">${tr("يُخصم من العهدة الرئيسية عند الصرف")}: <b class="num" data-tot="fromcu">${money(T.fromCu)}</b> (${tr("الكاش − المرحّل")})</p>
+   <p class="small muted" style="margin:0">${tr("يُخصم من العهدة الرئيسية عند الصرف")}: <b class="num" data-tot="fromcu">${money(T.fromCu)}</b> (${tr("البنك + الكاش − المرحّل")})</p>
    <div class="row">${unpaid.length?(A&&A.ok?`<button class="primary ${S.armed==="paygo"?"armed":""}" data-act="paygo">${S.armed==="paygo"?tr("اضغط مرة أخرى للتأكيد"):`✓ ${tr("صرف مرتبات")} ${esc(monthName(m))}`}</button>`:`<button class="primary" disabled>🔒 ${tr("الصرف بعد اعتماد المدير العام")}</button>`):`<span class="chip done">✓ ${tr("صُرفت مرتبات الشهر")}</span>`}
     <button data-act="paypdf">📄 PDF</button><button data-act="payxlsx">📊 Excel</button></div>
-   <p class="small muted" style="margin:0">${tr("البنكي يُسجَّل مدفوعاً من الشركة ولا يُخصم من العهدة. الكاش يُخصم من العهدة، والمرحّل يُسجَّل توريداً إليها.")}</p>`:`<p class="small muted" style="margin:0">${tr("أضف الموظفين ومرتباتهم أولاً.")}</p>`}
+   <p class="small muted" style="margin:0">${tr("رواتب البنك والكاش تُخصم من العهدة الرئيسية عند الصرف، والمرحّل يُسجَّل توريداً إليها.")}</p>`:`<p class="small muted" style="margin:0">${tr("أضف الموظفين ومرتباتهم أولاً.")}</p>`}
    <details ${S.staffOpen||!staffList().length?"open":""}><summary style="cursor:pointer" data-act="staffopen">👥 ${tr("الموظفون والمرتبات")} <span class="num">${staffActive().length}</span></summary>
     <div class="list">${staffList().map(e=>`<div class="staffrow ${e.active===false?"off":""}">
       <input class="sno" data-staff="${esc(e.id)}" data-sk="no" value="${esc(e.no||"")}" placeholder="${tr("رقم")}" aria-label="${tr("رقم الموظف")}" dir="ltr">
@@ -129,7 +130,7 @@ function advPanel(){ const m=S.payM||prevMonthOf(today());
        ${(due||skipped)&&!salPaid(x.salEmp,m)?`<button class="xs ghost" data-act="payskip" data-id="${esc(x.id)}" data-m="${m}">${skipped?tr("إلغاء التأجيل"):`${tr("تأجيل قسط")} ${esc(monthName(m))}`}</button>`:""}</div>`; }).join("")}</div>`).join("")}</div>`; }
 function staffSave(){ settingsSave(); }
 async function payGo(m){ const T=payTotals(m); const rows=T.rows.filter(r=>!r.paid&&r.net>0); let k=0;
-  for(const r of rows){ const x={id:uid(),kind:"exp",by:cuMe,holder:"main",hv:2,target:"gen",cat:"salary",pay:r.mode==="bank"?"gm":"cash",supplier:r.e.name,amount:r.net,date:today(),
+  for(const r of rows){ const x={id:uid(),kind:"exp",by:cuMe,holder:"main",hv:2,target:"gen",cat:"salary",pay:r.mode==="bank"?"bank":"cash",salMode:r.mode,supplier:r.e.name,amount:r.net,date:today(),
       desc:`${lang==="en"?"Salary":"راتب"} ${monthName(m)} — ${r.e.name}`,salEmp:r.e.id,salMonth:m,salGross:r.base,salAllow:r.allow,salAdvDed:r.adv,salAbs:n(r.days)||0,salAbsDed:r.absDed,salOther:r.other,salNote:r.note,ok:true,fileId:null,fileType:null,createdAt:Date.now()+(k++)};
     S.cu[x.id]=x; cuPut(x,true); }
   if(T.carry>0&&!T.carryDone){ const e=staffById(T.carryEmp);

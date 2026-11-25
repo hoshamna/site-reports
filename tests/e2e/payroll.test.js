@@ -37,9 +37,9 @@ test("payroll: bank and cash groups, advances, absence, carried amount, statemen
   await app.eval(() => { __T.S.user.name = "هشام"; __T.render(); });
   await page.click('[data-act="paygo"]'); await page.click('[data-act="paygo"]'); await page.waitForTimeout(500);
   const paid = await app.eval(() => Object.values(__T.S.cu).filter((x) => x.cat === "salary" && !x.salAdv).map((x) => [x.supplier, x.amount, x.pay, x.salAdvDed, x.salAbsDed, x.salOther]).sort());
-  assert.deepEqual(paid, [["HESHAM", 6000, "gm", 0, 0, 0], ["abd alla jad", 900, "cash", 0, 800, 0], ["mohamed suliman", 1350, "cash", 300, 0, -50]]);
-  // custody: advance 300 + cash 2250 out, carried 400 in; the bank salary does not touch it
-  assert.equal(await app.eval(() => __T.holderBal("main")), -300 - 2250 + 400);
+  assert.deepEqual(paid, [["HESHAM", 6000, "bank", 0, 0, 0], ["abd alla jad", 900, "cash", 0, 800, 0], ["mohamed suliman", 1350, "cash", 300, 0, -50]]);
+  // custody: advance 300 + cash 2250 + bank 6000 out (Hosham transfers the bank salaries himself), carried 400 in
+  assert.equal(await app.eval(() => __T.holderBal("main")), -300 - 2250 - 6000 + 400);
   assert.deepEqual(await app.eval(() => __T.S.settings.payCarry), { emp: hes, amount: 400 });
   assert.notEqual(await app.eval(() => __T.salaryDue()), "2026-10");
   assert.match(await app.text(), /صُرفت مرتبات الشهر/);
